@@ -214,5 +214,6 @@ export default _sources => {
     queue$,
     router,
     bugsnag,
+    openAndPrint: page.openAndPrint,
   }
 }
