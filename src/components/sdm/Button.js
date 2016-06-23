@@ -1,6 +1,7 @@
 //placeholder for replacement w cyclic-surface-material
 import {Observable} from 'rx'
 const {just, combineLatest} = Observable
+import {not, complement, nth} from 'ramda'
 
 // import isolate from '@cycle/isolate'
 
@@ -40,18 +41,25 @@ const FlatButton = sources => {
 
 const RaisedButton = sources => {
   const id = newId()
+  const disabled$ = (sources.disabled$ || just(false))
+    .tap(x => console.log('disabled$', x))
+    .shareReplay(1)
 
   const viewState = {
     label$: sources.label$ || just('Button'),
     classNames$: sources.classNames$ || just([]),
+    disabled$,
   }
 
   const click$ = sources.DOM.select('.' + id).events('click')
+    .withLatestFrom(disabled$)
+    .filter(complement(nth)(1))
+    .map(nth(0))
 
   const DOM = combineLatestObj(viewState)
-    .map(({label, classNames}) => span({},[
+    .map(({label, classNames, disabled}) => span({},[
       Button({
-        onClick: true,
+        onClick: not(disabled),
         primary: true,
         className: [id, ...classNames].join('.'),
       }, [

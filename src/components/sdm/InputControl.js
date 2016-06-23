@@ -1,6 +1,6 @@
-import {Observable} from 'rx'
-const {just} = Observable
-
+import {Observable as $} from 'rx'
+const {just} = $
+import {always} from 'ramda'
 import combineLatestObj from 'rx-combine-latest-obj'
 
 import {div} from 'helpers'
@@ -13,6 +13,10 @@ const InputControl = sources => {
 
   const value$ = (sources.value$ || just(null))
     .merge(input$.pluck('target', 'value'))
+
+  const validation$ = sources.validation$ || just(always(true))
+  const valid$ = $.combineLatest(validation$, value$)
+    .map(([validation, value]) => validation(value))
 
   const viewState = {
     label$: sources.label$ || just(null),
@@ -30,6 +34,7 @@ const InputControl = sources => {
   return {
     DOM,
     value$,
+    valid$,
     key$,
   }
 }
