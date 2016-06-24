@@ -74,10 +74,13 @@ const RaisedButton = sources => {
 }
 
 const OkAndCancel = sources => {
-  const ok = RaisedButton({...sources,
+  const ok = RaisedButton({
+    ...sources,
     label$: sources.okLabel$ || just('OK'),
   })
-  const cancel = FlatButton({...sources,
+  const cancel = FlatButton({
+    ...sources,
+    disabled$: just(false),
     label$: sources.cancelLabel$ || just('Cancel'),
   })
 

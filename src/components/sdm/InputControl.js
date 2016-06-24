@@ -1,6 +1,6 @@
 import {Observable as $} from 'rx'
 const {just} = $
-import {always} from 'ramda'
+import {always, identity} from 'ramda'
 import combineLatestObj from 'rx-combine-latest-obj'
 
 import {div} from 'helpers'
@@ -13,9 +13,14 @@ const InputControl = sources => {
 
   const value$ = (sources.value$ || just(null))
     .merge(input$.pluck('target', 'value'))
+    .shareReplay(1)
+
+  const transform$ = sources.transform$ || just(identity)
+  const transformedValue$ = value$
+    .withLatestFrom(transform$, (value, transform) => transform(value))
 
   const validation$ = sources.validation$ || just(always(true))
-  const valid$ = $.combineLatest(validation$, value$)
+  const valid$ = $.combineLatest(validation$, transformedValue$.startWith(null))
     .map(([validation, value]) => validation(value))
 
   const viewState = {
@@ -33,7 +38,7 @@ const InputControl = sources => {
 
   return {
     DOM,
-    value$,
+    value$: transformedValue$,
     valid$,
     key$,
   }

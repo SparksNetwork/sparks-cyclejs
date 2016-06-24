@@ -12,7 +12,7 @@ import isolate from '@cycle/isolate'
 
 import moment from 'moment'
 
-import {objOf} from 'ramda'
+import {objOf, not} from 'ramda'
 
 import {
   List,
@@ -49,6 +49,7 @@ const AddShift = sources => {
   const form = ShiftForm(sources)
   const liwd = ListItemWithDialog({
     ...sources,
+    disabled$: form.valid$.map(not),
     iconName$: of('calendar-check-o'),
     title$: of('Add a shift.'),
     dialogTitleDOM$: of('Add a shift'),
@@ -60,13 +61,11 @@ const AddShift = sources => {
     .withLatestFrom(
       sources.teamKey$,
       sources.date$,
-      ({start, ...vals}, teamKey, date) => ({
-        teamKey,
-        date: moment(date).format(),
-        reserved: 0,
+      (vals, teamKey, date) => ({
         ...vals,
-        start: moment(date).add(start,'hours').format(),
-        end: moment(date).add(start,'hours').add(vals.hours,'hours').format(),
+        teamKey,
+        date,
+        reserved: 0,
       }))
     .sample(submit$)
     .map(objOf('values'))
@@ -207,12 +206,15 @@ const _EditDialog = sources => {
   //   // .shareReplay(1)
 
   const form = ShiftForm({...sources, item$: shift$})
-  const dialog = Dialog({...sources,
+  const dialog = Dialog({
+    ...sources,
+    disabled$: form.valid$.map(not),
     isOpen$: shift$.map(true),
     titleDOM$: of('Edit Shift'),
     contentDOM$: form.DOM,
   })
 
+  //form.valid$.subscribe(x => console.log('valid?', x))
   form.item$.subscribe(x => console.log('item to submit', x))
 
   return {

@@ -1,5 +1,6 @@
-import {Observable} from 'rx'
-const {just} = Observable
+import {Observable as $} from 'rx'
+const {just} = $
+import {map, compose, apply, filter, all, prop, tap} from 'ramda'
 
 import combineLatestObj from 'rx-combine-latest-obj'
 import isolate from '@cycle/isolate'
@@ -15,17 +16,11 @@ const reduceControlsToObject = controls =>
     field && (a[field] = control.value$) && a || a, {}
   )
 
-// const _controlSources = (field,sources) => ({...sources,
-//   value$: (sources.value$ || just({}))
-//     .tap(x => console.log('form value$',x))
-//     .pluck(field),
-// })
 const _controlSources = (field,sources) => ({...sources,
   value$: (sources.value$ ||
       sources.item$ && pluckStartValue(sources.item$, field) ||
       just({})
     )
-    // .tap(x => console.log('form value$',x))
     .merge(pluckStartValue(sources.item$, field)),
 })
 
@@ -36,13 +31,9 @@ const Form = sources => {
   const controls$ = sources.Controls$.map(Controls =>
     Controls.map(({field,Control}) => ({
       field,
-      control: isolate(Control,field)({...sources,
+      control: isolate(Control,field)({
+        ...sources,
         value$: _controlSources(field, sources).value$,
-          // .merge(pluckStartValue(sources.item$, field)) ||
-          // pluckStartValue(sources.item$, field),
-        // value$: sources.value$ && sources.value$
-        //   .merge(pluckStartValue(sources.item$, field)) ||
-        //   pluckStartValue(sources.item$, field),
       }),
     }))
   ).shareReplay(1) // keeps it from being pwnd every time
@@ -52,6 +43,14 @@ const Form = sources => {
     combineLatestObj(reduceControlsToObject(controls))
   )
 
+  const valid$ = controls$.flatMapLatest(controls =>
+    $.combineLatest(...controls.map(c => c.control.valid$ || just(true)))
+    .map(all(Boolean))
+    .startWith(true)
+  )
+
+  //valid$.subscribe(x => console.log('valids', x))
+
   const DOM = controls$.map(controls =>
     div({}, controls.map(({control}) => control.DOM))
   )
@@ -59,6 +58,7 @@ const Form = sources => {
   return {
     DOM,
     item$,
+    valid$,
   }
 }
 
