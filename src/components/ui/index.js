@@ -25,3 +25,5 @@ export {StepListItem, StepListItemDumb} from './StepListItem'
 
 export {ActionButton} from './ActionButton'
 export {SubtitleListItem} from './SubtitleListItem'
+
+export {default as Loader} from './Loader'

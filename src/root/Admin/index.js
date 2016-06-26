@@ -10,7 +10,8 @@ import {mergeOrFlatMapLatest} from 'util'
 
 import ComingSoon from 'components/ComingSoon'
 
-import Projects from './Projects.js'
+import Projects from './Projects'
+import Profiles from './Profiles'
 
 import {TabbedPage} from 'components/ui'
 
@@ -32,7 +33,7 @@ const _Page = sources => TabbedPage({...sources,
   ]),
   routes$: of({
     '/': Projects,
-    '/profiles': ComingSoon('Admin/Dash'),
+    '/profiles': Profiles,
     '/previously': ComingSoon('Admin/Previously'),
     '/test': ComingSoon('Admin/Test'),
   }),

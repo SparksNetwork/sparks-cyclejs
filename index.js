@@ -24,6 +24,7 @@ if (env === 'development') {
   sync.init({
     proxy: `localhost:${port}`,
     notify: false,
+    open: false,
   }, () => {
     console.log('BrowserSync ready')
   })
@@ -64,7 +65,8 @@ app.use(express.static('dist'))
 app.use(express.static('static/build'))
 
 const compileHtml = () => {
-  const indexSource = fs.readFileSync(`./index-${env}.html`, {encoding: 'utf-8'})
+  const indexSource = fs.readFileSync(`./index-${env}.html`,
+    {encoding: 'utf-8'})
   const template = Handlebars.compile(indexSource)
   const html = template({...process.env})
   return html

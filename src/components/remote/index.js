@@ -59,6 +59,7 @@ const actionCreator = (domain, action) => payload => ({
 export const Profiles = {
   query: {
     one: filterOne('Profiles'),
+    all: filterAll('Profiles'),
   },
   action: {
     create: actionCreator('Profiles', 'create'),
@@ -222,6 +223,7 @@ export const Arrivals = {
   query: {
     one: filterOne('Arrivals'),
     byProject: filterBy('Arrivals','projectKey'),
+    byProfile: filterBy('Arrivals','profileKey'),
   },
   action: {
     create: actionCreator('Arrivals', 'create'),
