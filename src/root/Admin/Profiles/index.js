@@ -2,11 +2,11 @@ import {Observable as $} from 'rx'
 const {just} = $
 import combineLatestObj from 'rx-combine-latest-obj'
 import isolate from '@cycle/isolate'
-import {formatTime} from 'util'
+import {formatTime, mergeSinks} from 'util'
 import {
   complement, T, allPass, always, any, compose, cond, filter, head, ifElse,
   isEmpty, join, map, path, pathOr, prop, propEq, props, split, toLower,
-  useWith,
+  useWith, applySpec, propOr,
 } from 'ramda'
 
 import {div, img, span} from 'cycle-snabbdom'
@@ -25,6 +25,7 @@ import {
 } from 'components/sdm'
 
 import Collapsible from 'components/Collapsible'
+import Navigatable from 'components/Navigatable'
 
 import {
   Loader,
@@ -42,7 +43,6 @@ require('./styles.scss')
 
 const SearchBox = sources => {
   const focus$ = sources.DOM.select('.profiles-search').observable
-    .distinctUntilChanged()
     .filter(complement(isEmpty))
     .map({selector: '.profiles-search input'})
 
@@ -52,9 +52,7 @@ const SearchBox = sources => {
   })
 
   const vtree$ = input.DOM.map(i =>
-    div('.profiles-search', {
-      key: 'profiles-search',
-    }, [i]))
+    div('.profiles-search', [i]))
 
   return {
     ...input,
@@ -80,12 +78,17 @@ const engStatus = cond([
 ])
 
 const OrganizerListItem = sources => {
-  return ListItem({
+  return Navigatable(ListItem)({
     ...sources,
     title$: sources.item$
       .map(path(['project', 'name'])),
     subtitle$: sources.item$
       .map(ifElse(prop('isAccepted'), always('Accepted'), always('Invited'))),
+    path$: sources.item$
+      .map(compose(join(''), applySpec([
+        always('/project/'),
+        prop('projectKey'),
+      ]))),
   })
 }
 
@@ -119,26 +122,37 @@ const InnerEngagementListItem = sources => {
 }
 
 const TeamListItem = sources => {
-  const ass$ = sources.item$
+  const li = sources => {
+    const ass$ = sources.item$
 
-  const DOM = ass$.map(ass =>
-    div('.list-item', [
-      div('.content-xcol-sm-4', [
-        div('.title', pathOr('err', ['team', 'name'], ass)),
-        div('.subtitle', 'Team'),
-      ]),
-      div('.content-xcol-sm-4', [
-        div('.title', prop('startTime', ass)),
-        div('.subtitle', 'Start Time'),
-      ]),
-      div('.content-xcol-sm-4', [
-        div('.title', prop('endTime', ass)),
-        div('.subtitle', 'End Time'),
-      ]),
-    ])
-  )
+    const DOM = ass$.map(ass =>
+      div('.list-item', [
+        div('.content-xcol-sm-4', [
+          div('.title', pathOr('err', ['team', 'name'], ass)),
+          div('.subtitle', 'Team'),
+        ]),
+        div('.content-xcol-sm-4', [
+          div('.title', prop('startTime', ass)),
+          div('.subtitle', 'Start Time'),
+        ]),
+        div('.content-xcol-sm-4', [
+          div('.title', prop('endTime', ass)),
+          div('.subtitle', 'End Time'),
+        ]),
+      ])
+    )
 
-  return {DOM}
+    return {DOM}
+  }
+
+  return Navigatable(li)({
+    ...sources,
+    path$: sources.item$
+      .map(compose(join(''), applySpec([
+        always('/team/'),
+        prop('teamKey'),
+      ]))),
+  })
 }
 
 const EngagementListItem = sources => {
@@ -154,11 +168,16 @@ const EngagementListItem = sources => {
     emptyDOM: just(div('No assignments')),
   })
 
-  return Collapsible(InnerEngagementListItem)({
+  const engagementListItem = Collapsible(InnerEngagementListItem)({
     ...sources,
     assignments$,
     contentDOM$: teamsList.DOM,
   })
+
+  return {
+    ...mergeSinks(teamsList, engagementListItem),
+    DOM: engagementListItem.DOM,
+  }
 }
 
 const ArrivalListItem = sources => {
@@ -177,14 +196,6 @@ const ProfileView = sources => {
   const organizers$ = OrganizersFetcher(sources)
   const engagements$ = EngagementsFetcher(sources)
   const arrivals$ = ArrivalsFetcher(sources)
-
- // const enterPressed$ = profile$
- //   .map(() =>
- //     sources.key$.filter(propEq('keyCode', 13))
- //     .map(true)
- //     .startWith(false))
- //   .switch()
- //   .shareReplay(1)
 
   const LoadingHeader = sources => ListItem({
     classes$: just({header: true}),
@@ -246,6 +257,8 @@ const ProfileView = sources => {
     emptyDOM$: just(div('No arrivals')),
   })
 
+  const lists = [orgList, engList, arrList]
+
   const fieldRow = (label, value) =>
     div('.list-item', [
       div('.content.xcol-sm-12', [
@@ -292,6 +305,7 @@ const ProfileView = sources => {
 
   return {
     DOM: card.DOM,
+    ...mergeSinks(...lists),
   }
 }
 
@@ -338,9 +352,11 @@ const SearchResults = sources => {
         profile$: profiles$.map(head),
       }) :
       ProfileList(sources))
+    .shareReplay(1)
 
   return {
-    DOM: control$.pluck('DOM').switch(),
+    DOM: control$.map(prop('DOM')).switch(),
+    ...mergeSinks(control$),
   }
 }
 
@@ -384,7 +400,7 @@ const Profiles = unfetchedSources => {
   const DOM = combineDOMsToDiv('', searchBox, list)
 
   return {
-    ...searchBox,
+    ...mergeSinks(searchBox, list),
     DOM,
   }
 }

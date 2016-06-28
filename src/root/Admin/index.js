@@ -6,7 +6,7 @@ import AppFrame from 'components/AppFrame'
 import Title from 'components/Title'
 import Header from 'components/Header'
 
-import {mergeOrFlatMapLatest} from 'util'
+import {mergeSinks, mergeOrFlatMapLatest} from 'util'
 
 import ComingSoon from 'components/ComingSoon'
 
@@ -63,9 +63,8 @@ export default sources => {
   )
 
   return {
+    ...mergeSinks(...children),
     DOM: appFrame.DOM,
-    auth$: mergeOrFlatMapLatest('auth$', ...children),
-    queue$: mergeOrFlatMapLatest('queue$', ...children),
     route$,
   }
 }

@@ -1,7 +1,7 @@
 import {Observable as $} from 'rx'
 const {just} = $
 import {
-  join, juxt, last, init, split, toLower, prop, sortBy, compose,
+  join, juxt, last, init, split, toLower, prop, sortBy, compose, propOr,
 } from 'ramda'
 
 import {
@@ -24,7 +24,7 @@ const sortBySurname = sortBy(
   compose(
     toLower,
     fullNameToSortName,
-    prop('fullName')
+    propOr('', 'fullName')
   ))
 
 export function OrganizersFetcher(sources) {
