@@ -16,6 +16,8 @@ deployment:
     branch: release
     heroku:
       appname: sparks-frontend-staging
+    commands:
+      - npm run purge-cache
 
   production:
     branch: master
