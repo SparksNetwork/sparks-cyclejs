@@ -35,9 +35,11 @@ const plugins = {
 
 const entry = {
   production: [
+    'babel-polyfill',
     './src/main',
   ],
   staging: [
+    'babel-polyfill',
     './src/main',
   ],
   development: [
