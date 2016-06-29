@@ -14,10 +14,9 @@ checkout:
 deployment:
   staging:
     branch: release
-    heroku:
-      appname: sparks-frontend-staging
     commands:
-      - npm run purge-cache
+      - git push git@heroku.com:sparks-frontend-staging.git $CIRCLE_SHA1:master
+      - bin/purge-cache.sh
 
   production:
     branch: master
