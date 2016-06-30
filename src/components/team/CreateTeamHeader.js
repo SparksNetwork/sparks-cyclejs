@@ -2,7 +2,6 @@
 
 import {Observable} from 'rx'
 import combineLatestObj from 'rx-combine-latest-obj'
-import {objOf} from 'ramda'
 
 // import isolate from '@cycle/isolate'
 

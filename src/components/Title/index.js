@@ -89,14 +89,7 @@ export const TabbedTitle = sources => {
 }
 
 const ResponsiveTitle = sources => {
-  // const rightDOM$ = just(sidenavButton)
-
-  const content = TitleContent({...sources,
-    // rightDOM$: sources.isMobile$
-      // .flatMapLatest(m => m && rightDOM$ || just(null)),
-    // subtitleDOM$: sources.isMobile$
-    //   .flatMapLatest(m => m && sources.subtitleDOM$ || just(null)),
-  })
+  const content = TitleContent(sources)
   const url$ = sources.backgroundUrl$ || just(null)
   const classes$ = sources.classes$ || just([])
 
