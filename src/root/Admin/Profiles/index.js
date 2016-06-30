@@ -4,9 +4,9 @@ import combineLatestObj from 'rx-combine-latest-obj'
 import isolate from '@cycle/isolate'
 import {formatTime, mergeSinks} from 'util'
 import {
-  complement, T, allPass, always, any, compose, cond, filter, head, ifElse,
-  isEmpty, join, map, path, pathOr, prop, propEq, props, split, toLower,
-  useWith, applySpec,
+  T, allPass, always, any, applySpec, complement, compose, cond, filter, head,
+  ifElse, isEmpty, join, map, path, pathOr, prop, propEq, propOr, props, split,
+  take, toLower, useWith,
 } from 'ramda'
 
 import {div, img, span, a} from 'cycle-snabbdom'
@@ -135,11 +135,11 @@ const TeamListItem = sources => {
           div('.subtitle', 'Team'),
         ]),
         div('.content-xcol-sm-4', [
-          div('.title', prop('startTime', ass)),
+          div('.title', propOr('no time', 'startTime', ass)),
           div('.subtitle', 'Start Time'),
         ]),
         div('.content-xcol-sm-4', [
-          div('.title', prop('endTime', ass)),
+          div('.title', propOr('no time', 'endTime', ass)),
           div('.subtitle', 'End Time'),
         ]),
       ])
@@ -395,7 +395,11 @@ const Profiles = unfetchedSources => {
   const profiles$ = $.combineLatest(
     preparedTerm$,
     preparedProfiles$,
-    useWith(filter, [allPass]))
+    compose(
+      take(20),
+      useWith(filter, [allPass])
+    )
+  )
   .startWith([])
   .shareReplay(1)
 
