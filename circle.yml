@@ -16,7 +16,7 @@ deployment:
     branch: release
     commands:
       - git push git@heroku.com:sparks-frontend-staging.git $CIRCLE_SHA1:master
-      - bin/purge-cache.sh "staging.sparks.network"
+      - bin/purge-cache.sh "sparks.network"
 
   production:
     branch: master
