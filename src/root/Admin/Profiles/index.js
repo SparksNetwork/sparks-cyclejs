@@ -6,10 +6,10 @@ import {formatTime, mergeSinks} from 'util'
 import {
   complement, T, allPass, always, any, compose, cond, filter, head, ifElse,
   isEmpty, join, map, path, pathOr, prop, propEq, props, split, toLower,
-  useWith, applySpec, propOr,
+  useWith, applySpec,
 } from 'ramda'
 
-import {div, img, span} from 'cycle-snabbdom'
+import {div, img, span, a} from 'cycle-snabbdom'
 import {combineDOMsToDiv} from 'util'
 
 import {icon, iconSrc} from 'helpers'
@@ -107,14 +107,17 @@ const InnerEngagementListItem = sources => {
       div('.xcol-sm-1', [
         span('.icon-plus'),
       ]),
-      div('.content.xcol-sm-4', [
+      div('.content.xcol-sm-3', [
         div('.title', pathOr('err', ['project', 'name'], eng)),
       ]),
-      div('.content.xcol-sm-4', [
+      div('.content.xcol-sm-3', [
         div('.title', pathOr('err', ['opp', 'name'], eng)),
         div('.subtitle', engStatus(eng)),
       ]),
       div('.content.xcol-sm-3', [assignmentsDOM]),
+      div('.content.xcol-sm-3', [
+        a({attrs: {href: `/engaged/${eng.$key}`}}, 'View engagement page'),
+      ]),
     ])
   )
 
@@ -257,8 +260,6 @@ const ProfileView = sources => {
     emptyDOM$: just(div('No arrivals')),
   })
 
-  const lists = [orgList, engList, arrList]
-
   const fieldRow = (label, value) =>
     div('.list-item', [
       div('.content.xcol-sm-12', [
@@ -269,6 +270,8 @@ const ProfileView = sources => {
 
   const listRow = list =>
     div('.row', [div('.col-xs-12', [list])])
+
+  const children = [orgList, engList, arrList]
 
   const content$ = combineLatestObj({
     orgListDOM$: orgList.DOM,
@@ -305,7 +308,7 @@ const ProfileView = sources => {
 
   return {
     DOM: card.DOM,
-    ...mergeSinks(...lists),
+    ...mergeSinks(...children),
   }
 }
 
