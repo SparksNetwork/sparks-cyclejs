@@ -1,0 +1,18 @@
+@keyframes anim-spin {
+  0% {
+    transform: rotate(0);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: anim-spin 2s infinite linear;
+  display: inline-block;
+}
+
+.hidden {
+  display: none;
+}
