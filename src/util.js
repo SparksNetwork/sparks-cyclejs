@@ -1,7 +1,7 @@
 import {Observable} from 'rx'
 import {ReplaySubject} from 'rx'
 const {just, combineLatest, empty} = Observable
-import {curryN, objOf, prop, compose, complement} from 'ramda'
+import {curryN, objOf, prop, compose, complement, join} from 'ramda'
 
 import {div} from 'helpers'
 
@@ -22,6 +22,18 @@ export const hideable = Control => sources => {
     DOM: sources.isVisible$.flatMapLatest(v => v ? DOM : just(div({}, [null]))),
     ...sinks,
   }
+}
+
+export const siteUrl = () => {
+  const location = window.location
+  const {protocol, port, hostname} = location
+  const urlParts = [protocol, '//', hostname]
+
+  if (port && port !== '') {
+    urlParts.push(`:${port}`)
+  }
+
+  return join('', urlParts)
 }
 
 /**
@@ -144,6 +156,7 @@ export const mergeSinks = (...childs) => ({
   route$: mergeOrFlatMapLatest('route$', ...childs),
   focus$: mergeOrFlatMapLatest('focus$', ...childs),
   openAndPrint: mergeOrFlatMapLatest('openAndPrint', ...childs),
+  openGraph: mergeOrFlatMapLatest('openGraph', ...childs),
 })
 
 export const pluckLatest = (k,s$) => s$.pluck(k).switch()
