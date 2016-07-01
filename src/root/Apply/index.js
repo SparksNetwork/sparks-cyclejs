@@ -1,5 +1,6 @@
 import {Observable} from 'rx'
-const {of} = Observable
+const {of, merge} = Observable
+import {prop, objOf} from 'ramda'
 
 import isolate from '@cycle/isolate'
 
@@ -82,8 +83,19 @@ export default sources => {
     pageDOM,
   })
 
+  const openGraph = merge(
+    _sources.project$.map(project => ({
+      title: project.name,
+      description: project.description,
+    })),
+    _sources.project$.filter(prop('facebookImageUrl'))
+      .map(prop('facebookImageUrl'))
+      .map(objOf('image'))
+  )
+
   return {
     DOM: frame.DOM,
     ...mergeSinks(frame, page),
+    openGraph,
   }
 }
