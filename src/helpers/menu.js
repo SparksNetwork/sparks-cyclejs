@@ -1,4 +1,5 @@
 import {Mask, getScreenSize} from 'snabbdom-material'
+import {mergeAll} from 'ramda'
 import {div} from 'cycle-snabbdom'
 
 const insert = (vnode) => {
@@ -53,11 +54,11 @@ const menuStyle = {
 function menu(config, children) {
   const {isOpen, rightAlign, style: styles = {}} = config
 
-  const style = Object.assign(
+  const style = mergeAll([
     menuStyle,
     styles,
-    rightAlign ? {right: '0', left: 'auto'} : {left: '0', right: 'auto'}
-  )
+    rightAlign ? {right: '0', left: 'auto'} : {left: '0', right: 'auto'},
+  ])
 
   return div('.app-menu', {style: containerStyle}, [
     Mask({className: 'close-menu', dark: false, isOpen}),

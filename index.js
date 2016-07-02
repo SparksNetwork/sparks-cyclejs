@@ -1,13 +1,12 @@
 import fs from 'fs'
-import path from 'path'
 import express from 'express'
 import Handlebars from 'handlebars'
 import webpack from 'webpack'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import smith from './static'
-import smithWatch from 'metalsmith-watch'
 import browserSync from 'browser-sync'
+import prerender from 'prerender-node'
 
 const port = process.env.PORT || 3000
 const app = express()
@@ -25,6 +24,7 @@ if (env === 'development') {
   sync.init({
     proxy: `localhost:${port}`,
     notify: false,
+    open: false,
   }, () => {
     console.log('BrowserSync ready')
   })
@@ -54,11 +54,19 @@ if (env === 'development') {
   })
 }
 
+if (process.env.PRERENDER_TOKEN) {
+  // Prerender.IO
+  app.use(prerender
+    .set('prerenderToken', process.env.PRERENDER_TOKEN)
+  )
+}
+
 app.use(express.static('dist'))
 app.use(express.static('static/build'))
 
 const compileHtml = () => {
-  const indexSource = fs.readFileSync(`./index-${env}.html`, {encoding: 'utf-8'})
+  const indexSource = fs.readFileSync(`./index-${env}.html`,
+    {encoding: 'utf-8'})
   const template = Handlebars.compile(indexSource)
   const html = template({...process.env})
   return html

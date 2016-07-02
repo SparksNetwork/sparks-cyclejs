@@ -14,11 +14,12 @@ checkout:
 deployment:
   staging:
     branch: release
-    heroku:
-      appname: sparks-frontend-staging
+    commands:
+      - git push git@heroku.com:sparks-frontend-staging.git $CIRCLE_SHA1:master
+      - bin/purge-cache.sh "sparks.network"
 
   production:
     branch: master
-    heroku:
-      appname: sparks-frontend-production
-
+    commands:
+      - git push git@heroku.com:sparks-frontend-production.git $CIRCLE_SHA1:master
+      - bin/purge-cache.sh "sparks.network"

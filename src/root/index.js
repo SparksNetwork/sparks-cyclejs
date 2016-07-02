@@ -1,8 +1,8 @@
-import {Observable} from 'rx'
-const {just, empty, merge} = Observable
+import {Observable as $} from 'rx'
+const {just, empty, merge} = $
 
 import isolate from '@cycle/isolate'
-import {propOr, pick} from 'ramda'
+import {propOr, pick, join} from 'ramda'
 
 import Login from './Login'
 // import Landing from './Landing'
@@ -19,7 +19,7 @@ import Organize from './Organize'
 import 'normalize-css'
 import '!style!css!snabbdom-material/lib/index.css'
 
-// import {nestedComponent} from 'util'
+import {siteUrl} from 'util'
 
 import {RoutedComponent} from 'components/ui'
 
@@ -161,8 +161,11 @@ export default _sources => {
 
   const {responses$} = AuthedResponseManager(_sources)
 
-  const previousRoute$ = _sources.router.observable
+  const path$ = _sources.router.observable
     .pluck('pathname')
+    .shareReplay(1)
+
+  const previousRoute$ = path$
     .scan((acc,val) => [val, acc[0]], [null,null])
     .filter(arr => arr[1] !== '/confirm')
     .map(arr => arr[1])
@@ -195,9 +198,15 @@ export default _sources => {
 
   const auth$ = page.auth$
 
-  const focus$ = page.focus$ || Observable.empty()
+  const focus$ = page.focus$ || $.empty()
 
   const {queue$} = AuthedActionManager({...sources, queue$: page.queue$})
+
+  const openGraph = merge(
+    $.of({site_name: 'Sparks.Network'}),
+    path$.map(path => ({url: join('', [siteUrl(), path])})),
+    page.openGraph,
+  )
 
   const router = merge(
     page.route$,
@@ -206,7 +215,7 @@ export default _sources => {
   )
 
   // Refresh bugsnag on page change, send user uid
-  const bugsnag = Observable.merge(
+  const bugsnag = merge(
     router.map({action: 'refresh'}),
     sources.auth$.map(authInfo =>
       ({
@@ -223,5 +232,6 @@ export default _sources => {
     router,
     bugsnag,
     openAndPrint: page.openAndPrint,
+    openGraph,
   }
 }

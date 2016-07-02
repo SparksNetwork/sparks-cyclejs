@@ -6,11 +6,12 @@ import AppFrame from 'components/AppFrame'
 import Title from 'components/Title'
 import Header from 'components/Header'
 
-import {mergeOrFlatMapLatest} from 'util'
+import {mergeSinks, mergeOrFlatMapLatest} from 'util'
 
 import ComingSoon from 'components/ComingSoon'
 
-import Projects from './Projects.js'
+import Projects from './Projects'
+import Profiles from './Profiles'
 
 import {TabbedPage} from 'components/ui'
 
@@ -32,7 +33,7 @@ const _Page = sources => TabbedPage({...sources,
   ]),
   routes$: of({
     '/': Projects,
-    '/profiles': ComingSoon('Admin/Dash'),
+    '/profiles': Profiles,
     '/previously': ComingSoon('Admin/Previously'),
     '/test': ComingSoon('Admin/Test'),
   }),
@@ -62,9 +63,8 @@ export default sources => {
   )
 
   return {
+    ...mergeSinks(...children),
     DOM: appFrame.DOM,
-    auth$: mergeOrFlatMapLatest('auth$', ...children),
-    queue$: mergeOrFlatMapLatest('queue$', ...children),
     route$,
   }
 }

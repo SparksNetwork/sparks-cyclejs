@@ -1,12 +1,5 @@
 import {Observable as $} from 'rx'
 const just = $.just
-import combineLatestObj from 'rx-combine-latest-obj'
-
-// import isolate from '@cycle/isolate'
-
-// import {log} from 'util'
-
-// import AppBar from 'components/AppBar'
 
 import {h5, a} from 'cycle-snabbdom'
 import {div} from 'cycle-snabbdom'

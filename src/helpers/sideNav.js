@@ -1,4 +1,5 @@
 import {div, span} from 'cycle-snabbdom'
+import {mergeAll} from 'ramda'
 import {Mask} from 'snabbdom-material'
 import {material} from 'util'
 
@@ -13,7 +14,7 @@ const defaultStyles = {
 function renderSideNav(config, children) {
   const {className = '', style: userStyle = {}} = config
   const classes = ['sidenav', 'paper2', className].filter(Boolean)
-  const style = Object.assign(defaultStyles, userStyle, material.sidenav)
+  const style = mergeAll([defaultStyles, userStyle, material.sidenav])
   return div({},[
     Mask({isOpen: true, material, className: 'close-sideNav'}),
     div(`.${classes.join('.')}`, {style}, [

@@ -35,9 +35,11 @@ const plugins = {
 
 const entry = {
   production: [
+    'babel-polyfill',
     './src/main',
   ],
   staging: [
+    'babel-polyfill',
     './src/main',
   ],
   development: [
@@ -51,7 +53,9 @@ module.exports = {
   output: {
     path: path.join(__dirname, 'dist'),
     filename: 'bundle.js',
+    sourceMapFilename: '[file].map',
   },
+  devtool: 'hidden-source-map',
   devServer: {
     inline: true,
     historyApiFallback: true,

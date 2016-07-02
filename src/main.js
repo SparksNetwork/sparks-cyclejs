@@ -10,6 +10,8 @@ import {isMobile$} from 'drivers/isMobile'
 import openAndPrintDriver from 'drivers/openAndPrint'
 import makeBugsnagDriver from 'drivers/bugsnag'
 import makeFocusNextDriver from 'drivers/focusNext'
+import makePrerenderDriver from 'drivers/prerender'
+import makeOpenGraphDriver from 'drivers/openGraph'
 
 // app root function
 import Root from './root'
@@ -31,6 +33,8 @@ const {sources, sinks} = run(Root, {
     releaseStage: process.env.BUILD_ENV || 'development',
   }),
   openAndPrint: openAndPrintDriver,
+  prerender: makePrerenderDriver(),
+  openGraph: makeOpenGraphDriver(),
 })
 
 if (module.hot) {

@@ -44,29 +44,9 @@ const Fetch = sources => ({
 
 export default sources => {
   const _sources = {...sources, ...Fetch(sources)}
-
-  // const inst = Instruct(_sources)
   const list = AppList(_sources)
-  // const next = Next(_sources)
-
-  // const items = [
-    // inst,
-    // next,
-    // list,
-  // ]
-
-  // const DOM = combineLatest(
-  //   _sources.memberships$.map(m => m.length > 0),
-  //   ...items.map(i => i.DOM),
-  //   (hasTeams, i, n, l) => div({},[
-  //     hasTeams ? n : i,
-  //     l,
-  //   ])
-  // )
 
   return {
     DOM: list.DOM,
-    // queue$: list.queue$,
-    // route$: next.route$,
   }
 }
