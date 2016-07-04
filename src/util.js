@@ -1,7 +1,9 @@
 import {Observable} from 'rx'
 import {ReplaySubject} from 'rx'
 const {just, combineLatest, empty} = Observable
-import {curryN, objOf, prop, compose, complement, join} from 'ramda'
+import {
+  complement, compose, curryN, filter, isNil, join, map, objOf, prop, toPairs,
+} from 'ramda'
 
 import {div} from 'helpers'
 
@@ -24,17 +26,35 @@ export const hideable = Control => sources => {
   }
 }
 
+const joinWithoutNil = compose(
+  join(''),
+  filter(complement(isNil))
+)
+
 export const siteUrl = () => {
   const location = window.location
-  const {protocol, port, hostname} = location
-  const urlParts = [protocol, '//', hostname]
 
-  if (port && port !== '') {
-    urlParts.push(`:${port}`)
-  }
-
-  return join('', urlParts)
+  return joinWithoutNil([
+    location.protocol,
+    '//',
+    location.hostname,
+    location.port && location.port.length > 0 ? `:${location.port}` : null,
+  ])
 }
+
+export const absoluteUrl = path =>
+  joinWithoutNil([siteUrl(), path])
+
+/**
+* in: {width: 78, forward: true, animal: 'moosy moose'}
+* out: width=78&forward=true&animal=moosy+moose
+*/
+export const toQueryString = compose(
+  join('&'),
+  map(join('=')),
+  map(map(compose(encodeURIComponent, String))),
+  toPairs
+)
 
 /**
 * left/right. Takes a stream and predicate. Values that match the predicate go
