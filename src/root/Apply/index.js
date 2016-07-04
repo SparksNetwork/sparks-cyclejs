@@ -6,7 +6,7 @@ import isolate from '@cycle/isolate'
 
 import SoloFrame from 'components/SoloFrame'
 import {ResponsiveTitle} from 'components/Title'
-import FacebookShare from 'components/ui/FacebookShare'
+import {Share} from 'components/ui/Facebook'
 
 import Opp from './Opp'
 import Overview from './Overview'
@@ -56,7 +56,7 @@ const _Title = sources => ResponsiveTitle({...sources,
 
 const _Description = sources => DescriptionListItem({...sources,
   title$: sources.project$.pluck('description'),
-  rightDOM$: FacebookShare({
+  rightDOM$: Share({
     ...sources,
   }).DOM,
 })
