@@ -1,14 +1,16 @@
-import {Observable} from 'rx'
-const {just, combineLatest} = Observable
+import {Observable as $} from 'rx'
+const {just, combineLatest} = $
 
 import isolate from '@cycle/isolate'
 import {div, icon} from 'helpers'
 
 import {
   ListItemToggle,
+  ListItemCollapsible,
   ListItemCollapsibleTextArea,
 
 } from 'components/sdm'
+import {Share} from 'components/ui/Facebook'
 
 import {Opps} from 'components/remote'
 
@@ -32,6 +34,17 @@ const TextareaDescription = sources => ListItemCollapsibleTextArea({
   cancelLabel$: just('hang on ill do this later'),
 })
 
+const ShareOnFacebook = sources => ListItemCollapsible({
+  ...sources,
+  title$: just('Share this Opportunity on Facebook.'),
+  leftDOM$: just(icon('facebook-square')),
+  contentDOM$: Share({
+    ...sources,
+    path$: combineLatest(sources.projectKey$, sources.oppKey$)
+      .map(([projectKey, oppKey]) => `/apply/${projectKey}/opp/${oppKey}`),
+  }).DOM,
+})
+
 export default sources => {
   const preview = isolate(RecruitmentLinkItem)(sources)
 
@@ -41,6 +54,10 @@ export default sources => {
 
   const textareaDescription = isolate(TextareaDescription)({...sources,
     value$: sources.opp$.pluck('description'),
+  })
+
+  const shareOnFacebook = ShareOnFacebook({
+    ...sources,
   })
 
   const updateIsPublic$ = togglePublic.value$
@@ -53,7 +70,7 @@ export default sources => {
       Opps.action.update({key, values: {description}})
     )
 
-  const queue$ = Observable.merge(
+  const queue$ = $.merge(
     updateIsPublic$,
     updateDescription$,
   )
@@ -62,6 +79,7 @@ export default sources => {
     preview.DOM,
     togglePublic.DOM,
     textareaDescription.DOM,
+    shareOnFacebook.DOM,
     (...doms) => div({}, doms)
   )
 
