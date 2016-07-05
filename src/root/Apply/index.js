@@ -6,6 +6,7 @@ import isolate from '@cycle/isolate'
 
 import SoloFrame from 'components/SoloFrame'
 import {ResponsiveTitle} from 'components/Title'
+import {Share} from 'components/ui/Facebook'
 
 import Opp from './Opp'
 import Overview from './Overview'
@@ -55,6 +56,9 @@ const _Title = sources => ResponsiveTitle({...sources,
 
 const _Description = sources => DescriptionListItem({...sources,
   title$: sources.project$.pluck('description'),
+  rightDOM$: Share({
+    ...sources,
+  }).DOM,
 })
 
 const _Page = sources => RoutedComponent({...sources, routes$: of({
