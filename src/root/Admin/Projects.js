@@ -1,5 +1,6 @@
 import {Observable} from 'rx'
 const {just} = Observable
+import {objOf} from 'ramda'
 
 import combineLatestObj from 'rx-combine-latest-obj'
 
@@ -21,6 +22,7 @@ export default sources => {
   })
 
   const queue$ = projectForm.project$
+    .map(objOf('values'))
     .map(Projects.action.create)
 
   const route$ = Observable.merge(
