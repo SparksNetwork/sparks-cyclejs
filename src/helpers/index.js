@@ -4,7 +4,7 @@ import {div, h, img} from 'cycle-snabbdom'
 import {Icon} from 'snabbdom-material'
 // import {material} from 'util'
 
-import 'images/sn-logo-32.png'
+import 'images/sn-logo-48.png'
 
 export {menu} from './menu'
 export {landing} from './landing'
@@ -44,7 +44,7 @@ export const iconSrc = src =>
 export const fabIcon = name =>
   Icon({name, style: {backgroundColor: 'yellow', borderRadius: '16px'}})
 
-require('images/sn-logo-32.png')
+require('images/sn-logo-48.png')
 
 // export const headerLogo =
 //   a({props: {href: '/'}}, [

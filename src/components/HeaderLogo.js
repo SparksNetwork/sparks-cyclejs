@@ -1,7 +1,7 @@
 import {Observable} from 'rx'
 import {a, img} from 'cycle-snabbdom'
 
-const src = require('images/sn-logo-32.png')
+const src = require('images/sn-logo-48.png')
 
 export default () => ({
   DOM: Observable.just(
