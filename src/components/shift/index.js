@@ -1,4 +1,7 @@
 import {Observable as $} from 'rx'
+import {
+  always, ifElse, prop,
+} from 'ramda'
 import moment from 'moment'
 import {row, cell, icon} from 'helpers/layout'
 
@@ -62,7 +65,12 @@ export const ShiftContentExtra = sources => {
     leftDOM$: tod.DOM,
     title$: $.combineLatest(
       sources.item$.pluck('start'),
-      team$.pluck('name'),
+      team$.map(
+        ifElse(Boolean,
+          prop('name'),
+          always('Orphaned shift!')
+        )
+      ),
       sources.item$.pluck('people'),
       sources.item$.pluck('assigned'),
       (s,n,p,a) => row({},
