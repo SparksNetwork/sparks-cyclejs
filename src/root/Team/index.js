@@ -13,7 +13,7 @@ import {nestedComponent, mergeOrFlatMapLatest} from 'util'
 
 import {ListItemNavigating} from 'components/sdm'
 
-import {combineLatestToDiv} from 'util'
+import {combineLatestToDiv, mergeSinks} from 'util'
 // import {log} from 'util'
 
 import {
@@ -170,8 +170,9 @@ export default sources => {
 
   return {
     DOM: appFrame.DOM,
-    auth$: mergeOrFlatMapLatest('auth$', ...children),
-    queue$: mergeOrFlatMapLatest('queue$', ...children),
+    ...mergeSinks(...children),
+    // auth$: mergeOrFlatMapLatest('auth$', ...children),
+    // queue$: mergeOrFlatMapLatest('queue$', ...children),
     route$,
   }
 }

@@ -1,0 +1,46 @@
+@media all {
+	.xprintable {
+		display: none;
+	}
+}
+
+.printable {
+	display: table;
+	width: 100%;
+
+    .list-item {
+	    min-height: 0;
+	    xdisplay: table-row;
+  	}
+  	.collapsible {
+    	padding: 0 8px 0 48px
+  	}
+
+	.printableHeader {
+	  display: table-header-group;
+
+	  & > * {
+	  	display: table-row;
+	  }
+	}
+
+	.printableBody {
+	  display: table-row-group;
+
+	  & > * {
+	  	display: table-row;
+	  }
+	}
+
+	.printableFooter {
+	  display: table-footer-group;
+	}
+
+	.day {
+		page-break-after: always;
+	}
+}
+
+
+@media print {
+}
