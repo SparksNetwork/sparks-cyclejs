@@ -1,8 +1,9 @@
 import {Observable as $} from 'rx'
+import moment from 'moment'
 
 import AppFrame from 'components/AppFrame'
 import {TabbedTitle} from 'components/Title'
-import moment from 'moment'
+import {Recommend} from 'components/ui/Facebook'
 
 import {
   TabbedPage,
@@ -190,6 +191,13 @@ export default sources => {
   const title = TabbedTitle({..._sources,
     tabsDOM$: page.tabBarDOM,
     titleDOM$: _sources.project$.pluck('name'),
+    rightDOM$: Recommend({
+      ...sources,
+      path$: $.combineLatest(
+        _sources.projectKey$,
+        _sources.oppKey$
+      ).map(([projectKey, oppKey]) => `/apply/${projectKey}/opp/${oppKey}`),
+    }).DOM,
     subtitleDOM$: $.combineLatest(
       _sources.opp$.pluck('name'),
       _sources.engagement$.map(label),
