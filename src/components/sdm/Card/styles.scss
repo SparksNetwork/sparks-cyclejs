@@ -56,11 +56,14 @@
 }
 
 .cardtitle {
-  background-color: #FFEB3B;
+  background-color: #666;
   font-size: 1.8em;
   font-weight: bolder;
   color: white;
   padding: .5em;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
 }
 
 .cardcontent {

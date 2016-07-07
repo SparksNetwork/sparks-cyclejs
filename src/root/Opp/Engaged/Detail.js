@@ -4,11 +4,10 @@ import isolate from '@cycle/isolate'
 // import {log} from 'util'
 import {combineDOMsToDiv} from 'util'
 import {div, p} from 'cycle-snabbdom'
-import {objOf} from 'ramda'
+import {objOf, prop} from 'ramda'
 
 import {
   QuotingListItem,
-  RoutedComponent,
   ActionButton,
   DescriptionListItem,
   TitleListItem,
@@ -17,12 +16,15 @@ import {
 import {
   ListItemCollapsible,
   ListItemNewTarget,
-  BaseDialog,
   FlatButton,
   List,
   ListItemClickable,
   ListItemWithMenu,
+  TitledCard,
+  LargeCard,
 } from 'components/sdm'
+
+import {AccentToolbar} from 'components/sdm/Toolbar'
 
 import {LargeProfileAvatar} from 'components/profile'
 
@@ -33,34 +35,33 @@ import {
   Teams,
 } from 'components/remote'
 
-import {hideable} from 'util'
+import {hideable, combineLatestToDiv} from 'util'
 
-const Blank = () => ({DOM: just('')})
-
-const _Fetch = sources => {
+const Fetch = component => sources => {
   const engagement$ = sources.engagementKey$
     .flatMapLatest(Engagements.query.one(sources))
     .shareReplay(1)
-  const profile$ = engagement$.pluck('profileKey')
+  const profile$ = engagement$.map(prop('profileKey'))
     .flatMapLatest(Profiles.query.one(sources))
     .shareReplay(1)
   const memberships$ = sources.engagementKey$
     .flatMapLatest(Memberships.query.byEngagement(sources))
     .shareReplay(1)
 
-  return {
+  return component({
     profile$,
     engagement$,
     memberships$,
-  }
+    ...sources,
+  })
 }
 
 const _Avatar = sources => LargeProfileAvatar({...sources,
-  profileKey$: sources.engagement$.pluck('profileKey'),
+  profileKey$: sources.engagement$.map(prop('profileKey')),
 })
 
 const _Intro = sources => DescriptionListItem({...sources,
-  title$: sources.profile$.pluck('intro'),
+  title$: sources.profile$.map(prop('intro')),
   default$: just('No intro written.'),
 })
 
@@ -92,13 +93,13 @@ const _ProfileInfo = sources => ({
 const _ViewEngagement = sources => ListItemNewTarget({
   iconName$: just('link'),
   title$: just('See their Engagement Page'),
-  url$: sources.engagement$.pluck('$key')
+  url$: sources.engagement$.map(prop('$key'))
     .map(k => `/engaged/${k}`),
 })
 
 const _OppQ = sources => QuotingListItem({...sources,
-  profileKey$: sources.project$.pluck('ownerProfileKey'),
-  title$: sources.opp$.pluck('question'),
+  profileKey$: sources.project$.map(prop('ownerProfileKey')),
+  title$: sources.opp$.map(prop('question')),
 })
 
 const _OppAnswer = sources => DescriptionListItem({...sources,
@@ -203,7 +204,7 @@ const _Actions = (sources) => {
 
   return {
     DOM: combineDOMsToDiv('.center', ac, dec, rem),
-    action$: merge(ac.action$, dec.action$),
+    action$: $.merge(ac.action$, dec.action$),
     remove$: rem.action$,
   }
 }
@@ -339,36 +340,35 @@ const switchRoute = ([eKey, relative], oppKey, engs) => {
 }
 
 const ApprovalDialog = sources => {
-  const _sources = {...sources, ..._Fetch(sources)}
+  const navs = _Navs(sources)
+  const c = _Content(sources)
 
-  const navs = _Navs(_sources)
-  const c = _Content(_sources)
-  const d = BaseDialog({..._sources,
-    titleDOM$: _sources.profile$.pluck('fullName'),
-    isOpen$: just(true),
-    contentDOM$: c.DOM,
-    actionsDOM$: navs.DOM,
+  const card = TitledCard({
+    ...sources,
+    cardComponent: LargeCard,
+    title$: sources.profile$.map(prop('fullName')),
+    content$: $.combineLatest(c.DOM, navs.DOM),
   })
 
   const route$ = merge(
     navs.route$,
-    _sources.engagementKey$.map(k => [k, 1]).sample(c.action$),
-    _sources.engagementKey$.map(k => [k, 1]).sample(c.remove$),
+    sources.engagementKey$.map(k => [k, 1]).sample(c.action$),
+    sources.engagementKey$.map(k => [k, 1]).sample(c.remove$),
   )
   .combineLatest(
-    _sources.oppKey$,
-    _sources.engagements$,
+    sources.oppKey$,
+    sources.engagements$,
     (r, key, engs) => switchRoute(r, key, engs)
   ).merge(c.route$)
 
   const action$ = c.action$
-    .withLatestFrom(_sources.engagementKey$,
+    .withLatestFrom(sources.engagementKey$,
       (values, key) => ({key, values})
     )
     .map(Engagements.action.update)
 
   const remove$ = c.remove$
-    .withLatestFrom(_sources.engagementKey$,
+    .withLatestFrom(sources.engagementKey$,
       (values, key) => key
     )
     .map(objOf('key'))
@@ -377,17 +377,11 @@ const ApprovalDialog = sources => {
   const queue$ = merge(action$, remove$, c.queue$)
 
   return {
-    ...d,
+    DOM: card.DOM,
     route$,
     queue$,
   }
 }
 
-const Detail = sources => RoutedComponent({...sources,
-  routes$: just({
-    '/show/:key': k => s => ApprovalDialog({...s, engagementKey$: just(k)}),
-    '*': Blank,
-  }),
-})
-
-export {Detail}
+const Detail = Fetch(ApprovalDialog)
+export default Detail
