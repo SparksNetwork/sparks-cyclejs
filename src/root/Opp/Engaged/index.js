@@ -3,7 +3,7 @@ const {of, combineLatest} = Observable
 
 import {TabbedPage} from 'components/ui'
 
-import {FilteredView} from './FilteredView'
+import EngagedList from 'components/EngagedList'
 
 const _TabMaker = sources => ({
   tabs$: combineLatest(
@@ -11,7 +11,7 @@ const _TabMaker = sources => ({
     sources.priority$,
     sources.ok$,
     sources.never$,
-    (ap,pr,ok,nv/*,cf*/) => [
+    (ap,pr,ok,nv) => [
       {path: '/', label: `${ap.length} Applied`},
       pr.length > 0 && {path: '/priority', label: `${pr.length} Priority`},
       ok.length > 0 && {path: '/ok', label: `${ok.length} OK`},
@@ -20,16 +20,16 @@ const _TabMaker = sources => ({
   ),
 })
 
-const Applied = sources => FilteredView({...sources,
+const Applied = sources => EngagedList({...sources,
   engagements$: sources.applied$,
 })
-const Priority = sources => FilteredView({...sources,
+const Priority = sources => EngagedList({...sources,
   engagements$: sources.priority$,
 })
-const OK = sources => FilteredView({...sources,
+const OK = sources => EngagedList({...sources,
   engagements$: sources.ok$,
 })
-const Never = sources => FilteredView({...sources,
+const Never = sources => EngagedList({...sources,
   engagements$: sources.never$,
 })
 

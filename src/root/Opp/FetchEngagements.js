@@ -13,7 +13,7 @@ const filterNever = e =>
 const filterConfirmed = e =>
   e.filter(x => x.isConfirmed)
 
-export const FetchEngagements = sources => {
+export const FetchEngagements = component => sources => {
   const all$ = sources.oppKey$
     .flatMapLatest(Engagements.query.byOpp(sources))
     .shareReplay(1)
@@ -26,12 +26,13 @@ export const FetchEngagements = sources => {
     .map(engs => engs.filter(e => !!e.profileKey)) // filter out naughty records
     .shareReplay(1)
 
-  return {
+  return component({
+    ...sources,
     engagements$: e$,
     applied$: e$.map(filterApplied).shareReplay(1),
     priority$: e$.map(filterPriority).shareReplay(1),
     ok$: e$.map(filterOK).shareReplay(1),
     never$: e$.map(filterNever).shareReplay(1),
     confirmed$: e$.map(filterConfirmed).shareReplay(1),
-  }
+  })
 }

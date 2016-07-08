@@ -78,7 +78,7 @@ const _Page = sources => RoutedComponent({...sources, routes$: of({
   '/confirmed': Confirmed,
 })})
 
-export default sources => {
+const Opp = sources => {
   const __sources = {...sources, ..._Fetch(sources)}
   const _sources = {...__sources, ...FetchEngagements(__sources)}
 
@@ -106,3 +106,5 @@ export default sources => {
     ...mergeSinks(frame, page, qn, title, nav, header, redirect),
   }
 }
+
+export default FetchEngagements(Opp)

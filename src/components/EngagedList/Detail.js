@@ -24,8 +24,6 @@ import {
   LargeCard,
 } from 'components/sdm'
 
-import {AccentToolbar} from 'components/sdm/Toolbar'
-
 import {LargeProfileAvatar} from 'components/profile'
 
 import {
@@ -35,7 +33,7 @@ import {
   Teams,
 } from 'components/remote'
 
-import {hideable, combineLatestToDiv} from 'util'
+import {hideable} from 'util'
 
 const Fetch = component => sources => {
   const engagement$ = sources.engagementKey$
@@ -383,5 +381,7 @@ const ApprovalDialog = sources => {
   }
 }
 
-const Detail = Fetch(ApprovalDialog)
+const Detail = sources => Fetch(ApprovalDialog)({
+  ...sources, engagementKey$: sources.key$,
+})
 export default Detail
