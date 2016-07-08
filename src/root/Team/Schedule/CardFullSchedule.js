@@ -146,7 +146,8 @@ export const CardFullSchedule = sources => {
 
   return {
     DOM: card.DOM,
-    openAndPrint: printable$.sample(print.click$),
+    // openAndPrint: printable$.sample(print.click$),
+    openAndPrint: print.click$.withLatestFrom(printable$, (cl,pr) => pr),
   }
 }
 
