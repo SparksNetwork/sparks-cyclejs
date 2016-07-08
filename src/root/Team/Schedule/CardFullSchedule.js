@@ -1,112 +1,134 @@
 import {Observable as $} from 'rx'
-require('./styles.scss')
+import './styles.scss'
+import R from 'ramda'
 
 import {
   LargeCard,
-  TitledCard,
-  InputControl,
-  RaisedButton,
   List,
-  ListItemCollapsibleDumb,
   ListItemClickable,
-  ListItem,
-  ListItemHeader,
 } from 'components/sdm'
 
 import isolate from '@cycle/isolate'
+import {div, img} from 'cycle-snabbdom'
 
 import {combineDOMsToDiv, localTime} from 'util'
-import {ShiftContent} from 'components/shift'
+
+import {Profiles, Assignments, Arrivals} from 'components/remote'
+
+import {TimeOfDayAvatar} from 'components/shift'
 
 const PrintItem = sources => ListItemClickable({...sources,
   title$: $.of('Print your current schedule on dead trees.'),
   iconName$: $.of('print'),
 })
 
-const ShiftItem = sources => {
-  return ListItemCollapsibleDumb({...sources,
-    ...ShiftContent(sources),
-  })
-}
+const assignmentItemView = (profile, arrivals) =>
+  div('.assignment', [
+    img({class: {avatar: true}, attrs: {src: profile.portraitUrl}}),
+    div('.name', [profile.fullName]),
+    div('.phone', [profile.phone]),
+    arrivals.length > 0 ? 'ONSITE' : '',
+  ])
 
-const formatDayTitle = shift => localTime(shift.date).format('dddd, D MMMM')
+const AssignmentItem = sources => {
+  const profile$ = sources.item$.pluck('profileKey')
+    .flatMapLatest(Profiles.query.one(sources))
 
-const DayItem = sources => {
-  const shifts$ = sources.shifts$
+  const arrivals$ = sources.item$.pluck('profileKey')
+    .flatMapLatest(Arrivals.query.byProfile(sources))
 
-  const list = List({...sources,
-    rows$: shifts$,
-    Control$: $.of(ShiftItem),
-  })
-  return ListItemCollapsibleDumb({...sources,
-    title$: sources.item$.map(formatDayTitle),
-    isOpen$: $.of(true),
-    contentDOM$: list.DOM,
-  })
-}
-
-// function OldShiftItem(sources) {
-//   const content = ShiftContent(sources)
-
-//   const subtitle$ = $.combineLatest(content.subtitle$, sources.item$)
-//     .map(buildSubtitle)
-
-//   const assignments$ = sources.teamInfo$.pluck('assignments')
-//     .withLatestFrom(sources.item$, (memberships, item) =>
-//       filter(propEq('shiftKey', item.$key), memberships)
-//     )
-
-//   const profiles$ = assignments$.map(map(prop('profileKey')))
-//     .map(filter(Boolean))
-//     .map(map(Profiles.query.one(sources)))
-//     .flatMapLatest($.combineLatest)
-//     .shareReplay(1)
-
-//   const contentDOM$ =
-//     prop('DOM', List({...sources,
-//       rows$: profiles$,
-//       Control$: $.just(ProfileItem),
-//     }))
-//     .startWith(div({}, [null]))
-//     .shareReplay(1)
-
-//   const isOpen$ = contentDOM$.map(v => v.children[0] !== null)
-
-//   const li = ListItemCollapsibleDumb({...sources, ...content,
-//     subtitle$,
-//     contentDOM$,
-//     isOpen$,
-//   })
-
-//   return {...li}
-// }
-
-const PageHeader = sources => {
-  const li = ListItem({...sources,
-    title$: sources.team$.pluck('name'),
-    classes$: $.of({header: true, printableHeader: true}),
-  })
   return {
-    DOM: combineDOMsToDiv('.printableHeader', li),
+    DOM: $.combineLatest(profile$, arrivals$, assignmentItemView),
   }
 }
 
-const PageBody = sources => {
-  const li = List({...sources,
-    rows$: sources.shiftDates$,
-    Control$: $.of(DayItem),
+const humanDate = date => localTime(date).format('dddd, D MMMM')
+
+import {cell} from 'helpers/layout'
+export const timeCell = t =>
+  cell({minWidth: '150px', textAlign: 'left'}, localTime(t).format('h:mm a'))
+
+const shiftHeaderView = (shift, day, team, todDOM) =>
+  div('.shift-header', [
+    div('.top', [
+      div('.date', [humanDate(day)]),
+      div('.team', [team.name]),
+    ]),
+    div('.bottom', [
+      todDOM,
+      timeCell(shift.start),
+      timeCell(shift.end),
+      div('.duration', [`${shift.hours || 0} hrs`]),
+      div({class: {headcount: true, warning: (shift.assigned || 0) < shift.people}}, [
+        `${shift.assigned || 0}/${shift.people}`,
+      ]),
+    ]),
+  ])
+
+const ShiftHeader = sources => {
+  const tod = TimeOfDayAvatar({...sources,
+    time$: sources.item$.pluck('start'),
   })
+
   return {
-    DOM: combineDOMsToDiv('.printableBody', li),
+    DOM: $.combineLatest(
+      sources.item$, sources.day$, sources.team$, tod.DOM,
+      shiftHeaderView,
+    ),
+  }
+}
+
+const ShiftBlock = sources => {
+  const assignments$ = sources.item$.pluck('$key')
+    .flatMapLatest(Assignments.query.byShift(sources))
+
+  const hdr = ShiftHeader(sources)
+
+  const list = List({...sources,
+    rows$: assignments$,
+    Control$: $.of(AssignmentItem),
+  })
+
+  return {
+    DOM: combineDOMsToDiv('.shift', hdr, list),
+  }
+}
+
+const shortDate = date =>
+  localTime(date).format('YYYY-MM-DD')
+
+const localTimeStartSort = (a,b) =>
+  localTime(a.start) > localTime(b.start) ? 1 : -1
+
+const DayBlock = sources => {
+  const list = List({...sources,
+    day$: sources.item$,
+    rows$: $.combineLatest(
+        sources.item$, sources.shifts$,
+        (day, shifts) => shifts.filter(s => shortDate(s.start) === day)
+      )
+      .map(shifts => shifts.sort(localTimeStartSort)),
+    Control$: $.of(ShiftBlock),
+  })
+
+  return {
+    DOM: combineDOMsToDiv('.day', list),
   }
 }
 
 const PrintableContent = sources => {
-  const hdr = PageHeader(sources)
-  const bod = PageBody(sources)
+  const days = List({...sources,
+    rows$: sources.shiftDates$
+      .map(R.uniq)
+      .map(d => d.sort()),
+    Control$: $.of(DayBlock),
+  })
+  const frame = {
+    DOM: combineDOMsToDiv('.printablePage',days),
+  }
 
   return {
-    DOM: combineDOMsToDiv('.printable',hdr,bod),
+    DOM: combineDOMsToDiv('.printable',frame),
   }
 }
 

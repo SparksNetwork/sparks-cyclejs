@@ -4,41 +4,106 @@
 	}
 }
 
-.printable {
-	display: table;
-	width: 100%;
+$profileAvatarSize: 120px;
 
-    .list-item {
-	    min-height: 0;
-	    xdisplay: table-row;
-  	}
-  	.collapsible {
-    	padding: 0 8px 0 48px
-  	}
-
-	.printableHeader {
-	  display: table-header-group;
-
-	  & > * {
-	  	display: table-row;
-	  }
-	}
-
-	.printableBody {
-	  display: table-row-group;
-
-	  & > * {
-	  	display: table-row;
-	  }
-	}
-
-	.printableFooter {
-	  display: table-footer-group;
-	}
-
+.printablePage {
 	.day {
-		page-break-after: always;
+		xpage-break-after: always;
 	}
+
+	.shift {
+		page-break-inside: avoid;
+		margin-bottom: 32px;
+	}
+
+	.shift-header {
+		width: auto;
+		margin: 0px 8px 8px;
+		border-top: 2px solid black;
+
+		.top {
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-end;
+			padding: 8px 0px;
+		}
+
+		.bottom {
+			display: flex;
+			align-items: center;
+			xjustify-content: space-between;
+			font-size: 20pt;
+			font-weight: bold;
+			color: #333;
+
+			.avatar {
+				margin-right: 16px;
+			}
+
+			div {
+				min-width: 20%;
+			}
+
+			.headcount {
+				flex-grow: 10;
+				text-align: right;
+
+				&.warning {
+					color: red;
+				}
+			}
+		}
+
+		.date {
+			font-size: 16pt;
+			font-weight: boldest;
+		}
+
+		.team {
+			font-size: 18pt;
+			font-weight: bold;
+			color: #666;
+		}
+
+	}
+
+	.shift {
+
+		.list {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-around;
+
+			.assignment {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				padding: 0px 24px 16px;
+
+				.avatar {
+					width: $profileAvatarSize;
+					height: $profileAvatarSize;
+					border-radius: $profileAvatarSize / 2;
+					margin: 0px 0px 12px;
+				}
+
+				.name {
+					max-width: $profileAvatarSize;
+					font-size: 12pt;
+					line-height: 10pt;
+					text-align: center;
+				}
+				.phone {
+					font-size: 10px;
+					font-weight: bold;
+					color: #999;
+				}
+			}
+
+		}
+
+	}
+
 }
 
 
