@@ -24,10 +24,6 @@ const _Fetch = sources => {
     .map(arr => arr.map(a => localTime(a.date).format('YYYY-MM-DD')))
     // .tap(log('shiftDates$'))
 
-  // Y U NO
-  // const selectedDate$ = (sources.date$ || of(null))
-  //   .tap(log('date$'))
-
   const selectedDate$ = sources.router.observable.pluck('pathname')
     .map(fromPath)
 
@@ -35,15 +31,13 @@ const _Fetch = sources => {
     .tap(log('allDates$ start'))
     .map(([fmShifts,fmSelected]) => [...fmShifts, fmSelected].filter(i => !!i))
     .map(arr => arr.sort())
-    // .map(
-    //    arr => arr.filter((item, pos, ary) => !pos || item !== ary[pos - 1])
-    //  )
     .map(arr => Array.from(new Set(arr))) // orly???
     // .tap(log('allDates$ end'))
     .shareReplay(1)
 
   return {
     shifts$,
+    shiftDates$,
     selectedDate$,
     allDates$,
   }

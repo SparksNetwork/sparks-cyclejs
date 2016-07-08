@@ -68,7 +68,7 @@ export const List = sources => {
 
   const DOM = controls$
     .map(controls => controls.length > 0 ?
-      combineDOMsToDiv('', ...controls) :
+      combineDOMsToDiv('.list', ...controls) :
       just(div('',[]))
     ).switch()
 

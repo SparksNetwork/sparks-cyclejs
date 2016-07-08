@@ -20,13 +20,13 @@ const icons = [0,1,2,3,4,5,6]
 
 const daySegment = hr => Math.floor((parseInt(hr) + 2) / 4)
 
-const srcFromTime = time => icons[daySegment(moment(time).hours())]
+const srcFromTime = time => icons[daySegment(localTime(time).hours())]
 
 export const TimeOfDayAvatar = sources => Avatar({...sources,
   src$: sources.time$.map(srcFromTime),
 })
 
-const timeCell = t =>
+export const timeCell = t =>
   cell({minWidth: '100px', textAlign: 'left'}, localTime(t).format('h:mm a'))
 
 export const ShiftContent = sources => {

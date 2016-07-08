@@ -1,23 +1,17 @@
 import {Observable} from 'rx'
-const {of} = Observable
-import {InputControl} from 'components/sdm'
-import {RaisedButton} from 'components/sdm'
-import {combineLatestToDiv} from 'util'
+import {combineDOMsToDiv, mergeSinks} from 'util'
+
+import {CardNewDay} from './CardNewDay'
+import {CardFullSchedule} from './CardFullSchedule'
 
 export default (sources) => {
-  const ic = InputControl({
-    label$: of('Choose a day to start adding shifts! (YYYY-MM-DD)'),
-    ...sources,
-  })
-  const rb = RaisedButton({label$: of('Add Date'), ...sources})
-  const route$ = ic.value$
-    .sample(rb.click$)
-    .combineLatest(
-      sources.teamKey$,
-      (date, team) => `/team/${team}/schedule/shifts` + (date ? `/${date}` : '')
-    )
+  const newDay = CardNewDay(sources)
+  const fullSchedule = CardFullSchedule(sources)
+
   return {
-    DOM: combineLatestToDiv(ic.DOM, rb.DOM),
-    route$,
+    DOM: combineDOMsToDiv('.cardcontainer', newDay, fullSchedule),
+    ...mergeSinks(newDay, fullSchedule),
+    // route$: newDay.route$,
+    // openAndPrint: fullSchedule.openAndPrint,
   }
 }
