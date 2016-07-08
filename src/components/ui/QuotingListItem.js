@@ -1,5 +1,8 @@
 import {Observable} from 'rx'
-const {just, combineLatest} = Observable
+const {of, combineLatest} = Observable
+import {
+  equals, objOf,
+} from 'ramda'
 
 import {
   Profiles,
@@ -13,21 +16,28 @@ import {ProfileAvatar} from 'components/profile'
 
 import {div} from 'helpers'
 
-// import {log} from 'util'
-
 const QuotingListItem = sources => {
   const profile$ = sources.profileKey$
     .flatMapLatest(Profiles.query.one(sources))
+  const right$ = sources.right$ || of(false)
 
-  // const src$ = profile$.map(p => p && p.portraitUrl)
+  const classes$ = combineLatest(
+    sources.classes$ || of({}),
+    right$,
+  )
+  .map(([classes, right]) => ({...classes, quote: true, right: right}))
 
   const li = ListItem({...sources,
-    classes$: just({quote: true}),
+    subtitle$: of(''),
+    classes$,
   }) // uses title$
+
   const liq = ListItem({...sources,
-    leftDOM$: ProfileAvatar(sources).DOM,
+    leftDOM$: right$.filter(equals(false)).flatMapLatest(ProfileAvatar(sources).DOM).startWith(null),
+    rightDOM$: right$.filter(equals(true)).flatMapLatest(ProfileAvatar(sources).DOM).startWith(null),
     title$: profile$.map(p => p && p.fullName),
-    subtitle$: sources.subtitle$ || just('Organizer'),
+    subtitle$: sources.subtitle$ || of(''),
+    classes$: right$.map(objOf('right')),
   })
 
   const DOM = combineLatest(

@@ -1,36 +1,27 @@
 import {Observable as $} from 'rx'
 const {just, merge} = $
-import isolate from '@cycle/isolate'
 // import {log} from 'util'
 import {combineDOMsToDiv} from 'util'
-import {div, p} from 'cycle-snabbdom'
 import {objOf, prop} from 'ramda'
 
 import {
-  QuotingListItem,
   ActionButton,
-  DescriptionListItem,
-  TitleListItem,
 } from 'components/ui'
 
 import {
-  ListItemCollapsible,
-  ListItemNewTarget,
   FlatButton,
-  List,
-  ListItemClickable,
-  ListItemWithMenu,
   TitledCard,
   LargeCard,
 } from 'components/sdm'
 
-import {LargeProfileAvatar} from 'components/profile'
+import ProfileInfo from './ProfileInfo'
+import TeamsInfo from './TeamsInfo'
+import EngagementInfo from './EngagementInfo'
 
 import {
   Profiles,
   Engagements,
   Memberships,
-  Teams,
 } from 'components/remote'
 
 import {hideable} from 'util'
@@ -52,129 +43,6 @@ const Fetch = component => sources => {
     memberships$,
     ...sources,
   })
-}
-
-const _Avatar = sources => LargeProfileAvatar({...sources,
-  profileKey$: sources.engagement$.map(prop('profileKey')),
-})
-
-const _Intro = sources => DescriptionListItem({...sources,
-  title$: sources.profile$.map(prop('intro')),
-  default$: just('No intro written.'),
-})
-
-const _PersonalInfo = sources => {
-  const view = ({email, phone}) =>
-    div({}, [
-      div('.row', {}, [
-        p('#email', 'Email: ' + email),
-      ]),
-      div('.row', {}, [
-        p('#phone', 'Phone number: ' + phone),
-      ]),
-    ])
-  return {
-    DOM: sources.profile$.map(view),
-  }
-}
-
-const _ProfileInfo = sources => ({
-  DOM: just(div([
-    combineDOMsToDiv('.row',
-      _Avatar(sources),
-      _Intro(sources)
-    ),
-    combineDOMsToDiv('row', _PersonalInfo(sources)),
-  ])),
-})
-
-const _ViewEngagement = sources => ListItemNewTarget({
-  iconName$: just('link'),
-  title$: just('See their Engagement Page'),
-  url$: sources.engagement$.map(prop('$key'))
-    .map(k => `/engaged/${k}`),
-})
-
-const _OppQ = sources => QuotingListItem({...sources,
-  profileKey$: sources.project$.map(prop('ownerProfileKey')),
-  title$: sources.opp$.map(prop('question')),
-})
-
-const _OppAnswer = sources => DescriptionListItem({...sources,
-  title$: sources.engagement$.pluck('answer'),
-  default$: just('This person did not answer'),
-})
-
-const _EngageInfo = sources => ({
-  DOM: combineDOMsToDiv('', _OppQ(sources), _OppAnswer(sources)),
-})
-
-const _TeamQ = sources => QuotingListItem({...sources,
-  profileKey$: sources.project$.pluck('ownerProfileKey'),
-  title$: sources.team$.pluck('question'),
-})
-
-const _TeamAnswer = sources => DescriptionListItem({...sources,
-  title$: sources.item$.pluck('answer'),
-  default$: just('This person did not answer'),
-})
-
-const _TeamQandA = sources => ({
-  DOM: combineDOMsToDiv('', _TeamQ(sources), _TeamAnswer(sources)),
-})
-
-const getTeamTitle = ({isAccepted = false, isDeclined = false}, {name}) => {
-  if (isAccepted === true) { return `${name} - Accepted` }
-  return isDeclined ? `${name} - Declined` : `${name}`
-}
-
-const _TeamItem = sources => {
-  const team$ = sources.item$.pluck('teamKey')
-    .flatMapLatest(Teams.query.one(sources))
-
-  const title$ = sources.item$.combineLatest(team$, getTeamTitle)
-
-  const qa = _TeamQandA({...sources, team$})
-
-  const okButton = ActionButton({...sources,
-    label$: just('Ok'),
-    params$: just({isAccepted: true, isDeclined: false}),
-  })
-
-  const neverButton = ActionButton({...sources,
-    label$: just('Never'),
-    params$: just({isAccepted: false, isDeclined: true}),
-    classNames$: just(['red']),
-  })
-
-  const queue$ = merge(okButton.action$, neverButton.action$)
-    .withLatestFrom(sources.item$, (action, item) => ({
-      key: item.$key,
-      values: action,
-    }))
-    .map(Memberships.action.update)
-
-  const contentDOM$ = combineDOMsToDiv('', qa, okButton, neverButton)
-
-  const li = ListItemCollapsible({...sources, title$, contentDOM$})
-  return {...li, queue$: merge(li.queue$, queue$)}
-}
-
-const _TeamsInfo = sources => {
-  const title = TitleListItem({...sources, title$: just('Applied to Teams')})
-  const list = List({...sources,
-    Control$: just(_TeamItem),
-    rows$: sources.memberships$,
-  })
-
-  const hasBeenAccepted$ = sources.memberships$
-    .map(memberships => memberships.some(x => x.isAccepted === true))
-
-  return {
-    DOM: combineDOMsToDiv('', title, list),
-    queue$: list.queue$,
-    hasBeenAccepted$,
-  }
 }
 
 const _Accept = sources => ActionButton({...sources,
@@ -227,80 +95,17 @@ const _Navs = sources => {
   }
 }
 
-const _AddTeamItem = sources => {
-  const li = ListItemClickable({...sources,
-    title$: sources.item$.pluck('name'),
-  })
-
-  const teamKey$ = sources.item$.pluck('$key')
-
-  const createMembership$ = $.combineLatest(
-    teamKey$, sources.engagementKey$, sources.oppKey$,
-    (teamKey, engagementKey, oppKey) => ({
-      teamKey,
-      engagementKey,
-      oppKey,
-      isApplied: true,
-      isAccepted: true,
-      answer: 'Added by organizer',
-    })
-  )
-    .sample(li.click$)
-    .map(Memberships.action.create)
-
-  const updateEngagement$ = sources.engagementKey$
-    .sample(li.click$)
-    .map(engagementKey => ({key: engagementKey, values: {isAccepted: true}}))
-    .map(Engagements.action.update)
-
-  const queue$ = $
-    .merge(createMembership$, updateEngagement$)
-    .share()
-
-  const DOM = sources.item$.combineLatest(sources.memberships$,
-    (item, memberships) => !memberships.some(m => m.teamKey === item.$key) ?
-      li.DOM :
-      $.of(div([null]))
-  ).switch()
-
-  const route$ = queue$.map(() =>
-    sources.engagementKey$.map(key => '/ok/show/' + key)
-  ).switch().shareReplay(1)
-
-  return {...li, DOM, queue$, route$}
-}
-
-const _AddToTeam = sources => {
-  const list = List({...sources,
-    rows$: sources.teams$,
-    Control$: just(_AddTeamItem),
-  })
-
-  return {
-    ...ListItemWithMenu({...sources,
-      title$: just('Add to another team'),
-      iconName$: just('plus-square'),
-      menuItems$: just([list.DOM]),
-    }),
-    queue$: list.queue$,
-    route$: list.route$.shareReplay(1),
-  }
-}
-
 const _Scrolled = sources => {
-  const addToTeam = isolate(_AddToTeam)(sources)
-  const teamInfo = _TeamsInfo(sources)
+  const teamsInfo = TeamsInfo(sources)
   return {
     DOM: combineDOMsToDiv('.scrollable',
-      _ProfileInfo(sources),
-      _ViewEngagement(sources),
-      _EngageInfo(sources),
-      addToTeam,
-      teamInfo,
+      ProfileInfo(sources),
+      EngagementInfo(sources),
+      teamsInfo,
     ),
-    queue$: teamInfo.queue$.merge(addToTeam.queue$),
-    hasBeenAccepted$: teamInfo.hasBeenAccepted$,
-    route$: addToTeam.route$,
+    queue$: teamsInfo.queue$,
+    hasBeenAccepted$: teamsInfo.hasBeenAccepted$,
+    route$: teamsInfo.route$,
   }
 }
 
@@ -315,8 +120,10 @@ const _Content = sources => {
   )
   .filter(Boolean)
 
+  const DOM = combineDOMsToDiv('', scr, acts)
+
   return {
-    DOM: combineDOMsToDiv('', acts, scr),
+    DOM,
     remove$: acts.remove$,
     queue$: scr.queue$,
     action$,
@@ -337,7 +144,7 @@ const switchRoute = ([eKey, relative], oppKey, engs) => {
   return `/show/${newKey}`
 }
 
-const ApprovalDialog = sources => {
+const Detail = sources => {
   const navs = _Navs(sources)
   const c = _Content(sources)
 
@@ -381,7 +188,9 @@ const ApprovalDialog = sources => {
   }
 }
 
-const Detail = sources => Fetch(ApprovalDialog)({
-  ...sources, engagementKey$: sources.key$,
-})
-export default Detail
+export default function(sources) {
+  return Fetch(Detail)({
+    ...sources,
+    engagementKey$: sources.key$,
+  })
+}

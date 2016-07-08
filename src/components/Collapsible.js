@@ -1,7 +1,14 @@
 import {Observable as $} from 'rx'
+const {of} = $
 import combineLatestObj from 'rx-combine-latest-obj'
 import Clickable from './Clickable'
 import {div} from 'cycle-snabbdom'
+import {
+  lensPath, set, compose, not,
+} from 'ramda'
+
+const openLens = lensPath(['data', 'class', 'open'])
+const closedLens = lensPath(['data', 'class', 'closed'])
 
 export const Collapsible = Component => sources => {
   const clickable = Clickable(Component)(sources)
@@ -13,17 +20,29 @@ export const Collapsible = Component => sources => {
   .scan((acc, next) => next === -1 ? !acc : next, false)
   .startWith(false)
 
+  const clickableDOM$ = $.combineLatest(
+    isOpen$,
+    clickable.DOM
+  )
+  .map(([open, dom]) => compose(
+      set(openLens, open),
+      set(closedLens, not(open))
+    )(dom)
+  )
+
+  const contentDOM$ = sources.contentDOM$ || of(div({}, ['no ContentDOM$']))
+
   const viewState = {
     isOpen$: isOpen$,
-    clickableDOM$: clickable.DOM,
-    contentDOM$: sources.contentDOM$ || $.just(div({},['no contentDOM$'])),
+    clickableDOM$,
+    contentDOM$,
   }
 
   const DOM = combineLatestObj(viewState)
     .map(({isOpen, clickableDOM, contentDOM}) =>
-      div({},[
+      div({}, [
         clickableDOM,
-        isOpen && div('.collapsible',[contentDOM]),
+        isOpen && div([contentDOM]),
       ].filter(Boolean))
     )
 

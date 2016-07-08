@@ -12,13 +12,14 @@ import {
 import {div, img, span, a} from 'cycle-snabbdom'
 import {combineDOMsToDiv} from 'util'
 
-import {icon, iconSrc} from 'helpers'
+import {iconSrc} from 'helpers'
 
 import {
   List,
   ListWithHeader,
   ListItem,
   ListItemClickable,
+  ListItemLoadingHeader,
   InputControl,
   LargeCard,
   TitledCard,
@@ -200,22 +201,7 @@ const ProfileView = sources => {
   const engagements$ = EngagementsFetcher(sources)
   const arrivals$ = ArrivalsFetcher(sources)
 
-  const LoadingHeader = sources => ListItem({
-    classes$: just({header: true}),
-    title$: sources.title$,
-    leftDOM$: sources.watch$.startWith(true).map(false)
-      .map(showl =>
-        showl ?
-          Loader({
-            ...sources,
-            visible$: sources.watch$.startWith(true).map(false),
-          }).DOM :
-          (sources.iconName$ || just('none')).map(icon)
-      )
-      .switch(),
-  })
-
-  const orgHeader = LoadingHeader({
+  const orgHeader = ListItemLoadingHeader({
     ...sources,
     title$: just('Organizer of'),
     watch$: organizers$,
@@ -230,7 +216,7 @@ const ProfileView = sources => {
     emptyDOM$: just(div('No projects')),
   })
 
-  const engHeader = LoadingHeader({
+  const engHeader = ListItemLoadingHeader({
     ...sources,
     title$: just('Engagements'),
     watch$: engagements$,
@@ -245,7 +231,7 @@ const ProfileView = sources => {
     emptyDOM$: just(div('No engagements')),
   })
 
-  const arrHeader = LoadingHeader({
+  const arrHeader = ListItemLoadingHeader({
     ...sources,
     title$: just('Arrivals'),
     watch$: arrivals$,

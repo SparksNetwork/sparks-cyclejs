@@ -9,6 +9,7 @@ function newScope() {
 export const Clickable = Component => sources => {
   const clickableScope = newScope()
   const click$ = sources.DOM.select(`.${clickableScope}`).events('click')
+    .tap(evt => evt.preventDefault())
   const component = Component(sources)
   const DOM = component.DOM.map(dom =>
     div([div(`.clickable.${clickableScope}`, [dom])])

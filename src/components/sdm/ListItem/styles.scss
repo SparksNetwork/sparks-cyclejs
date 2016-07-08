@@ -68,6 +68,10 @@ a.list-item {
     color: #CCC !important;
   }
 
+  &.right {
+    text-align: right;
+  }
+
   .left, .right {
     flex-basis: 64px;
 

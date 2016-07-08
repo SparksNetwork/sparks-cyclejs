@@ -221,3 +221,11 @@ export const material = {
     },
   },
 }
+
+/**
+* Boolean() returns false for 0 which is dumb
+*/
+export const truth = val =>
+  Boolean(val) || val === 0
+
+export const filterTruth = filter(truth)
