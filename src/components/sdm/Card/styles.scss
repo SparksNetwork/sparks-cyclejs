@@ -9,6 +9,10 @@
     flex: 1 1 auto;
     min-height: 100%;
   }
+
+  & > .row {
+    flex-flow: initial;
+  }
 }
 
 .cardcontainer {
