@@ -5,7 +5,7 @@ const {of} = Observable
 import {TabbedPage} from 'components/ui'
 
 import Priority from './Priority'
-import Print from './PrintableShifts'
+// import Print from './PrintableShifts'
 //const Find = ComingSoon('Opp | Glance | Find')
 //const Recently = ComingSoon('Opp | Glance | Recently')
 
@@ -15,13 +15,13 @@ export default sources => ({
   ...TabbedPage({...sources,
     tabs$: of([
       {path: '/', label: 'Priority'},
-      {path: '/print', label: 'Print'},
+      // {path: '/print', label: 'Print'},
       // {path: '/find', label: 'Find'},
       // {path: '/recently', label: 'Recently'},
     ]),
     routes$: of({
       '/': Priority,
-      '/print': Print,
+      // '/print': Print,
     }),
   }),
 })

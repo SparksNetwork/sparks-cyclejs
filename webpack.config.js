@@ -74,16 +74,19 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        loader: 'style-loader!css-loader?sourceMap',
+        loaders: [
+          'style',
+          'css?modules&importLoaders=1&localIdentName=[local]',
+        ],
         include: __dirname,
       },
       {
         test: /\.scss/,
         loaders: [
-          'style-loader',
-          'css-loader',
-          'postcss-loader',
-          'sass-loader?outputStyle=expanded',
+          'style',
+          'css?modules&importLoaders=1&localIdentName=[local]',
+          'postcss',
+          'sass?outputStyle=expanded',
         ],
       },
       {
