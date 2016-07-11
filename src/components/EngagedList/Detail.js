@@ -2,7 +2,7 @@ import {Observable as $} from 'rx'
 const {just, merge} = $
 // import {log} from 'util'
 import {combineDOMsToDiv} from 'util'
-import {objOf, prop} from 'ramda'
+import {objOf, prop, ifElse} from 'ramda'
 
 import {
   ActionButton,
@@ -74,8 +74,15 @@ const _Actions = (sources) => {
   const dec = _Decline(sources)
   const rem = _Remove(sources)
 
+  const DOM = sources.engagement$
+    .map(prop('isConfirmed'))
+    .map(ifElse(Boolean,
+      () => null,
+      () => combineDOMsToDiv('.center', ac, dec, rem),
+    ))
+
   return {
-    DOM: combineDOMsToDiv('.center', ac, dec, rem),
+    DOM,
     action$: $.merge(ac.action$, dec.action$),
     remove$: rem.action$,
   }
