@@ -11,7 +11,7 @@ import {
   ListItemNewTarget,
   ListItemHeader,
 } from 'components/sdm'
-import Collapsible from 'components/Collapsible'
+import Collapsible from 'components/behaviors/Collapsible'
 
 const OppQ = sources => QuotingListItem({...sources,
   profileKey$: sources.project$.map(prop('ownerProfileKey')),
@@ -38,6 +38,7 @@ const EngagementInfo = sources => {
   const header = Collapsible(ListItemHeader)({
     ...sources,
     title$: of('Engagement'),
+    iconName$: of('event_available'),
     contentDOM$: combineDOMsToDiv('',
       ViewEngagement(sources),
       OppQ(sources),

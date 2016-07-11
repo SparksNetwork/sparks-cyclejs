@@ -2,7 +2,6 @@ import {Observable as $} from 'rx'
 import {
   always, ifElse, prop,
 } from 'ramda'
-import moment from 'moment'
 import {row, cell, icon} from 'helpers/layout'
 
 import {

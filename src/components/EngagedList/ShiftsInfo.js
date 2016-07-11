@@ -9,7 +9,7 @@ import {
   List,
   ListItemHeader,
 } from 'components/sdm'
-import Collapsible from 'components/Collapsible'
+import Collapsible from 'components/behaviors/Collapsible'
 import ShiftItem from './ShiftItem'
 
 const ShiftsInfo = sources => {

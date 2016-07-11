@@ -10,7 +10,7 @@ import {
   List,
   ListItemHeader,
 } from 'components/sdm'
-import Collapsible from 'components/Collapsible'
+import Collapsible from 'components/behaviors/Collapsible'
 
 import AddToTeam from './AddToTeam'
 import TeamItem from './TeamItem'

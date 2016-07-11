@@ -33,8 +33,10 @@ const QuotingListItem = sources => {
   }) // uses title$
 
   const liq = ListItem({...sources,
-    leftDOM$: right$.filter(equals(false)).flatMapLatest(ProfileAvatar(sources).DOM).startWith(null),
-    rightDOM$: right$.filter(equals(true)).flatMapLatest(ProfileAvatar(sources).DOM).startWith(null),
+    leftDOM$: right$.filter(equals(false))
+      .flatMapLatest(ProfileAvatar(sources).DOM).startWith(null),
+    rightDOM$: right$.filter(equals(true))
+      .flatMapLatest(ProfileAvatar(sources).DOM).startWith(null),
     title$: profile$.map(p => p && p.fullName),
     subtitle$: sources.subtitle$ || of(''),
     classes$: right$.map(objOf('right')),

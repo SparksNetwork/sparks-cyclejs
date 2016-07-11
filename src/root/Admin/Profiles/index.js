@@ -25,8 +25,9 @@ import {
   TitledCard,
 } from 'components/sdm'
 
-import Collapsible from 'components/Collapsible'
-import Navigatable from 'components/Navigatable'
+import {
+  Collapsible, Navigatable,
+} from 'components/behaviors'
 
 import {
   Loader,

@@ -2,7 +2,7 @@ import {Observable as $} from 'rx'
 import combineLatestObj from 'rx-combine-latest-obj'
 
 import {div, a} from 'cycle-snabbdom'
-import {icon, iconSrc} from 'helpers'
+import {Icon} from 'components/sdm/icon'
 import {filterTruth} from 'util'
 
 const liClasses = {'list-item': true}
@@ -32,12 +32,6 @@ const listItem = ({leftDOM, title, subtitle, rightDOM, classes}) =>
     ])),
     rightDOM && div('.right.xcol-sm-1',[rightDOM]),
   ]))
-
-const Icon = sources => ({
-  DOM: sources.iconName$ && sources.iconName$.map(n => icon(n)) ||
-    sources.iconSrc$ && sources.iconSrc$.map(url => iconSrc(url)) ||
-    null,
-})
 
 export const ListItem = sources => {
   const viewState = {

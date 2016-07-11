@@ -1,18 +1,23 @@
 import {Observable as $} from 'rx'
-const {just, merge} = $
+const {of, merge, combineLatest} = $
 // import {log} from 'util'
 import {combineDOMsToDiv} from 'util'
-import {objOf, prop, ifElse} from 'ramda'
+import {
+  add, always, apply, equals, flip, ifElse, indexOf, map, modulo, nth, objOf,
+  prop, lensPath, set, of as rof,
+} from 'ramda'
 
 import {
   ActionButton,
 } from 'components/ui'
 
 import {
-  FlatButton,
-  TitledCard,
   LargeCard,
+  ListItemHeader,
+  Icon,
 } from 'components/sdm'
+
+import {Swipeable, Clickable} from 'components/behaviors'
 
 import ProfileInfo from './ProfileInfo'
 import EngagementInfo from './EngagementInfo'
@@ -26,7 +31,10 @@ import {
   Profiles,
 } from 'components/remote'
 
-import {hideable} from 'util'
+import {hideable, mergeSinks} from 'util'
+
+const superLens = lensPath(['data', 'supernova'])
+const keyLens = lensPath(['key'])
 
 const Fetch = component => sources => {
   const engagement$ = sources.engagementKey$
@@ -52,20 +60,20 @@ const Fetch = component => sources => {
 }
 
 const _Accept = sources => ActionButton({...sources,
-  label$: just('OK'),
-  params$: just({isAccepted: true, priority: false, declined: false}),
+  label$: of('OK'),
+  params$: of({isAccepted: true, priority: false, declined: false}),
 })
 
 const _Decline = sources => ActionButton({...sources,
-  label$: just('never'),
-  params$: just({isAccepted: false, priority: false, declined: true}),
-  classNames$: just(['red']),
+  label$: of('never'),
+  params$: of({isAccepted: false, priority: false, declined: true}),
+  classNames$: of(['red']),
 })
 
 const _Remove = sources => hideable(ActionButton)({...sources,
-  label$: just('Delete'),
-  params$: just({isAccepted: false, priority: false, declined: true}),
-  classNames$: just(['black']),
+  label$: of('Delete'),
+  params$: of({isAccepted: false, priority: false, declined: true}),
+  classNames$: of(['black']),
   isVisible$: sources.userProfile$.pluck('isAdmin'),
 })
 
@@ -88,99 +96,95 @@ const _Actions = (sources) => {
   }
 }
 
-const _Navs = sources => {
-  const prev = FlatButton({...sources, label$: just('<')})
-  const close = FlatButton({...sources, label$: just('CLOSE')})
-  const next = FlatButton({...sources, label$: just('>')})
-
-  const route$ = merge(
-    sources.engagementKey$.map(k => [k, -1])
-      .sample(prev.click$),
-    sources.engagementKey$.map(k => [k, 0])
-      .sample(close.click$),
-    sources.engagementKey$.map(k => [k, 1])
-      .sample(next.click$),
-  )
-
-  return {
-    DOM: combineDOMsToDiv('.center', prev, close, next),
-    route$,
-  }
-}
-
-const _Scrolled = sources => {
+const _Content = sources => {
+  const profileInfo = ProfileInfo(sources)
+  const engagementInfo = EngagementInfo(sources)
   const teamsInfo = TeamsInfo(sources)
   const shiftsInfo = ShiftsInfo(sources)
-
-  return {
-    DOM: combineDOMsToDiv('.scrollable',
-      ProfileInfo(sources),
-      EngagementInfo(sources),
-      teamsInfo,
-      shiftsInfo,
-    ),
-    queue$: merge(teamsInfo.queue$, shiftsInfo.queue$),
-    hasBeenAccepted$: teamsInfo.hasBeenAccepted$,
-    route$: teamsInfo.route$,
-  }
-}
-
-const _Content = sources => {
   const acts = _Actions(sources)
-  const scr = _Scrolled(sources)
+
+  const components = [
+    profileInfo,
+    engagementInfo,
+    teamsInfo,
+    shiftsInfo,
+    acts,
+  ]
 
   const action$ = acts.action$
-  .withLatestFrom(scr.hasBeenAccepted$,
+  .withLatestFrom(teamsInfo.hasBeenAccepted$,
     (action, hasBeenAccepted) => hasBeenAccepted || action.declined ?
       action : false
   )
   .filter(Boolean)
 
-  const DOM = combineDOMsToDiv('', scr, acts)
+  const DOM = combineDOMsToDiv('', ...components)
 
   return {
+    ...mergeSinks(...components),
     DOM,
     remove$: acts.remove$,
-    queue$: scr.queue$,
     action$,
-    route$: scr.route$,
   }
-}
-
-const switchRoute = ([eKey, relative], oppKey, engs) => {
-  if (relative === 0 || engs.length <= 1) {
-    return ``
-  }
-  let idx = engs.findIndex(e => e.$key === eKey) + relative
-  console.log('looking for', idx, engs.length)
-  if (idx < 0) { idx = engs.length - 1 }
-  if (idx >= engs.length) { idx = 0 }
-  console.log('changed to', idx)
-  const newKey = engs[idx].$key
-  return `/show/${newKey}`
 }
 
 const Detail = sources => {
-  const navs = _Navs(sources)
   const c = _Content(sources)
 
-  const card = TitledCard({
+  const backButton = Clickable(Icon)({
     ...sources,
-    cardComponent: LargeCard,
-    title$: sources.profile$.map(prop('fullName')),
-    content$: $.combineLatest(c.DOM, navs.DOM),
+    iconName$: of('arrow_back'),
   })
 
-  const route$ = merge(
-    navs.route$,
-    sources.engagementKey$.map(k => [k, 1]).sample(c.action$),
-    sources.engagementKey$.map(k => [k, 1]).sample(c.remove$),
+  const header = ListItemHeader({
+    ...sources,
+    title$: sources.profile$.map(prop('fullName')),
+    leftDOM$: backButton.DOM,
+  })
+
+  const card = Swipeable(LargeCard)({
+    ...sources,
+    content$: combineDOMsToDiv('', header, c).map(rof),
+  })
+
+  const index$ = combineLatest(
+    sources.engagementKey$,
+    sources.engagements$.map(map(prop('$key'))),
   )
-  .combineLatest(
-    sources.oppKey$,
-    sources.engagements$,
-    (r, key, engs) => switchRoute(r, key, engs)
-  ).merge(c.route$)
+  .map(apply(indexOf))
+
+  const nextIndex$ = index$.flatMapLatest(index =>
+    merge(
+      card.swipe$
+        .map(ifElse(equals('left'), always(-1), always(1))),
+      c.action$.map(always(1)),
+      c.remove$.map(always(1))
+    )
+    .map(add(index))
+  )
+
+  const nextEngKey$ = sources.engagements$.flatMapLatest(engs =>
+    nextIndex$
+      .map(flip(modulo)(engs.length))
+      .map(flip(nth)(engs))
+      .map(prop('$key'))
+  )
+
+  const route$ = merge(
+    nextEngKey$.map(key => `/show/${key}`),
+    c.route$,
+    backButton.click$.map(always('')),
+  )
+
+  const DOM = combineLatest(
+    sources.profile$.map(prop('$key')),
+    card.DOM
+      .map(set(superLens, {
+        in: {className: 'slide-from-right'},
+        out: {className: '', duration: 500},
+      })),
+  )
+  .map(apply(set(keyLens)))
 
   const action$ = c.action$
     .withLatestFrom(sources.engagementKey$,
@@ -198,7 +202,7 @@ const Detail = sources => {
   const queue$ = merge(action$, remove$, c.queue$)
 
   return {
-    DOM: card.DOM,
+    DOM,
     route$,
     queue$,
   }

@@ -10,9 +10,9 @@ import {
   ListItem,
 } from 'components/sdm'
 
-import {LargeProfileAvatar} from 'components/profile'
+import {MediumProfileAvatar} from 'components/profile'
 
-const Avatar = sources => LargeProfileAvatar({...sources,
+const Avatar = sources => MediumProfileAvatar({...sources,
   profileKey$: sources.engagement$.map(prop('profileKey')),
 })
 

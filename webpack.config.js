@@ -54,6 +54,7 @@ module.exports = {
     path: path.join(__dirname, 'dist'),
     filename: 'bundle.js',
     sourceMapFilename: '[file].map',
+    publicPath: '/',
   },
   devtool: 'hidden-source-map',
   devServer: {

@@ -2,7 +2,7 @@ import {Observable as $} from 'rx'
 const {of, merge} = $
 import {div} from 'cycle-snabbdom'
 import {mergeSinks} from 'util'
-import {RoutedComponent, Loader} from 'components/ui'
+import {RoutedComponent} from 'components/ui'
 
 const ViewOnly = sources => {
   const view = sources.viewControl(sources)
@@ -22,8 +22,8 @@ const ViewAndDetail = sources => {
   const detail = sources.detailControl(sources)
 
   const DOM = $.combineLatest(
-    view.DOM.startWith(Loader(sources).DOM),
-    detail.DOM.startWith(Loader(sources).DOM)
+    view.DOM,
+    detail.DOM,
   )
   .map(([view, detail]) =>
     div('.row', [
