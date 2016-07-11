@@ -15,13 +15,15 @@ import {
 } from 'components/sdm'
 
 import ProfileInfo from './ProfileInfo'
-import TeamsInfo from './TeamsInfo'
 import EngagementInfo from './EngagementInfo'
+import TeamsInfo from './TeamsInfo'
+import ShiftsInfo from './ShiftsInfo'
 
 import {
-  Profiles,
+  Assignments,
   Engagements,
   Memberships,
+  Profiles,
 } from 'components/remote'
 
 import {hideable} from 'util'
@@ -36,11 +38,15 @@ const Fetch = component => sources => {
   const memberships$ = sources.engagementKey$
     .flatMapLatest(Memberships.query.byEngagement(sources))
     .shareReplay(1)
+  const assignments$ = sources.engagementKey$
+    .flatMapLatest(Assignments.query.byEngagement(sources))
+    .shareReplay(1)
 
   return component({
     profile$,
     engagement$,
     memberships$,
+    assignments$,
     ...sources,
   })
 }
@@ -97,13 +103,16 @@ const _Navs = sources => {
 
 const _Scrolled = sources => {
   const teamsInfo = TeamsInfo(sources)
+  const shiftsInfo = ShiftsInfo(sources)
+
   return {
     DOM: combineDOMsToDiv('.scrollable',
       ProfileInfo(sources),
       EngagementInfo(sources),
       teamsInfo,
+      shiftsInfo,
     ),
-    queue$: teamsInfo.queue$,
+    queue$: merge(teamsInfo.queue$, shiftsInfo.queue$),
     hasBeenAccepted$: teamsInfo.hasBeenAccepted$,
     route$: teamsInfo.route$,
   }

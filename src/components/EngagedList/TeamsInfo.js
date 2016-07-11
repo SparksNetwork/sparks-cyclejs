@@ -1,7 +1,11 @@
 import {Observable as $} from 'rx'
 const {of} = $
+import {
+  prop, of as rof, compose,
+} from 'ramda'
 import isolate from '@cycle/isolate'
 import {combineDOMsToDiv} from 'util'
+import {div} from 'cycle-snabbdom'
 import {
   List,
   ListItemHeader,
@@ -24,6 +28,8 @@ const TeamsInfo = sources => {
   const header = Collapsible(ListItemHeader)({
     ...sources,
     title$: of('Applied to Teams'),
+    iconName$: of('people'),
+    rightDOM$: sources.memberships$.map(compose(div, rof, prop('length'))),
     contentDOM$: combineDOMsToDiv('', addToTeam, list),
   })
 
