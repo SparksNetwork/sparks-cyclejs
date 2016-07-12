@@ -2,6 +2,7 @@ require('./styles.scss')
 
 export {RoutedComponent} from './RoutedComponent'
 export {TabbedPage} from './TabbedPage'
+export {ViewWithDetail} from './ViewWithDetail'
 
 export {makeModal} from './Modal'
 

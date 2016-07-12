@@ -1,4 +1,3 @@
-import {Observable} from 'rx'
 import {combineDOMsToDiv, mergeSinks} from 'util'
 
 import {CardNewDay} from './CardNewDay'

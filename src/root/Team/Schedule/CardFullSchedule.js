@@ -62,7 +62,12 @@ const shiftHeaderView = (shift, day, team, todDOM) =>
       timeCell(shift.start),
       timeCell(shift.end),
       div('.duration', [`${shift.hours || 0} hrs`]),
-      div({class: {headcount: true, warning: (shift.assigned || 0) < shift.people}}, [
+      div({
+        class: {
+          headcount: true,
+          warning: (shift.assigned || 0) < shift.people,
+        },
+      }, [
         `${shift.assigned || 0}/${shift.people}`,
       ]),
     ]),

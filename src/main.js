@@ -2,6 +2,8 @@ import {run} from '@cycle/core'
 
 // drivers
 import {makeDOMDriver} from 'cycle-snabbdom'
+import defaultModules from 'cycle-snabbdom/lib/modules'
+import SupernovaModule from 'drivers/supernova'
 import {makeRouterDriver, supportsHistory} from 'cyclic-router'
 import {createHistory, createHashHistory} from 'history'
 import Firebase from 'firebase'
@@ -21,9 +23,11 @@ const history = supportsHistory() ?
 
 const fbRoot = new Firebase(__FIREBASE_HOST__) // eslint-disable-line
 
+const modules = defaultModules.concat(SupernovaModule)
+
 const {sources, sinks} = run(Root, {
   isMobile$,
-  DOM: makeDOMDriver('#root'),
+  DOM: makeDOMDriver('#root', {modules}),
   focus$: makeFocusNextDriver(),
   router: makeRouterDriver(history),
   firebase: makeFirebaseDriver(fbRoot),
