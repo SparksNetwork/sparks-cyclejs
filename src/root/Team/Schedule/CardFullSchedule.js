@@ -13,7 +13,7 @@ import {div, img} from 'cycle-snabbdom'
 
 import {combineDOMsToDiv, localTime} from 'util'
 
-import {Profiles, Assignments, Arrivals} from 'components/remote'
+import {Profiles, Assignments, Arrivals, Engagements} from 'components/remote'
 
 import {TimeOfDayAvatar} from 'components/shift'
 
@@ -22,10 +22,10 @@ const PrintItem = sources => ListItemClickable({...sources,
   iconName$: $.of('print'),
 })
 
-const assignmentItemView = (profile, arrivals) =>
+const assignmentItemView = (profile, arrivals, engagement) =>
   div('.assignment', [
     img({class: {avatar: true}, attrs: {src: profile.portraitUrl}}),
-    div('.name', [profile.fullName]),
+    div('.name', [profile.fullName, engagement.isConfirmed ? '' : '(!)']),
     div('.phone', [profile.phone]),
     arrivals.length > 0 ? 'ONSITE' : '',
   ])
@@ -37,8 +37,11 @@ const AssignmentItem = sources => {
   const arrivals$ = sources.item$.pluck('profileKey')
     .flatMapLatest(Arrivals.query.byProfile(sources))
 
+  const engagement$ = sources.item$.pluck('engagementKey')
+    .flatMapLatest(Engagements.query.one(sources))
+
   return {
-    DOM: $.combineLatest(profile$, arrivals$, assignmentItemView),
+    DOM: $.combineLatest(profile$, arrivals$, engagement$, assignmentItemView),
   }
 }
 
