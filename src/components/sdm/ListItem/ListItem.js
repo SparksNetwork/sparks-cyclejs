@@ -2,7 +2,7 @@ import {Observable as $} from 'rx'
 import combineLatestObj from 'rx-combine-latest-obj'
 
 import {div, a} from 'cycle-snabbdom'
-import {Icon} from 'components/sdm/icon'
+import {Icon} from 'components/sdm/Icon'
 import {filterTruth} from 'util'
 
 const liClasses = {'list-item': true}
