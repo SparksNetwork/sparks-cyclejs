@@ -1,7 +1,7 @@
 import {Observable as $} from 'rx'
 const {of, combineLatest} = $
 import {
-  equals, filter, objOf, prop, whereEq,
+  compose, equals, filter, map, objOf, prop, reject, sum, whereEq,
 } from 'ramda'
 
 import moment from 'moment'
@@ -64,7 +64,14 @@ const Fetch = component => sources => {
 const EngagementAssignmentCount = sources => ({
   DOM: combineLatest(
     sources.shifts$.map(prop('length')),
-    sources.commitments$.map(prop('length')),
+    sources.commitments$.map(
+      compose(
+        sum,
+        reject(isNaN),
+        map(Number),
+        map(prop('count'))
+      )
+    )
   )
   .map(([shifts, commitments]) =>
     cellC(
