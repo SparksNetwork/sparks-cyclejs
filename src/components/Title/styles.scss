@@ -5,6 +5,11 @@
 .title-block {
   z-index: 0;
   min-height: 120px;
+
+  @media (min-width: 992px) {
+    min-height: 150px;
+  }
+
   background-size: cover;
   display: flex;
   flex-direction: column;

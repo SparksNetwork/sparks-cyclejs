@@ -1,5 +1,8 @@
 import {Observable as $} from 'rx'
-const {just} = $
+const {of} = $
+import {
+  compose, head, last, equals, when, type, toPairs,
+} from 'ramda'
 
 import {div} from 'helpers'
 import {requireSources, mergeOrFlatMapLatest, controlsFromRows} from 'util'
@@ -69,7 +72,7 @@ export const List = sources => {
   const DOM = controls$
     .map(controls => controls.length > 0 ?
       combineDOMsToDiv('.list', ...controls) :
-      just(div('',[]))
+      of(div('',[]))
     ).switch()
 
   const route$ = controls$.flatMapLatest(children =>
@@ -123,4 +126,36 @@ export const ListWithHeader = sources => {
     route$: list.route$,
     queue$: list.queue$,
   }
+}
+
+export const GroupedListItem = sources => {
+  requireSources('GroupedListItem', sources, 'item$', 'Control$')
+
+  const item$ = sources.item$
+  const headerDOM = item$.map(head)
+    .map(header => div([header]))
+  const rows$ = item$.map(last)
+
+  return ListWithHeader({
+    headerDOM,
+    rows$,
+  })
+}
+
+export const GroupedList = sources => {
+  requireSources('GroupedList', sources, 'groups$')
+
+  const rows$ = sources.groups$
+    .map(when(
+      compose(equals('Object'), type),
+      toPairs
+    ))
+
+  return List({
+    Control$: of(sources => GroupedListItem({
+      ...sources,
+      Control$: sources.Control$,
+    })),
+    rows$,
+  })
 }

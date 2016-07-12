@@ -17,9 +17,8 @@ import {
 import {
   Shifts,
   Commitments,
+  Assignments,
 } from 'components/remote'
-
-import {AssignmentsFetcher} from 'components/assignment'
 
 import {cellC, icon} from 'helpers/layout'
 
@@ -30,8 +29,11 @@ const volShifts = filter(whereEq({code: 'shifts', party: 'vol'}))
 const Fetch = component => sources => {
   const profileKey$ = sources.item$.map(prop('profileKey'))
   const {profile$} = ProfileFetcher({...sources, profileKey$})
-  const assignments$ =
-    AssignmentsFetcher({...sources, profileKey$}).assignments$
+
+  const assignments$ = sources.item$
+    .map(prop('$key'))
+    .flatMapLatest(Assignments.query.byEngagement(sources))
+
   const commitments$ =
     sources.oppKey$.flatMapLatest(
       Commitments.query.byOpp(sources)
