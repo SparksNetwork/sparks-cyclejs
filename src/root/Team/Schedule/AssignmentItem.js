@@ -31,8 +31,9 @@ export const AssignmentItem = sources => {
   const _sources = {...sources, profileKey$, profile$: pf.profile$}
   const title$ = $.combineLatest(
     _sources.profile$.map(p => p && p.fullName),
+    engagement$,
     _sources.item$.pluck('$key'),
-    (fullName, $key) => fullName || `DELETE ME: ${$key}`
+    (fullName, engagement, $key) => fullName + (engagement.isConfirmed ? '' : ' (!)')
   )
 
   const rem = _Remove(_sources)
