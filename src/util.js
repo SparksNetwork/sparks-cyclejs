@@ -10,7 +10,10 @@ import {div} from 'helpers'
 import isolate from '@cycle/isolate'
 
 export const PROVIDERS = {
-  google: {type: 'redirect', provider: 'google'},
+  google: {type: 'redirect', provider: 'google', scopes: [
+    'https://www.googleapis.com/auth/plus.login',
+    'email',
+  ]},
   facebook: {type: 'redirect', provider: 'facebook'},
   logout: {type: 'logout'},
 }

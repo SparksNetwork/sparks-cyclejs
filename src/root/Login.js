@@ -4,6 +4,7 @@ import {not, identity, replace} from 'ramda'
 import {RaisedButton} from 'components/sdm'
 import {combineDOMsToDiv} from 'util'
 import {div} from 'cycle-snabbdom'
+import {PROVIDERS} from 'util'
 
 const renderLabel = provider => replace('{{provider}}', provider)
 
@@ -38,10 +39,7 @@ const Login = sources => {
         sources.auth$.filter(not)
       ),
     )
-    .map(([provider]) => ({
-      type: 'redirect',
-      provider,
-    }))
+    .map(([provider]) => PROVIDERS[provider])
 
   const route$ = merge(
     sources.auth$.filter(Boolean).map('/dash'),

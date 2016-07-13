@@ -23,6 +23,7 @@ import 'snabbdom-material/lib/index.css'
 import {siteUrl} from 'util'
 
 import {RoutedComponent} from 'components/ui'
+import {SwitchedComponent} from 'components/SwitchedComponent'
 
 import {log} from 'util'
 import {div} from 'helpers'
@@ -82,8 +83,23 @@ import {
   Engagements,
 } from 'components/remote'
 
-const UserManager = sources => {
-  const userProfileKey$ = sources.auth$
+/**
+* This can wrap a component and takes an auth$ source, giving the component the
+* following additional sources:
+*
+* - userProfileKey$<Stream<string>>
+* - userProfile$<Stream<Object>>
+* - userName$<Stream<string>>
+* - userPortraitUrl$<Stream<string>>
+* - user<Object>
+*   - user.projectsOwned$<Stream<Array>>
+*   - user.engagements$<Stream<Array>>
+*/
+const UserManager = component => sources => {
+  const auth$ = sources.auth$
+    .shareReplay(1)
+
+  const userProfileKey$ = auth$
     .flatMapLatest(auth =>
       auth ? sources.firebase('Users', auth.uid) : just(null)
     )
@@ -111,13 +127,15 @@ const UserManager = sources => {
       .flatMapLatest(Engagements.query.byUser(sources)),
   }
 
-  return {
+  return component({
+    ...sources,
+    auth$,
     userProfile$,
     userProfileKey$,
     userName$,
     userPortraitUrl$,
     user,
-  }
+  })
 }
 
 const AuthedResponseManager = sources => ({
@@ -134,32 +152,13 @@ const AuthedActionManager = sources => ({
 })
 
 import {SideNav} from './SideNav'
-// import {ProfileSidenav} from 'components/profile'
-import {pluckLatest, pluckLatestOrNever} from 'util'
-
-const SwitchedComponent = sources => {
-  const comp$ = sources.Component$
-    .distinctUntilChanged()
-    .map(C => isolate(C)(sources))
-    .shareReplay(1)
-
-  return {
-    pluck: key => pluckLatestOrNever(key, comp$),
-    DOM: pluckLatest('DOM', comp$),
-    ...['auth$', 'queue$', 'route$'].reduce((a,k) =>
-      (a[k] = pluckLatestOrNever(k,comp$)) && a, {}
-    ),
-  }
-}
 
 const BlankSidenav = () => ({
   DOM: just(div('')),
 })
 
 const Root = _sources => {
-  const user = UserManager(_sources)
-
-  const redirects = AuthRedirectManager({...user, ..._sources})
+  const redirects = AuthRedirectManager(_sources)
 
   const {responses$} = AuthedResponseManager(_sources)
 
@@ -178,7 +177,6 @@ const Root = _sources => {
 
   const sources = {
     ..._sources,
-    ...user,
     ...redirects,
     responses$,
     previousRoute$,
@@ -186,7 +184,7 @@ const Root = _sources => {
 
   const nav = SwitchedComponent({...sources,
     Component$: sources.userProfile$
-      .map(up => up ? SideNav : BlankSidenav),
+      .map(up => up ? isolate(SideNav) : isolate(BlankSidenav)),
   })
 
   nav.route$.subscribe(x => console.log('navroute',x))
@@ -226,10 +224,12 @@ const Root = _sources => {
       }))
   )
 
+  sources.auth$.subscribe(x => console.log('from auth', x))
+
   return {
     DOM,
     focus$,
-    auth$,
+    auth$: auth$.tap(x => console.log('sending auth', x)),
     queue$,
     router,
     bugsnag,
@@ -249,4 +249,4 @@ const IsMobile = Component => sources => {
   })
 }
 
-export default IsMobile(Root)
+export default UserManager(IsMobile(Root))

@@ -7,7 +7,9 @@ import SupernovaModule from 'drivers/supernova'
 import {makeRouterDriver, supportsHistory} from 'cyclic-router'
 import {createHistory, createHashHistory} from 'history'
 import Firebase from 'firebase'
-import {makeAuthDriver, makeFirebaseDriver, makeQueueDriver} from 'cyclic-fire'
+import {
+  makeAuthDriver, makeFirebaseDriver, makeQueueDriver,
+} from '@sparksnetwork/cyclic-fire'
 import screenInfoDriver from 'drivers/screenInfo'
 import openAndPrintDriver from 'drivers/openAndPrint'
 import makeBugsnagDriver from 'drivers/bugsnag'
@@ -21,7 +23,16 @@ import Root from './root'
 const history = supportsHistory() ?
   createHistory() : createHashHistory()
 
-const fbRoot = new Firebase(__FIREBASE_HOST__) // eslint-disable-line
+try {
+  firebase.app()
+} catch (err) {
+  firebase.initializeApp({
+    apiKey: Sparks.FIREBASE_API_KEY, // eslint-disable-line
+    authDomain: Sparks.FIREBASE_AUTH_DOMAIN, // eslint-disable-line
+    databaseURL: Sparks.FIREBASE_DATABASE_URL, // eslint-disable-line
+  })
+}
+const fbRoot = firebase.database().ref()
 
 const modules = defaultModules.concat(SupernovaModule)
 
@@ -31,7 +42,7 @@ const {sources, sinks} = run(Root, {
   focus$: makeFocusNextDriver(),
   router: makeRouterDriver(history),
   firebase: makeFirebaseDriver(fbRoot),
-  auth$: makeAuthDriver(fbRoot),
+  auth$: makeAuthDriver(firebase),
   queue$: makeQueueDriver(fbRoot.child('!queue')),
   bugsnag: makeBugsnagDriver({
     releaseStage: process.env.BUILD_ENV || 'development',
