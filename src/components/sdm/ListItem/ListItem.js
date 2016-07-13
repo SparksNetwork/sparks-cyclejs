@@ -2,41 +2,36 @@ import {Observable as $} from 'rx'
 import combineLatestObj from 'rx-combine-latest-obj'
 
 import {div, a} from 'cycle-snabbdom'
-import {icon, iconSrc} from 'helpers'
+import {Icon} from 'components/sdm/Icon'
+import {filterTruth} from 'util'
 
 const liClasses = {'list-item': true}
 
 const contentClass = (...doms) =>
   '.content.xcol-sm-' +
-  (12 - doms.filter(i => !!i).length)
+  (12 - filterTruth(doms).length)
 
 const listItemLink = ({url, leftDOM, title, subtitle, rightDOM, classes}) =>
   a({class: {...liClasses, ...classes, clickable: true},
     attrs: {href: url, target: '_new'},
-  }, [
+  }, filterTruth([
     leftDOM && div('.left.xcol-sm-1', [leftDOM]),
-    div(contentClass(leftDOM,rightDOM), [
+    div(contentClass(leftDOM,rightDOM), filterTruth([
       div('.title', [title]),
       subtitle && div('.subtitle', [subtitle]),
-    ].filter(i => !!i)),
+    ])),
     rightDOM && div('.right.xcol-sm-1',[rightDOM]),
-  ].filter(i => !!i))
+  ]))
 
 const listItem = ({leftDOM, title, subtitle, rightDOM, classes}) =>
-  div({class: {...liClasses, ...classes}}, [
+  div({class: {...liClasses, ...classes}}, filterTruth([
     leftDOM && div('.left.xcol-sm-1', [leftDOM]),
-    div(contentClass(leftDOM,rightDOM), [
+    div(contentClass(leftDOM,rightDOM), filterTruth([
       div('.title', [title]),
       subtitle && div('.subtitle', [subtitle]),
-    ].filter(i => !!i)),
+    ])),
     rightDOM && div('.right.xcol-sm-1',[rightDOM]),
-  ].filter(i => !!i))
-
-const Icon = sources => ({
-  DOM: sources.iconName$ && sources.iconName$.map(n => icon(n)) ||
-    sources.iconSrc$ && sources.iconSrc$.map(url => iconSrc(url)) ||
-    null,
-})
+  ]))
 
 export const ListItem = sources => {
   const viewState = {

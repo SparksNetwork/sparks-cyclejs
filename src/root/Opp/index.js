@@ -34,7 +34,7 @@ import Confirmed from './Confirmed'
 
 import {FetchEngagements} from './FetchEngagements'
 
-const _Fetch = sources => {
+const Fetch = component => sources => {
   const opp$ = sources.oppKey$
     .flatMapLatest(Opps.query.one(sources))
 
@@ -52,14 +52,15 @@ const _Fetch = sources => {
   const opps$ = projectKey$
     .flatMapLatest(Opps.query.byProject(sources))
 
-  return {
+  return component({
+    ...sources,
     opp$,
     projectKey$,
     project$,
     projectImage$,
     teams$,
     opps$,
-  }
+  })
 }
 
 const _Title = sources => ResponsiveTitle({...sources,
@@ -78,31 +79,30 @@ const _Page = sources => RoutedComponent({...sources, routes$: of({
   '/confirmed': Confirmed,
 })})
 
-export default sources => {
-  const __sources = {...sources, ..._Fetch(sources)}
-  const _sources = {...__sources, ...FetchEngagements(__sources)}
-
-  const page = _Page(_sources)
-  const qn = ProjectQuickNavMenu(_sources)
-  const title = _Title({..._sources,
+const Opp = sources => {
+  const page = _Page(sources)
+  const qn = ProjectQuickNavMenu(sources)
+  const title = _Title({...sources,
     pageTitle$: page.pluck('pageTitle'),
     tabsDOM$: page.pluck('tabBarDOM'),
     topDOM$: qn.DOM,
   })
-  const nav = OppNav({..._sources, titleDOM: title.DOM})
-  const header = Header({..._sources,
+  const nav = OppNav({...sources, titleDOM: title.DOM})
+  const header = Header({...sources,
     titleDOM: title.DOM,
     tabsDOM: page.pluck('tabBarDOM'),
   })
-  const frame = AppFrame({..._sources,
+  const frame = AppFrame({...sources,
     navDOM: nav.DOM,
     headerDOM: header.DOM,
     pageDOM: page.DOM,
   })
-  const redirect = LogoutRedirector(_sources)
+  const redirect = LogoutRedirector(sources)
 
   return {
     DOM: frame.DOM,
     ...mergeSinks(frame, page, qn, title, nav, header, redirect),
   }
 }
+
+export default FetchEngagements(Fetch(Opp))

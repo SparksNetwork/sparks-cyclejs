@@ -11,12 +11,13 @@ export const LargeCard = sources => {
   const elevation$ = sources.elevation$ || $.just(1)
   const content$ = sources.content$ || $.just('need content$')
     .map((...c) => c)
+  const classes$ = sources.classes$ || $.just({})
 
   const DOM = $.combineLatest(
-    elevation$, content$,
-    (elevation, content) =>
-      div('.col-xs-12',[
-        div(`.card.paper${elevation}`, content),
+    elevation$, classes$, content$,
+    (elevation, classes, content) =>
+      div('.col-xs-12', [
+        div(`.card.paper${elevation}`, {class: classes}, content),
       ])
   )
 

@@ -1,38 +1,31 @@
 import {Observable as $} from 'rx'
-import {div} from 'helpers'
-import {combineDOMsToDiv} from 'util'
+import {prop} from 'ramda'
 
 import {FetchEngagements} from '../FetchEngagements'
 
-import {
-  List,
-} from 'components/sdm'
+import {TabBar} from 'components/TabBar'
 
-import {
-  TitleListItem,
-} from 'components/ui'
+import EngagedList from 'components/EngagedList'
 
-import {Item} from './Item'
+const Confirmed = sources => {
+  const list = EngagedList({
+    ...sources,
+    engagements$: sources.confirmed$,
+  })
 
-const _Header = sources => TitleListItem({...sources,
-  title$: sources.confirmed$
-    .map(arr => `You have ${arr.length} Confirmed Volunteers.`),
-})
-
-const AppList = sources => List({...sources,
-  Control$: $.of(Item),
-  rows$: sources.confirmed$,
-})
-
-export default sources => {
-  const _sources = {...sources, ...FetchEngagements(sources)}
-  const hdr = _Header(_sources)
-  const list = AppList(_sources)
+  const tabBar = TabBar({
+    ...sources,
+    tabs$: sources.confirmed$
+      .map(prop('length'))
+      .map(l => [{path: '/', label: `${l} Confirmed`}]),
+  })
 
   return {
+    ...list,
     pageTitle: $.of('Confirmed Volunteers'),
-    tabBarDOM: $.of(div('',[])),
-    DOM: combineDOMsToDiv('',hdr,list),
+    tabBarDOM: tabBar.DOM,
     queue$: list.queue$,
   }
 }
+
+export default FetchEngagements(Confirmed)

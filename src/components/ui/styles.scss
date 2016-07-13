@@ -1,3 +1,33 @@
+@mixin arrow($left: auto, $right: auto) {
+  &:before {
+    content:"";
+    position:absolute;
+    bottom:-14px; /* value = - border-top-width - border-bottom-width */
+    left: $left;
+    right: $right;
+    border-width:14px 14px 0;
+    border-style:solid;
+    border-color:black transparent;
+    /* reduce the damage in FF3.0 */
+    display:block;
+    width:0;
+  }
+
+  &:after {
+    content:"";
+    position:absolute;
+    bottom:-13px; /* value = - border-top-width - border-bottom-width */
+    left: $left + 1;
+    right: $right + 1;
+    border-width:13px 13px 0;
+    border-style:solid;
+    border-color:#fff transparent;
+    /* reduce the damage in FF3.0 */
+    display:block;
+    width:0;
+  }
+}
+
 .quote {
   position:relative;
   padding:8px;
@@ -9,33 +39,14 @@
   -webkit-border-radius:10px;
   -moz-border-radius:10px;
   border-radius:10px;
-}
 
-.quote:before {
-  content:"";
-  position:absolute;
-  bottom:-13px; /* value = - border-top-width - border-bottom-width */
-  left:10px; /* controls horizontal position */
-  border-width:14px 14px 0;
-  border-style:solid;
-  border-color:black transparent;
-  /* reduce the damage in FF3.0 */
-  display:block;
-  width:0;
-}
+  &:not(.right) {
+    @include arrow($left: 10px)
+  }
 
-/* creates the smaller  triangle */
-.quote:after {
-  content:"";
-  position:absolute;
-  bottom:-12px; /* value = - border-top-width - border-bottom-width */
-  left:11px; /* value = (:before left) + (:before border-left) - (:after border-left) */
-  border-width:13px 13px 0;
-  border-style:solid;
-  border-color:#fff transparent;
-  /* reduce the damage in FF3.0 */
-  display:block;
-  width:0;
+  &.right {
+    @include arrow($right: 10px)
+  }
 }
 
 .list-item-title .content .title {

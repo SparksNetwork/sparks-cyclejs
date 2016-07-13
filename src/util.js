@@ -95,6 +95,9 @@ export const localTime = t => //1p
 export const formatTime = t =>
   localTime(t).format('hh:mm a')
 
+export const formatDate = t =>
+  localTime(t).format('ddd Do MMM')
+
 export const requireSources = (cname, sources, ...sourceNames) =>
   sourceNames.forEach(n => {
     if (!sources[n]) { throw new Error(cname + ' must specify ' + n)}
@@ -221,3 +224,11 @@ export const material = {
     },
   },
 }
+
+/**
+* Boolean() returns false for 0 which is dumb
+*/
+export const truth = val =>
+  Boolean(val) || val === 0
+
+export const filterTruth = filter(truth)

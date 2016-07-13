@@ -1,6 +1,5 @@
 import {Observable} from 'rx'
 const {empty} = Observable
-import {div} from 'helpers'
 // import {log} from 'util'
 
 const pluckLatest = (k,s$) => s$.pluck(k).switch()
@@ -26,7 +25,7 @@ export const RoutedComponent = sources => {
       const c = value({...sources, router: sources.router.path(path)})
       return {
         ...c,
-        DOM: c.DOM && c.DOM.startWith(div('.loading',['Loading...'])),
+        DOM: c.DOM,
       }
     })
     .shareReplay(1)
