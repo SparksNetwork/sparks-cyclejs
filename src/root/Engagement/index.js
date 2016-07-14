@@ -229,5 +229,6 @@ export default sources => {
     auth$: mergeOrFlatMapLatest('auth$', ...children),
     queue$: mergeOrFlatMapLatest('queue$', ...children),
     route$,
+    openAndPrint: page.openAndPrint, //  mergeOrFlatMapLatest('openAndPrint', ...children),
   }
 }
