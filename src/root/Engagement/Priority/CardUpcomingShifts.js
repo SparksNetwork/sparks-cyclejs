@@ -3,6 +3,7 @@ import {hideable} from 'util'
 import {div, a} from 'cycle-snabbdom'
 import isolate from '@cycle/isolate'
 import {combineDOMsToDiv} from 'util'
+import {Printable} from 'components/Printable'
 
 import {
   List,
@@ -55,59 +56,91 @@ const _PrintSchedule = sources => ListItemClickable({...sources,
   iconName$: $.of('print'),
 })
 
+const COL_A = [
+  'a magnificent',
+  'a beautiful',
+  'a giving',
+  'an amazing',
+  'an incredible',
+  'a phenomenal',
+  'a passionate',
+  'a powerful',
+  'an epic',
+  'a grand',
+  'a lovely',
+  'an excellent',
+  'a superb',
+  'a marvelous',
+  'a glorious',
+  'a courageous',
+  'a tremendous',
+  'a noble',
+]
+const COL_B = [
+  'creator of things',
+  'human being',
+  'soul',
+  'beauty-creator',
+  'maker of joy',
+  'builder of a better world',
+  'pillar of humanity',
+  'maker of magic',
+  'person',
+  'forge of the future',
+  'generator of joy',
+  'producer of positivity',
+  'composer of consciousness',
+  'mover',
+  'weaver of the world',
+  'enabler of the extraordinary',
+]
+
+const pick = arr => arr[Math.floor(Math.random() * arr.length)]
+
+const chineseMenu = () =>
+  'a ' + pick(COL_A) + ' ' + pick(COL_B)
+
 const PrintableScheduleHeader = sources => {
   const profile$ = sources.engagement$.pluck('profileKey')
     .flatMapLatest(Profiles.query.one(sources))
 
   return {
     DOM: profile$.map(
-      (profile) => div('.volunteer', [profile.fullName])
+      (profile) => div({}, [
+        div('.volunteer', [
+          profile.fullName,
+        ]),
+        div('.inspiration', [
+          chineseMenu(),
+        ]),
+        div('.instructions', [
+          `Are you ready to make a difference?  You are needed for these shifts:`,
+        ]),
+      ])
     ),
   }
 }
 
-// const shiftHeaderView = (shift, day, team, todDOM) =>
-//   div('.shift-header', [
-//     div('.top', [
-//       div('.date', [humanDate(day)]),
-//       div('.team', [team.name]),
-//     ]),
-//     div('.bottom', [
-//       todDOM,
-//       timeCell(shift.start),
-//       timeCell(shift.end),
-//       div('.duration', [`${shift.hours || 0} hrs`]),
-//       div({
-//         class: {
-//           headcount: true,
-//           warning: (shift.assigned || 0) < shift.people,
-//         },
-//       }, [
-//         `${shift.assigned || 0}/${shift.people}`,
-//       ]),
-//     ]),
-//   ])
-
-const PrintableContent = sources => {
-  const hdr = PrintableScheduleHeader(sources)
-  const list = _List(sources)
-  const frame = {
-    DOM: combineDOMsToDiv('.printablePage',hdr, list),
-  }
-
+const PrintableScheduleFooter = sources => {
   return {
-    DOM: combineDOMsToDiv('.hidden.printable',frame),
+    DOM: sources.project$.map(project =>
+      div('.note', [
+        `Thank you from ${project.name} and the Sparks.Network!`,
+      ])
+    ),
   }
 }
 
+const printableView = (phdr, plist, pftr) => div({}, [phdr, plist, pftr])
+
 export const CardUpcomingShifts = sources => {
   const info = _Info(sources)
-  // const list = PrintableContent(sources)
-  // const list = hideable(PrintableContent)({...sources,
-  //   isVisible$: $.of(false),
-  // })
-  const plist = PrintableContent(sources)
   const list = _List(sources)
+  const phdr = PrintableScheduleHeader(sources)
+  const pftr = PrintableScheduleFooter(sources)
+  const plist = Printable({...sources,
+    contentDOM$: $.combineLatest(phdr.DOM, list.DOM, pftr.DOM, printableView),
+  })
   const rs = _Reschedule(sources)
   const pr = isolate(_PrintSchedule)(sources)
 

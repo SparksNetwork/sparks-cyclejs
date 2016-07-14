@@ -26,8 +26,8 @@ export default function openAndPrintDriver(html$) {
       WinPrint.document.write(buildHtml(html, style))
       WinPrint.document.close()
       WinPrint.focus()
-      WinPrint.print()
-      WinPrint.close()
+      // WinPrint.print()
+      // WinPrint.close()
     })
 
   return Observable.empty()
