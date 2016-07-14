@@ -7,6 +7,28 @@
 $profileAvatarSize: 120px;
 
 .printablePage {
+	.volunteer {
+		font-size: 24pt;
+		font-weight: bold;
+		padding-top: 24px;
+		border-top: 1px solid black;
+	}
+	.inspiration {
+		font-size: 14pt;
+		color: #666;
+		font-style: italic;
+		margin-top: 16px;
+	}
+	.instructions {
+		font-size: 16pt;
+		margin: 16px 0px;
+	}
+	.note {
+		text-align: center;
+		margin: auto;
+		font-style: italic;
+		font-size: 10pt;
+	}
 	.day {
 		xpage-break-after: always;
 	}
@@ -63,11 +85,6 @@ $profileAvatarSize: 120px;
 			font-size: 18pt;
 			font-weight: bold;
 			color: #666;
-		}
-
-		.volunteer {
-			font-size: 24pt;
-			font-weight: bold;
 		}
 
 	}
