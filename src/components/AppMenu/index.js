@@ -74,12 +74,12 @@ const AppMenu = sources => {
 
   const auth$ = merge(
     googleLogin.click$.map(PROVIDERS.google),
-    logout.click$.map(PROVIDERS.logout),
   )
 
   const route$ = merge(
     dash.click$.map('/dash'),
     admin.click$.map('/admin'),
+    logout.click$.map('/logout'),
   ).share()
 
   return {

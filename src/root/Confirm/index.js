@@ -1,4 +1,3 @@
-import {Observable} from 'rx'
 import combineLatestObj from 'rx-combine-latest-obj'
 import {objOf} from 'ramda'
 // import isolate from '@cycle/isolate'
@@ -103,22 +102,8 @@ export default sources => {
 
   const frame = SoloFrame({pageDOM, ...sources})
 
-  const redirectLogin$ = sources.previousRoute$
-    .sample(sources.redirectLogin$)
-    .map(r => r || '/dash')
-
-  const redirectLogout$ = sources.previousRoute$
-    .sample(sources.redirectLogout$)
-    .map(r => r || '/')
-
-  const route$ = Observable.merge(
-    frame.route$,
-    redirectLogin$,
-    redirectLogout$,
-  )
-
+  const route$ = frame.route$
   const auth$ = frame.auth$
-
   const DOM = frame.DOM
 
   return {DOM, route$, queue$, auth$}

@@ -2,10 +2,11 @@ import {Observable as $} from 'rx'
 const {just, empty, merge} = $
 
 import isolate from '@cycle/isolate'
-import {propOr, pick, join} from 'ramda'
+import {propOr, pick, join, objOf} from 'ramda'
 
+import AuthRoute from './AuthRoute'
 import Login from './Login'
-// import Landing from './Landing'
+import Logout from './Logout'
 import Confirm from './Confirm'
 import Dash from './Dash'
 import Admin from './Admin'
@@ -28,35 +29,41 @@ import {div} from 'helpers'
 
 import './styles.scss'
 
+/**
+* Returns a function that takes a key and returns a component representing a
+* page that requires the user to be logged in, passing the key to the component
+* as a stream with .just using the keyName.
+*/
+const KeyRoute = (component, keyName) => key => AuthRoute(sources =>
+  isolate(component)({...sources, ...objOf(keyName, just(key))})
+)
+
 // Route definitions at this level
 const _routes = {
   // '/': Landing,
-  '/confirm': isolate(Confirm),
-  '/dash': isolate(Dash),
-  '/admin': isolate(Admin),
-  '/project/:key': key => sources =>
-    isolate(Project)({projectKey$: just(key), ...sources}),
-  '/team/:key': key => sources =>
-    isolate(Team)({teamKey$: just(key), ...sources}),
-  '/opp/:key': key => sources =>
-    isolate(Opp)({oppKey$: just(key), ...sources}),
-  '/apply/:key': key => sources =>
-    isolate(Apply)({projectKey$: just(key), ...sources}),
-  '/engaged/:key': key => sources =>
-    isolate(Engagement)({engagementKey$: just(key), ...sources}),
-  '/organize/:key': key => sources =>
-    isolate(Organize)({organizerKey$: just(key), ...sources}),
-  '/login/:provider': provider => sources => Login(provider)(sources),
+  '/confirm': AuthRoute(isolate(Confirm)),
+  '/dash': AuthRoute(isolate(Dash)),
+  '/admin': AuthRoute(isolate(Admin)),
+  '/project/:key': KeyRoute(Project, 'projectKey$'),
+  '/team/:key': KeyRoute(Team, 'teamKey$'),
+  '/opp/:key': KeyRoute(Opp, 'oppKey$'),
+  '/apply/:key': KeyRoute(Apply, 'projectKey$'),
+  '/engaged/:key': KeyRoute(Engagement, 'engagementKey$'),
+  '/organize/:key': KeyRoute(Organize, 'organizerKey$'),
+  '/login': Login,
+  '/login/:provider': provider => sources =>
+    Login({...sources, provider$: just(provider)}),
+  '/logout': Logout,
 }
 
 const AuthRedirectManager = sources => {
   const redirectLogin$ = sources.userProfile$
-    .filter(profile => !!profile)
+    .filter(Boolean)
     .map(profile => profile.isAdmin ? '/admin' : '/dash')
 
-  const redirectLogout$ = sources.auth$
-    .filter(profile => !profile)
-    .map(() => { window.location.href = '/' })
+  //const redirectLogout$ = sources.auth$
+  //  .filter(not)
+  //  .map(() => { window.location.href = '/' })
     // we want to redirect to the new landing, because the old landing login
     // does not work at all and is sloppy
     // sorry jeremy please fix me to not suck so much
@@ -70,7 +77,7 @@ const AuthRedirectManager = sources => {
 
   return {
     redirectLogin$,
-    redirectLogout$,
+    //redirectLogout$,
     redirectUnconfirmed$,
   }
 }

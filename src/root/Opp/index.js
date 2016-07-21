@@ -18,10 +18,6 @@ import {
 } from 'components/remote'
 
 import {
-  LogoutRedirector,
-} from 'components/redirects'
-
-import {
   RoutedComponent,
 } from 'components/ui'
 
@@ -97,11 +93,10 @@ const Opp = sources => {
     headerDOM: header.DOM,
     pageDOM: page.DOM,
   })
-  const redirect = LogoutRedirector(sources)
 
   return {
     DOM: frame.DOM,
-    ...mergeSinks(frame, page, qn, title, nav, header, redirect),
+    ...mergeSinks(frame, page, qn, title, nav, header),
   }
 }
 
