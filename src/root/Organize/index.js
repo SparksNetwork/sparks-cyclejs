@@ -107,31 +107,21 @@ export default _sources => {
   const accepted$ = sources.organizer$
     .filter(prop('isAccepted'))
 
-  const emailMatches$ = $.combineLatest(
-    loggedIn$.map(prop('email')),
-    notAccepted$.map(prop('inviteEmail')),
-    equals
-  )
-
   const profileMatches$ = $.combineLatest(
     loggedIn$.map(prop('key')),
     accepted$.map(prop('profileKey')),
     equals
   )
 
+  // One of these these stremas emits:
   const notLoggedinNotAccepted$ = $.combineLatest(notLoggedin$, notAccepted$)
     .map(loginButtons)
 
   const notLoggedInAccepted$ = $.combineLatest(notLoggedin$, accepted$)
     .map({DOM: just(h5('This invite has already been accepted.'))})
 
-  const showAccept$ = emailMatches$
-    .filter(Boolean)
+  const showAccept$ = $.combineLatest(loggedIn$, notAccepted$)
     .map(acceptButton)
-
-  const notForYou$ = emailMatches$
-    .filter(complement(Boolean))
-    .map({DOM: just(h5('This invite is not for you.'))})
 
   const alreadyAccepted$ = profileMatches$
     .filter(Boolean)
@@ -156,7 +146,6 @@ export default _sources => {
     notLoggedinNotAccepted$,
     notLoggedInAccepted$,
     showAccept$,
-    notForYou$,
     alreadyAccepted$,
     anotherAccepted$
   ).shareReplay(1)
