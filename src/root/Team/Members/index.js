@@ -29,6 +29,7 @@ const _Fetch = sources => {
   /* eslint-disable max-len */
   all$ // all errors here
     .map(engs => engs.filter(e => e.authorProfileKey !== void 0 || e.profileKey !== void 0)) // filter out naughty records
+    .filter(ary => ary.length > 0)
     .subscribe(engs => console.log('Memberships with errors:', engs))
 
   const e$ = all$
