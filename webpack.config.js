@@ -1,5 +1,7 @@
 import path from 'path'
 import webpack from 'webpack'
+import ExtractTextPlugin from 'extract-text-webpack-plugin'
+import importUrl from 'postcss-import-url'
 
 if (!process.env.BUILD_ENV) {
   process.env.BUILD_ENV = 'development'
@@ -18,6 +20,7 @@ const basePlugins = [
   new webpack.EnvironmentPlugin([
     'BUILD_ENV',
   ]),
+  new ExtractTextPlugin('styles.css', {allChunks: true}),
 ]
 
 const plugins = {
@@ -75,20 +78,18 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        loaders: [
-          'style',
-          'css?modules&importLoaders=1&localIdentName=[local]',
-        ],
+        loader: ExtractTextPlugin.extract(
+          'style-loader',
+          'css?modules&importLoaders=1&localIdentName=[local]!postcss',
+        ),
         include: __dirname,
       },
       {
         test: /\.scss/,
-        loaders: [
-          'style',
-          'css?modules&importLoaders=1&localIdentName=[local]',
-          'postcss',
-          'sass?outputStyle=expanded',
-        ],
+        loader: ExtractTextPlugin.extract(
+          'style-loader',
+          'css?modules&importLoaders=1&localIdentName=[local]!postcss!sass?outputStyle=expanded',
+        ),
       },
       {
         test: /\.(jpe?g|png|gif|svg)$/i,
@@ -114,4 +115,7 @@ module.exports = {
     },
   },
   plugins: plugins[ENV],
+  postcss: function postcss() {
+    return [importUrl]
+  },
 }

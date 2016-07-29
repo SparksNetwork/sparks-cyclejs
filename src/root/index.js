@@ -18,7 +18,7 @@ import Engagement from './Engagement'
 import Organize from './Organize'
 
 import 'normalize-css'
-import '!style!css!snabbdom-material/lib/index.css'
+import 'snabbdom-material/lib/index.css'
 
 import {siteUrl} from 'util'
 
@@ -60,14 +60,6 @@ const AuthRedirectManager = sources => {
   const redirectLogin$ = sources.userProfile$
     .filter(Boolean)
     .map(profile => profile.isAdmin ? '/admin' : '/dash')
-
-  //const redirectLogout$ = sources.auth$
-  //  .filter(not)
-  //  .map(() => { window.location.href = '/' })
-    // we want to redirect to the new landing, because the old landing login
-    // does not work at all and is sloppy
-    // sorry jeremy please fix me to not suck so much
-    // I had no time left to do this with a driver :)
 
   // this is the only global redirect, always gets piped to the router
   const redirectUnconfirmed$ = sources.userProfile$
