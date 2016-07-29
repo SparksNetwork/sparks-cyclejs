@@ -14,13 +14,22 @@ smith.build(err => {
 const webpackConfig = require('./webpack.config')
 const compiler = webpack(webpackConfig)
 console.log('Webpack build')
-compiler.run(err => {
+compiler.run((err, stats) => {
   if (err) {
     console.error('Webpack error', err)
     process.exit(1)
   }
 
   console.log('Webpack built')
+  if (stats.hasErrors()) {
+    console.log(stats.toString('errors-only'))
+    process.exit(1)
+  } else {
+    console.log(stats.toString({
+      chunks: false,
+      colors: true,
+    }))
+  }
 
   if (process.env.BUGSNAG_API_KEY) {
     const urls = {
