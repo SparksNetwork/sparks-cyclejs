@@ -34,7 +34,10 @@ import './styles.scss'
 * page that requires the user to be logged in, passing the key to the component
 * as a stream with .just using the keyName.
 */
-const KeyRoute = (component, keyName) => key => AuthRoute(sources =>
+const KeyRoute = (component, keyName) => key => sources =>
+  isolate(component)({...sources, ...objOf(keyName, just(key))})
+
+const AuthedKeyRoute = (component, keyName) => key => AuthRoute(sources =>
   isolate(component)({...sources, ...objOf(keyName, just(key))})
 )
 
@@ -44,12 +47,12 @@ const _routes = {
   '/confirm': AuthRoute(isolate(Confirm)),
   '/dash': AuthRoute(isolate(Dash)),
   '/admin': AuthRoute(isolate(Admin)),
-  '/project/:key': KeyRoute(Project, 'projectKey$'),
-  '/team/:key': KeyRoute(Team, 'teamKey$'),
-  '/opp/:key': KeyRoute(Opp, 'oppKey$'),
+  '/project/:key': AuthedKeyRoute(Project, 'projectKey$'),
+  '/team/:key': AuthedKeyRoute(Team, 'teamKey$'),
+  '/opp/:key': AuthedKeyRoute(Opp, 'oppKey$'),
   '/apply/:key': KeyRoute(Apply, 'projectKey$'),
-  '/engaged/:key': KeyRoute(Engagement, 'engagementKey$'),
-  '/organize/:key': KeyRoute(Organize, 'organizerKey$'),
+  '/engaged/:key': AuthedKeyRoute(Engagement, 'engagementKey$'),
+  '/organize/:key': AuthedKeyRoute(Organize, 'organizerKey$'),
   '/login': Login,
   '/login/:provider': provider => sources =>
     Login({...sources, provider$: just(provider)}),
