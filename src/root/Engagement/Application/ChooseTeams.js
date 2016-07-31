@@ -156,7 +156,7 @@ const _determineAction =
   } else if (answer && !membership) {
     return create({values: {teamKey, oppKey, engagementKey, answer}})
   } else if (!answer && membership) {
-    return remove(membership.$key)
+    return remove({key: membership.$key})
   } else {
     throw new Error('no answer, and no membership, wat?')
   }
