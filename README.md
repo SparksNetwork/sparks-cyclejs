@@ -12,7 +12,7 @@ We're not just a volunteer management app, and we're not just a craigslist for v
 
 ### Ethos
 
-Volunterism is a fundamental part of our company ethos, and open source is just another expression of that.  As we continue to develop this application, we are constantly looking for ways to extract things into more reusable libraries that we can give back to the community.  If you see anything like that in the code, open an issue and let us know!
+Volunterism is a fundamental part of our company ethos, and open source is just another expression of that.  As we continue to develop this application, we are constantly looking for ways to extract things into more reusable libraries that we can give back jto the community.  If you see anything like that in the code, open an issue and let us know!
 
 ### Contributions
 

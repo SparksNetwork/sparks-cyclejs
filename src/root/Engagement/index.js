@@ -1,4 +1,7 @@
 import {Observable as $} from 'rx'
+import {
+  not,
+} from 'ramda'
 import moment from 'moment'
 
 import AppFrame from 'components/AppFrame'
@@ -168,7 +171,7 @@ import Confirmation from './Confirmation/index.js'
 
 import {label} from 'components/engagement'
 
-export default sources => {
+const Engagement = sources => {
   const _sources = {...sources, ..._Fetch(sources)}
 
   // const nav = ProfileSidenav(_sources)
@@ -217,7 +220,7 @@ export default sources => {
   // const children = [frame, page, nav]
   const children = [frame, page]
 
-  const redirectOnLogout$ = _sources.auth$.filter(auth => !auth).map(() => '/')
+  const redirectOnLogout$ = _sources.auth$.filter(not).map(() => '/')
 
   const route$ = $.merge(
     mergeOrFlatMapLatest('route$', ...children),
@@ -229,6 +232,8 @@ export default sources => {
     auth$: mergeOrFlatMapLatest('auth$', ...children),
     queue$: mergeOrFlatMapLatest('queue$', ...children),
     route$,
-    openAndPrint: page.openAndPrint, //  mergeOrFlatMapLatest('openAndPrint', ...children),
+    openAndPrint: page.openAndPrint,
   }
 }
+
+export default Engagement
