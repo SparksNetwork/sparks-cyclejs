@@ -36,7 +36,7 @@ const ViewAndDetail = sources => {
   return {
     ...mergeSinks(view, detail),
     DOM,
-    route$: merge(view.route$, detail.route$.map(sources.createHref)),
+    // route$: merge(view.route$, detail.route$.map(sources.createHref)),
   }
 }
 
