@@ -65,7 +65,7 @@ const OpenTeamListItem = sources => {
       (membership, teamKey, oppKey, engagementKey) =>
         membership ?
         Memberships.action.remove({key: membership.$key}) :
-        Memberships.action.create({teamKey, oppKey, engagementKey}),
+        Memberships.action.create({values: {teamKey, oppKey, engagementKey}}),
     )
 
   queue$.subscribe(log('O.queue$'))
@@ -154,7 +154,7 @@ const _determineAction =
   if (answer && membership) {
     return update({key: membership.$key, values: {answer}})
   } else if (answer && !membership) {
-    return create({teamKey, oppKey, engagementKey, answer})
+    return create({values: {teamKey, oppKey, engagementKey, answer}})
   } else if (!answer && membership) {
     return remove(membership.$key)
   } else {
