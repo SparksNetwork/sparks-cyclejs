@@ -3,7 +3,7 @@ const {just, merge, combineLatest} = Observable
 
 // import isolate from '@cycle/isolate'
 
-import {h5} from 'cycle-snabbdom'
+import {h5, a} from 'cycle-snabbdom'
 import {div} from 'helpers'
 
 import {CommitmentItemPassive} from 'components/commitment'
@@ -26,6 +26,7 @@ import {
   QuotingListItem,
   TitleListItem,
   LoginButtons,
+  DescriptionListItem,
 } from 'components/ui'
 
 const _Select = sources => SelectControl({...sources,
@@ -117,6 +118,13 @@ export default sources => {
     rows$: commitments$.map(cs => cs.filter(({party}) => party === 'org')),
   })
 
+  const needHelp = DescriptionListItem({...sources,
+    title$: just(div({},[
+      'questions?  need help?  email to ',
+      a({attrs: {href: 'mailto:help@sparks.network'}}, ['help@sparks.network']),
+    ])),
+  })
+
   // combine controls to make sinks
   const newApplication$ = combineLatest(
     oppKey$,
@@ -138,18 +146,20 @@ export default sources => {
     sources.auth$,
     applyNow.DOM,
     logins.DOM,
+    needHelp.DOM,
     title.DOM,
     chooser.DOM,
     desc.DOM,
     gives.DOM,
     gets.DOM,
-    (hasApplied, auth, anDOM, lDOM, ...doms) => div({},[
+    (hasApplied, auth, anDOM, lDOM, nhDOM, ...doms) => div({},[
       ...doms,
       auth ? // eslint-disable-line no-nested-ternary
         hasApplied ?
           h5(`You've already applied for this opportunity!`) :
           anDOM :
         lDOM,
+      nhDOM,
     ])
   )
 
