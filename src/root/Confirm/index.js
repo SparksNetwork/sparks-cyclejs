@@ -40,14 +40,6 @@ const _fromAuthData$ = sources =>
 const _submitAction$ = ({DOM}) =>
   DOM.select('.submit').events('click').map(true)
 
-// const _render = ({valid, profileFormDOM, portraitDOM}) =>
-//   narrowCol(
-//     pageTitle('Is This You?'),
-//     portraitDOM,
-//     profileFormDOM,
-//     valid ? submitAndCancel('yup, that\'s me!', 'let me log in again') : null
-//   )
-
 export default sources => {
   const authProfile$ = _fromAuthData$(sources)
 
@@ -67,10 +59,7 @@ export default sources => {
       (p,portraitUrl) => ({...p, portraitUrl})
     )
 
-  const valid$ = profile$
-    .map(({fullName,email,phone}) =>
-      !!fullName && !!email && !!phone
-    )
+  const valid$ = profileForm.valid$
 
   const queue$ = profile$
     .sample(submit$)

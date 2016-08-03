@@ -156,7 +156,7 @@ const BlankSidenav = () => ({
   DOM: just(div('')),
 })
 
-export default _sources => {
+const Root = _sources => {
   const user = UserManager(_sources)
 
   const redirects = AuthRedirectManager({...user, ..._sources})
@@ -237,3 +237,16 @@ export default _sources => {
     openGraph,
   }
 }
+
+const IsMobile = Component => sources => {
+  const isMobile$ = sources.screenInfo$
+    .map(si => si.size <= 2)
+    .shareReplay(1)
+
+  return Component({
+    ...sources,
+    isMobile$,
+  })
+}
+
+export default IsMobile(Root)
