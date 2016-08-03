@@ -1,5 +1,6 @@
+import {Observable as $} from 'rx'
 import combineLatestObj from 'rx-combine-latest-obj'
-import {objOf} from 'ramda'
+import {objOf, last} from 'ramda'
 // import isolate from '@cycle/isolate'
 
 import {Profiles} from 'components/remote'
@@ -91,7 +92,14 @@ export default sources => {
 
   const frame = SoloFrame({pageDOM, ...sources})
 
-  const route$ = frame.route$
+  const route$ = $.merge(
+    frame.route$,
+    // Route to previous route or dashboard if the user is confirmed
+    sources.userProfile$.filter(Boolean)
+      .withLatestFrom(sources.previousRoute$.filter(Boolean).startWith('/dash'))
+      .map(last)
+  )
+
   const auth$ = frame.auth$
   const DOM = frame.DOM
 
