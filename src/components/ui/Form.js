@@ -1,5 +1,8 @@
-import {Observable} from 'rx'
-const {just} = Observable
+import {Observable as $} from 'rx'
+const {just} = $
+import {
+  all, map, pathOr,
+} from 'ramda'
 
 import combineLatestObj from 'rx-combine-latest-obj'
 import isolate from '@cycle/isolate'
@@ -15,11 +18,6 @@ const reduceControlsToObject = controls =>
     field && (a[field] = control.value$) && a || a, {}
   )
 
-// const _controlSources = (field,sources) => ({...sources,
-//   value$: (sources.value$ || just({}))
-//     .tap(x => console.log('form value$',x))
-//     .pluck(field),
-// })
 const _controlSources = (field,sources) => ({...sources,
   value$: (sources.value$ ||
       sources.item$ && pluckStartValue(sources.item$, field) ||
@@ -38,11 +36,6 @@ const Form = sources => {
       field,
       control: isolate(Control,field)({...sources,
         value$: _controlSources(field, sources).value$,
-          // .merge(pluckStartValue(sources.item$, field)) ||
-          // pluckStartValue(sources.item$, field),
-        // value$: sources.value$ && sources.value$
-        //   .merge(pluckStartValue(sources.item$, field)) ||
-        //   pluckStartValue(sources.item$, field),
       }),
     }))
   ).shareReplay(1) // keeps it from being pwnd every time
@@ -52,6 +45,11 @@ const Form = sources => {
     combineLatestObj(reduceControlsToObject(controls))
   )
 
+  // valid$ gets their valid$
+  const valid$ = controls$
+    .map(map(pathOr(just(true), ['control', 'valid$'])))
+    .flatMapLatest(valids => $.combineLatest(...valids).map(all(Boolean)))
+
   const DOM = controls$.map(controls =>
     div({}, controls.map(({control}) => control.DOM))
   )
@@ -59,6 +57,7 @@ const Form = sources => {
   return {
     DOM,
     item$,
+    valid$,
   }
 }
 

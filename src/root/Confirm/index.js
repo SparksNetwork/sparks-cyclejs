@@ -1,5 +1,6 @@
+import {Observable as $} from 'rx'
 import combineLatestObj from 'rx-combine-latest-obj'
-import {objOf} from 'ramda'
+import {objOf, last} from 'ramda'
 // import isolate from '@cycle/isolate'
 
 import {Profiles} from 'components/remote'
@@ -40,14 +41,6 @@ const _fromAuthData$ = sources =>
 const _submitAction$ = ({DOM}) =>
   DOM.select('.submit').events('click').map(true)
 
-// const _render = ({valid, profileFormDOM, portraitDOM}) =>
-//   narrowCol(
-//     pageTitle('Is This You?'),
-//     portraitDOM,
-//     profileFormDOM,
-//     valid ? submitAndCancel('yup, that\'s me!', 'let me log in again') : null
-//   )
-
 export default sources => {
   const authProfile$ = _fromAuthData$(sources)
 
@@ -67,10 +60,7 @@ export default sources => {
       (p,portraitUrl) => ({...p, portraitUrl})
     )
 
-  const valid$ = profile$
-    .map(({fullName,email,phone}) =>
-      !!fullName && !!email && !!phone
-    )
+  const valid$ = profileForm.valid$
 
   const queue$ = profile$
     .sample(submit$)
@@ -102,7 +92,14 @@ export default sources => {
 
   const frame = SoloFrame({pageDOM, ...sources})
 
-  const route$ = frame.route$
+  const route$ = $.merge(
+    frame.route$,
+    // Route to previous route or dashboard if the user is confirmed
+    sources.userProfile$.filter(Boolean)
+      .withLatestFrom(sources.previousRoute$.filter(Boolean).startWith('/dash'))
+      .map(last)
+  )
+
   const auth$ = frame.auth$
   const DOM = frame.DOM
 
