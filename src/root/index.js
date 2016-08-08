@@ -87,6 +87,8 @@ const PathManager = Component => sources => {
 }
 
 const Root = sources => {
+  sources.auth$.subscribe(x => console.log(x))
+
   const nav = SwitchedComponent({...sources,
     Component$: sources.userProfile$
       .map(up => up ? isolate(SideNav) : isolate(BlankSidenav)),
@@ -139,6 +141,9 @@ const Root = sources => {
   }
 }
 
+/**
+* Inject isMobile$ stream into the component sources
+*/
 const IsMobile = Component => sources => {
   const isMobile$ = sources.screenInfo$
     .map(si => si.size <= 2)
@@ -150,10 +155,11 @@ const IsMobile = Component => sources => {
   })
 }
 
+// The returned component is Root wrapped in each of these helpers
 export default compose(
-  UserManager,
-  IsMobile,
-  AuthRedirectManager,
   AuthedResponseManager,
+  UserManager,
+  AuthRedirectManager,
+  IsMobile,
   PathManager,
 )(Root)

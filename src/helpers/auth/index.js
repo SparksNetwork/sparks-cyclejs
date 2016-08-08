@@ -2,9 +2,9 @@
 * Helper components for authentication
 */
 import {Observable as $} from 'rx'
-const {just, empty} = $
+const {just, empty, combineLatest, merge} = $
 import {
-  objOf, always, ifElse,
+  objOf, always, ifElse, compose, cond, nth, head, split, prop, join, T,
 } from 'ramda'
 import isolate from '@cycle/isolate'
 
@@ -12,6 +12,7 @@ import {
   Projects,
   Engagements,
 } from 'components/remote'
+import {requireSources} from 'util'
 
 import {SwitchedComponent} from 'components/SwitchedComponent'
 import Login from 'components/Login'
@@ -23,9 +24,9 @@ import Login from 'components/Login'
  * otherwise /dash
  * - redirectUnconfirmed$: Emits /confirm when the user is logged in but has
  * no profile
- *
  */
-export const AuthRedirectManager = Component => sources => {
+export const AuthRedirectManager = component => sources => {
+  console.log('redirect manager')
   const redirectLogin$ = sources.userProfile$
     .filter(Boolean)
     .map(profile => profile.isAdmin ? '/admin' : '/dash')
@@ -36,7 +37,7 @@ export const AuthRedirectManager = Component => sources => {
     .filter(([profile,auth]) => !profile && !!auth)
     .map(() => '/confirm')
 
-  return Component({
+  return component({
     ...sources,
     redirectLogin$,
     redirectUnconfirmed$,
@@ -44,10 +45,83 @@ export const AuthRedirectManager = Component => sources => {
 }
 
 /**
-* This can wrap a component and takes an auth$ source, giving the component the
-* following additional sources:
+ * Inject a component with a userProfileKey$ source
+ */
+export const UserProfileKey = component => sources => {
+  requireSources('UserProfileKey', sources, 'auth$')
+
+  return component({
+    ...sources,
+    userProfileKey$: sources.auth$
+      .flatMapLatest(auth =>
+        auth ? sources.firebase('Users', auth.uid) : just(null)
+      )
+      .shareReplay(1),
+  })
+}
+
+/**
+ * Convert firebase 2 users to firebase 3 users. This wraps a component and
+ * intercepts userProfileKey$. When that stream is emitting null and auth$ is
+ * emitting something then it will try to look up a firebase 2 user using the
+ * uid in the auth providerData object. If it finds an older user it will
+ * replace userProfileKey$ and put a message on the queue for the backend to
+ * migrate the user's data.
+ */
+export const ProfileMigration = component => sources => {
+  requireSources('ProfileMigration', sources, 'userProfileKey$', 'auth$',
+    'firebase')
+
+  const migrated$ = combineLatest(sources.auth$, sources.userProfileKey$)
+    .flatMapLatest(cond([
+      // If there's a key just return it
+      [nth(1), ([, profileKey]) => just({migrate: false, profileKey})],
+      // If no key and there is a user migrate it
+      [nth(0), ([auth]) => {
+        // Construct the old uid:
+        const provider = auth.providerData[0]
+        const name = compose(head, split('.'), prop('providerId'))(provider)
+        const uid = join(':', [name, provider.uid])
+
+        // Search, only migrate if found
+        return sources.firebase('Users', uid).map(profileKey => ({
+          migrate: Boolean(profileKey),
+          profileKey,
+          fromUid: uid,
+          toUid: auth.uid,
+        }))
+      }],
+
+      // Else: fall through with a null key
+      [T, () => just({migrate: false, profileKey: null})],
+    ]))
+    .shareReplay(1)
+
+  const userProfileKey$ = migrated$.map(prop('profileKey'))
+
+  const sinks = component({
+    ...sources,
+    userProfileKey$,
+  })
+
+  const queue$ = merge(
+    sinks.queue$,
+    migrated$.filter(prop('migrate')).map(({profileKey, fromUid, toUid}) => ({
+      domain: 'Users',
+      action: 'migrate',
+      payload: {profileKey, fromUid, toUid},
+    })),
+  )
+
+  return {
+    ...sinks,
+    queue$,
+  }
+}
+
+/**
+* inject a component with the following additional sources:
 *
-* - userProfileKey$<Stream<string>>
 * - userProfile$<Stream<Object>>
 * - userName$<Stream<string>>
 * - userPortraitUrl$<Stream<string>>
@@ -55,17 +129,10 @@ export const AuthRedirectManager = Component => sources => {
 *   - user.projectsOwned$<Stream<Array>>
 *   - user.engagements$<Stream<Array>>
 */
-export const UserManager = component => sources => {
-  const auth$ = sources.auth$
-    .shareReplay(1)
+const UserProfileFetcher = component => sources => {
+  requireSources('UserProfileFetcher', sources, 'userProfileKey$', 'firebase')
 
-  const userProfileKey$ = auth$
-    .flatMapLatest(auth =>
-      auth ? sources.firebase('Users', auth.uid) : just(null)
-    )
-    .shareReplay(1)
-
-  const userProfile$ = userProfileKey$
+  const userProfile$ = sources.userProfileKey$
     .distinctUntilChanged()
     .flatMapLatest(key => {
       return key ? sources.firebase('Profiles', key) : just(null)
@@ -81,17 +148,15 @@ export const UserManager = component => sources => {
     .shareReplay(1)
 
   const user = {
-    projectsOwned$: userProfileKey$
+    projectsOwned$: sources.userProfileKey$
       .flatMapLatest(Projects.query.byOwner(sources)),
-    engagements$: userProfileKey$
+    engagements$: sources.userProfileKey$
       .flatMapLatest(Engagements.query.byUser(sources)),
   }
 
   return component({
     ...sources,
-    auth$,
     userProfile$,
-    userProfileKey$,
     userName$,
     userPortraitUrl$,
     user,
@@ -99,11 +164,27 @@ export const UserManager = component => sources => {
 }
 
 /**
+ * Combine the injections for the user profiles and so forth
+ */
+export const UserManager = component => sources => {
+  console.log('user manage')
+  return compose(
+    UserProfileKey,
+    ProfileMigration,
+    UserProfileFetcher,
+  )(component)({
+    ...sources,
+    auth$: sources.auth$.shareReplay(1),
+  })
+}
+
+/**
  * Inject responses$ into the component sources and map component sinks queue$
  * with the authenticated users uid
  */
-export const AuthedResponseManager = Component => sources => {
-  const sinks = Component({
+export const AuthedResponseManager = component => sources => {
+  console.log('response manager')
+  const sinks = component({
     ...sources,
     responses$: sources.auth$
       .flatMapLatest(auth => auth ? sources.queue$(auth.uid) : empty())
