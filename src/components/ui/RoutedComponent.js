@@ -1,5 +1,9 @@
 import {SwitchedComponent} from 'components/SwitchedComponent'
 
+/**
+* Specialized version of SwitchComponent that takes a routes object and
+* switches between components based on the route.
+*/
 export const RoutedComponent = sources => {
   const comp$ = sources.routes$
     .map(routes => sources.router.define(routes))

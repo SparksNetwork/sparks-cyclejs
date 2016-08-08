@@ -9,6 +9,10 @@ const sinks = [
   'openGraph',
 ]
 
+/**
+* Takes a stream, Component$, that emits components and switches it's sinks so
+* they're always emitting from the latest component
+*/
 export const SwitchedComponent = sources => {
   const comp$ = sources.Component$
     .distinctUntilChanged()

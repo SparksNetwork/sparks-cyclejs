@@ -6,7 +6,7 @@ import defaultModules from 'cycle-snabbdom/lib/modules'
 import SupernovaModule from 'drivers/supernova'
 import {makeRouterDriver, supportsHistory} from 'cyclic-router'
 import {createHistory, createHashHistory} from 'history'
-import Firebase from 'firebase'
+import firebase from 'firebase'
 import {
   makeAuthDriver, makeFirebaseDriver, makeQueueDriver,
 } from '@sparksnetwork/cyclic-fire'
