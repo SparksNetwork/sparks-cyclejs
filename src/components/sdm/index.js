@@ -19,6 +19,7 @@ export {SelectControl} from './SelectControl'
 export {ToggleControl} from './ToggleControl'
 export {TextAreaControl} from './TextAreaControl'
 export {CheckboxControl} from './CheckboxControl'
+export {DateControl} from './DateControl'
 
 export * from './Dialog'
 

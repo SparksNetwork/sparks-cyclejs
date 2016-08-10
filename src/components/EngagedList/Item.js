@@ -1,7 +1,7 @@
 import {Observable as $} from 'rx'
 const {of, combineLatest} = $
 import {
-  compose, equals, filter, map, objOf, prop, reject, sum, whereEq,
+  compose, equals, filter, map, objOf, prop, reject, sum, whereEq, propEq,
 } from 'ramda'
 
 import moment from 'moment'
@@ -30,8 +30,13 @@ const volShifts = filter(whereEq({code: 'shifts', party: 'vol'}))
 const Fetch = component => sources => {
   const profileKey$ = sources.item$.map(prop('profileKey'))
   const {profile$} = ProfileFetcher({...sources, profileKey$})
-  const assignments$ =
-    AssignmentsFetcher({...sources, profileKey$}).assignments$
+
+  const assignments$ = sources.oppKey$.flatMapLatest(oppKey =>
+    AssignmentsFetcher({...sources, profileKey$})
+      .assignments$
+      .map(filter(propEq('oppKey', oppKey)))
+  )
+
   const commitments$ =
     sources.oppKey$.flatMapLatest(
       Commitments.query.byOpp(sources)

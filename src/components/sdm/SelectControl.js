@@ -46,6 +46,7 @@ const SelectControl = sources => {
         Select({
           isOpen, label, value, options,
           className: ['input', ...classNames].join(' '),
+          selected: value,
         }),
       ])
     )

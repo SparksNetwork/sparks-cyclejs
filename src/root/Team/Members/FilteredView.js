@@ -1,5 +1,5 @@
 import {Observable} from 'rx'
-const {of, merge} = Observable
+const {of} = Observable
 import {div} from 'helpers'
 
 import {combineLatestToDiv} from 'util'
@@ -14,7 +14,7 @@ import {
   ListItemNavigating,
 } from 'components/sdm'
 
-import {Detail} from './Detail'
+// import {Detail} from './Detail'
 
 const Item = sources => {
   const eng$ = sources.item$
@@ -55,14 +55,15 @@ const EmptyNotice = sources => ({
 })
 
 const FilteredView = sources => {
-  const detail = Detail(sources)
+  //const detail = Detail(sources)
   const list = AppList(sources)
   const mt = EmptyNotice({...sources, items$: sources.memberships$})
 
   return {
-    DOM: combineLatestToDiv(mt.DOM, list.DOM, detail.DOM),
-    route$: merge(list.route$, detail.route$.map(sources.router.createHref)),
-    queue$: detail.queue$,
+    DOM: combineLatestToDiv(mt.DOM, list.DOM), //, detail.DOM),
+    route$: list.route$,
+    //merge(list.route$, detail.route$.map(sources.router.createHref)),
+    //queue$: detail.queue$,
   }
 }
 
