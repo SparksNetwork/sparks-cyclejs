@@ -56,7 +56,6 @@ const ConfirmWithoutPayment = sources => {
       (click, key) => ({key})
     )
     .map(Engagements.action.confirmWithoutPay)
-    .tap(x => console.log('engagement payment action:', x))
 
   return {
     ...b,

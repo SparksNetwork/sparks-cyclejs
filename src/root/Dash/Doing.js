@@ -43,7 +43,7 @@ const _Fetch = sources => {
   const ownedProjects$ = sources.userProfileKey$
     .flatMapLatest(Projects.query.byOwner(sources))
 
-  const organizerProjects$ = lr(organizers$.tap(x => console.log('', x)),
+  const organizerProjects$ = lr(organizers$,
       os => os.length > 0,
       t$ => t$.map(
         map(o => Projects.query.one(sources)(o.projectKey)
@@ -174,7 +174,6 @@ const ConfirmationsNeededCard = sources => {
 
 const CombinedList = sources => ({
   DOM: sources.contents$
-    .tap(x => console.log('contents$', x))
     .map(contents => div('',contents)),
 })
 

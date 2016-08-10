@@ -82,14 +82,11 @@ const ShiftItem = sources => {
     disabledDOM: $.just(div('.disabled',['FULL'])),
   })
 
-  sources.engagement$.subscribe(x => console.log('engagement$',x))
-
   const value$ = li.value$
     .combineLatest(isDisabled$)
     .filter(([val,isDisabled]) => !isDisabled) // eslint-disable-line
 
   const queue$ = value$
-    .tap(x => console.log('new queue value', x))
     .withLatestFrom(
       sources.item$, assignment$, sources.engagement$,
       sources.engagementKey$, sources.engagement$.pluck('profileKey'),
@@ -127,7 +124,6 @@ const AssignedShiftItem = sources => {
   })
 
   const queue$ = li.value$
-    .tap(x => console.log('new queue value', x))
     .withLatestFrom(
       sources.item$,
       (val,{$key}) => Assignments.action.remove({key: $key})

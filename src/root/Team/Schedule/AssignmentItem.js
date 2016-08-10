@@ -33,7 +33,8 @@ export const AssignmentItem = sources => {
     _sources.profile$.map(p => p && p.fullName),
     engagement$,
     _sources.item$.pluck('$key'),
-    (fullName, engagement, $key) => fullName + (engagement.isConfirmed ? '' : ' (!)')
+    (fullName, engagement) =>
+      fullName + (engagement.isConfirmed ? '' : ' (!)')
   )
 
   const rem = _Remove(_sources)

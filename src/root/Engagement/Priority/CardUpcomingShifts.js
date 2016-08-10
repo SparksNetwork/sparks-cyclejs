@@ -2,7 +2,6 @@ import {Observable as $} from 'rx'
 import {hideable} from 'util'
 import {div, a} from 'cycle-snabbdom'
 import isolate from '@cycle/isolate'
-import {combineDOMsToDiv} from 'util'
 import {Printable} from 'components/Printable'
 
 import {

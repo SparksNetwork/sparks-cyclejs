@@ -2,7 +2,7 @@ import {Observable as $} from 'rx'
 const {just, merge} = $
 
 import isolate from '@cycle/isolate'
-import {propOr, pick, join, compose} from 'ramda'
+import {propOr, pick, join, compose, omit} from 'ramda'
 
 import {
   AuthRoute,
@@ -87,14 +87,13 @@ const PathManager = Component => sources => {
 }
 
 const Root = sources => {
-  sources.auth$.subscribe(x => console.log(x))
-
   const nav = SwitchedComponent({...sources,
     Component$: sources.userProfile$
       .map(up => up ? isolate(SideNav) : isolate(BlankSidenav)),
   })
 
-  const page = RoutedComponent({...sources,
+  const page = RoutedComponent({
+    ...omit(['path$'], sources),
     routes$: just(_routes),
     navDOM$: nav.DOM,
   })
@@ -118,6 +117,7 @@ const Root = sources => {
     nav.pluck('route$'),
     sources.redirectUnconfirmed$,
   )
+  .tap(x => console.log(x))
 
   // Refresh bugsnag on page change, send user uid
   const bugsnag = merge(

@@ -26,7 +26,6 @@ import Login from 'components/Login'
  * no profile
  */
 export const AuthRedirectManager = component => sources => {
-  console.log('redirect manager')
   const redirectLogin$ = sources.userProfile$
     .filter(Boolean)
     .map(profile => profile.isAdmin ? '/admin' : '/dash')
@@ -167,7 +166,6 @@ const UserProfileFetcher = component => sources => {
  * Combine the injections for the user profiles and so forth
  */
 export const UserManager = component => sources => {
-  console.log('user manage')
   return compose(
     UserProfileKey,
     ProfileMigration,
@@ -183,7 +181,6 @@ export const UserManager = component => sources => {
  * with the authenticated users uid
  */
 export const AuthedResponseManager = component => sources => {
-  console.log('response manager')
   const sinks = component({
     ...sources,
     responses$: sources.auth$

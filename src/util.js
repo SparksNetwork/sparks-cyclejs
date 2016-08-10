@@ -144,7 +144,6 @@ function pluckFlat(component, key) {
 
 export function nestedComponent(match$, sources) {
   const component = match$.map(({path, value}) => {
-    // console.log('nestedComponent path$',path)
     return value({...sources, router: sources.router.path(path)})
   }).shareReplay(1)
 
