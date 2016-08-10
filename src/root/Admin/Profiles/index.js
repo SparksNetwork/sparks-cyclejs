@@ -278,6 +278,8 @@ const ProfileView = sources => {
           fieldRow('Email', profile.email),
           fieldRow('Phone', profile.phone),
           fieldRow('Role', role(profile)),
+          fieldRow('Profile Key', profile.$key),
+          fieldRow('UID', profile.uid),
         ]),
       ]),
       listRow(orgListDOM),
