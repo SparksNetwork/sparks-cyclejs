@@ -132,7 +132,7 @@ export default _sources => {
           a({attrs: {
             href: `/project/${org.projectKey}`,
           }},
-          'Check out the project.',
+          'Check out the project.'
           ),
         ])),
       }))
@@ -166,7 +166,7 @@ export default _sources => {
 
   const route$ = $.merge(
     frame.route$,
-    redirectUnconfirmed$,
+    redirectUnconfirmed$
   )
 
   return {
@@ -174,7 +174,7 @@ export default _sources => {
     route$,
     auth$: $.merge(
       loginButtons.auth$,
-      frame.auth$,
+      frame.auth$
     ),
     queue$,
   }
