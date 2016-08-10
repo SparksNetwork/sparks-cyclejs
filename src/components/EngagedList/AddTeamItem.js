@@ -48,7 +48,9 @@ const AddTeamItem = sources => {
   ).switch()
 
   const route$ = queue$.map(() =>
-    sources.engagementKey$.map(key => '/ok/show/' + key)
+    sources.engagementKey$
+      .map(key => '/ok/show/' + key)
+      .map(sources.createHref)
   ).switch().shareReplay(1)
 
   return {...li, DOM, queue$, route$}

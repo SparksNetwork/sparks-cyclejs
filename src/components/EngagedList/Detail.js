@@ -20,6 +20,7 @@ import {
 import {Swipeable, Clickable} from 'components/behaviors'
 
 import ProfileInfo from './ProfileInfo'
+import OppChange from './OppChange'
 import EngagementInfo from './EngagementInfo'
 import TeamsInfo from './TeamsInfo'
 import ShiftsInfo from './ShiftsInfo'
@@ -98,6 +99,7 @@ const _Actions = (sources) => {
 
 const _Content = sources => {
   const profileInfo = ProfileInfo(sources)
+  const oppChange = OppChange(sources)
   const engagementInfo = EngagementInfo(sources)
   const teamsInfo = TeamsInfo(sources)
   const shiftsInfo = ShiftsInfo(sources)
@@ -105,6 +107,7 @@ const _Content = sources => {
 
   const components = [
     profileInfo,
+    oppChange,
     engagementInfo,
     teamsInfo,
     shiftsInfo,
@@ -171,9 +174,11 @@ const Detail = sources => {
   )
 
   const route$ = merge(
-    nextEngKey$.map(key => `/show/${key}`),
+    nextEngKey$.map(key => `/show/${key}`)
+      .map(sources.createHref),
+    backButton.click$.map(always(''))
+      .map(sources.createHref),
     c.route$,
-    backButton.click$.map(always('')),
   )
 
   const DOM = combineLatest(
