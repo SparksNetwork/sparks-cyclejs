@@ -55,7 +55,7 @@ export const ListItemWithMenu = sources => {
 
   const viewState = {
     itemDOM$: item$.pluck('DOM'),
-    menuDOM$: menu.DOM.do(x => console.warn('menuDOM$', x)),
+    menuDOM$: menu.DOM,
   }
 
   const DOM = combineLatestObj(viewState)
