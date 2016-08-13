@@ -3,7 +3,8 @@ const {just} = $
 import {div, button, i} from 'cycle-snabbdom'
 import {PROVIDERS, combineDOMsToDiv} from 'util'
 import Clickable from 'components/behaviors/Clickable'
-import styles from './styles.scss'
+import CenterFrame from 'components/CenterFrame'
+import './styles.scss'
 
 const LoginButton = sources => {
   const icon$ = sources.icon$
@@ -58,18 +59,19 @@ const LoginButtons = sources => {
 const Login = sources => {
   const buttons = LoginButtons(sources)
 
-  const DOM = buttons.DOM.map(buttonsDOM =>
-    div('.sparks-dialog', [
-      div(`.${styles['interstitial-login']}`, [
+  const frame = CenterFrame({
+    ...sources,
+    pageDOM: buttons.DOM.map(buttonsDOM =>
+      div([
         div('.logo', []),
         div('We need to know who you are'),
         buttonsDOM,
       ]),
-    ])
-  )
+    ),
+  })
 
   return {
-    DOM,
+    DOM: frame.DOM,
     auth$: buttons.auth$,
   }
 }

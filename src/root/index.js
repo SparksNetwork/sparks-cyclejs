@@ -22,6 +22,7 @@ import Project from './Project'
 import Team from './Team'
 import Opp from './Opp'
 import Apply from './Apply'
+import ApplyToOpp from './ApplyToOpp'
 import Engagement from './Engagement'
 import Organize from './Organize'
 
@@ -48,6 +49,7 @@ const _routes = {
   '/team/:key': AuthedKeyRoute(Team, 'teamKey$'),
   '/opp/:key': AuthedKeyRoute(Opp, 'oppKey$'),
   '/apply/:key': KeyRoute(Apply, 'projectKey$'),
+  '/applyTo/:key': AuthedKeyRoute(ApplyToOpp, 'oppKey$'),
   '/engaged/:key': AuthedKeyRoute(Engagement, 'engagementKey$'),
   '/organize/:key': AuthedKeyRoute(Organize, 'organizerKey$'),
   '/login': Login,
