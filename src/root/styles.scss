@@ -1,3 +1,5 @@
+@import url('https://i.icomoon.io/public/17558b8ea5/Sparks/style.css');
+
 @import '../../node_modules/bootstrap/scss/variables';
 $grid-gutter-width: 0;
 @import '../../node_modules/bootstrap/scss/mixins/breakpoints';
@@ -7,11 +9,9 @@ $grid-gutter-width: 0;
 @import '../../node_modules/bootstrap/scss/grid';
 @import '../../node_modules/bootstrap/scss/utilities-responsive';
 
-@import url("//fonts.googleapis.com/css?family=Montserrat+Alternates");
-
-@import url("//fonts.googleapis.com/css?family=Roboto");
-
-@import url("//fonts.googleapis.com/css?family=Amatic+SC");
+@import url("https://fonts.googleapis.com/css?family=Montserrat+Alternates");
+@import url("https://fonts.googleapis.com/css?family=Roboto");
+@import url("https://fonts.googleapis.com/css?family=Amatic+SC");
 
 * {
   font-family: 'Roboto';

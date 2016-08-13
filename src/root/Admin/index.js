@@ -6,7 +6,7 @@ import AppFrame from 'components/AppFrame'
 import Title from 'components/Title'
 import Header from 'components/Header'
 
-import {mergeSinks, mergeOrFlatMapLatest} from 'util'
+import {mergeSinks} from 'util'
 
 import ComingSoon from 'components/ComingSoon'
 
@@ -57,14 +57,8 @@ export default sources => {
 
   const children = [appFrame, page, title, nav, header]
 
-  const route$ = Observable.merge(
-    mergeOrFlatMapLatest('route$', ...children),
-    sources.redirectLogout$,
-  )
-
   return {
     ...mergeSinks(...children),
     DOM: appFrame.DOM,
-    route$,
   }
 }

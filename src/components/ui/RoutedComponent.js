@@ -21,6 +21,7 @@ export const RoutedComponent = sources => {
     .map(routes => sources.router.define(routes))
     .switch()
     .distinctUntilChanged(({path}) => path)
+    .filter(({path, value}) => path && value)
     .map(({path, value}) => {
       const c = value({...sources, router: sources.router.path(path)})
       return {

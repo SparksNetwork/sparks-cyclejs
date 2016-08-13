@@ -13,10 +13,6 @@ import {
   TabbedPage,
 } from 'components/ui'
 
-import {
-  LogoutRedirector,
-} from 'components/redirects'
-
 import Doing from './Doing'
 import Being from './Being'
 
@@ -50,11 +46,8 @@ export default sources => {
     pageDOM: page.DOM,
   })
 
-  const redirect = LogoutRedirector(sources)
-
   return {
     DOM: frame.DOM,
-    // ...mergeSinks(frame, page, nav, header, redirect),
-    ...mergeSinks(frame, page, header, redirect),
+    ...mergeSinks(frame, page, header),
   }
 }

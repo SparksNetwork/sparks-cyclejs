@@ -9,7 +9,7 @@ import {ResponsiveTitle} from 'components/Title'
 
 import {div, iconSrc} from 'helpers'
 
-import {nestedComponent, mergeOrFlatMapLatest} from 'util'
+import {nestedComponent} from 'util'
 
 import {ListItemNavigating} from 'components/sdm'
 
@@ -163,16 +163,8 @@ export default sources => {
 
   const children = [appFrame, page$, quickNav, title, nav, header]
 
-  const route$ = merge(
-    mergeOrFlatMapLatest('route$', ...children),
-    sources.redirectLogout$,
-  )
-
   return {
     DOM: appFrame.DOM,
     ...mergeSinks(...children),
-    // auth$: mergeOrFlatMapLatest('auth$', ...children),
-    // queue$: mergeOrFlatMapLatest('queue$', ...children),
-    route$,
   }
 }

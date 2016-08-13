@@ -1,5 +1,6 @@
 import {Observable as $} from 'rx'
 const {merge, of, combineLatest} = $
+import {objOf} from 'ramda'
 import {div} from 'cycle-snabbdom'
 import {
   Engagements,
@@ -18,17 +19,18 @@ const AddTeamItem = sources => {
   const teamKey$ = sources.item$.pluck('$key')
 
   const createMembership$ = combineLatest(
-    teamKey$, sources.engagementKey$, sources.oppKey$,
-    (teamKey, engagementKey, oppKey) => ({
-      teamKey,
-      engagementKey,
-      oppKey,
-      isApplied: true,
-      isAccepted: true,
-      answer: 'Added by organizer',
-    })
-  )
+      teamKey$, sources.engagementKey$, sources.oppKey$,
+      (teamKey, engagementKey, oppKey) => ({
+        teamKey,
+        engagementKey,
+        oppKey,
+        isApplied: true,
+        isAccepted: true,
+        answer: 'Added by organizer',
+      })
+    )
     .sample(li.click$)
+    .map(objOf('values'))
     .map(Memberships.action.create)
 
   const updateEngagement$ = sources.engagementKey$
@@ -46,7 +48,9 @@ const AddTeamItem = sources => {
   ).switch()
 
   const route$ = queue$.map(() =>
-    sources.engagementKey$.map(key => '/ok/show/' + key)
+    sources.engagementKey$
+      .map(key => '/ok/show/' + key)
+      .map(sources.createHref)
   ).switch().shareReplay(1)
 
   return {...li, DOM, queue$, route$}

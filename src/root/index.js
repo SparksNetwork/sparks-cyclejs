@@ -2,10 +2,11 @@ import {Observable as $} from 'rx'
 const {just, empty, merge} = $
 
 import isolate from '@cycle/isolate'
-import {propOr, pick, join} from 'ramda'
+import {propOr, pick, join, objOf} from 'ramda'
 
+import AuthRoute from './AuthRoute'
 import Login from './Login'
-// import Landing from './Landing'
+import Logout from './Logout'
 import Confirm from './Confirm'
 import Dash from './Dash'
 import Admin from './Admin'
@@ -17,7 +18,7 @@ import Engagement from './Engagement'
 import Organize from './Organize'
 
 import 'normalize-css'
-import '!style!css!snabbdom-material/lib/index.css'
+import 'snabbdom-material/lib/index.css'
 
 import {siteUrl} from 'util'
 
@@ -28,39 +29,40 @@ import {div} from 'helpers'
 
 import './styles.scss'
 
+/**
+* Returns a function that takes a key and returns a component representing a
+* page that requires the user to be logged in, passing the key to the component
+* as a stream with .just using the keyName.
+*/
+const KeyRoute = (component, keyName) => key => sources =>
+  isolate(component)({...sources, ...objOf(keyName, just(key))})
+
+const AuthedKeyRoute = (component, keyName) => key => AuthRoute(sources =>
+  isolate(component)({...sources, ...objOf(keyName, just(key))})
+)
+
 // Route definitions at this level
 const _routes = {
   // '/': Landing,
-  '/confirm': isolate(Confirm),
-  '/dash': isolate(Dash),
-  '/admin': isolate(Admin),
-  '/project/:key': key => sources =>
-    isolate(Project)({projectKey$: just(key), ...sources}),
-  '/team/:key': key => sources =>
-    isolate(Team)({teamKey$: just(key), ...sources}),
-  '/opp/:key': key => sources =>
-    isolate(Opp)({oppKey$: just(key), ...sources}),
-  '/apply/:key': key => sources =>
-    isolate(Apply)({projectKey$: just(key), ...sources}),
-  '/engaged/:key': key => sources =>
-    isolate(Engagement)({engagementKey$: just(key), ...sources}),
-  '/organize/:key': key => sources =>
-    isolate(Organize)({organizerKey$: just(key), ...sources}),
-  '/login/:provider': provider => sources => Login(provider)(sources),
+  '/confirm': AuthRoute(isolate(Confirm)),
+  '/dash': AuthRoute(isolate(Dash)),
+  '/admin': AuthRoute(isolate(Admin)),
+  '/project/:key': AuthedKeyRoute(Project, 'projectKey$'),
+  '/team/:key': AuthedKeyRoute(Team, 'teamKey$'),
+  '/opp/:key': AuthedKeyRoute(Opp, 'oppKey$'),
+  '/apply/:key': KeyRoute(Apply, 'projectKey$'),
+  '/engaged/:key': AuthedKeyRoute(Engagement, 'engagementKey$'),
+  '/organize/:key': AuthedKeyRoute(Organize, 'organizerKey$'),
+  '/login': Login,
+  '/login/:provider': provider => sources =>
+    Login({...sources, provider$: just(provider)}),
+  '/logout': Logout,
 }
 
 const AuthRedirectManager = sources => {
   const redirectLogin$ = sources.userProfile$
-    .filter(profile => !!profile)
+    .filter(Boolean)
     .map(profile => profile.isAdmin ? '/admin' : '/dash')
-
-  const redirectLogout$ = sources.auth$
-    .filter(profile => !profile)
-    .map(() => { window.location.href = '/' })
-    // we want to redirect to the new landing, because the old landing login
-    // does not work at all and is sloppy
-    // sorry jeremy please fix me to not suck so much
-    // I had no time left to do this with a driver :)
 
   // this is the only global redirect, always gets piped to the router
   const redirectUnconfirmed$ = sources.userProfile$
@@ -70,7 +72,7 @@ const AuthRedirectManager = sources => {
 
   return {
     redirectLogin$,
-    redirectLogout$,
+    //redirectLogout$,
     redirectUnconfirmed$,
   }
 }
@@ -154,7 +156,7 @@ const BlankSidenav = () => ({
   DOM: just(div('')),
 })
 
-export default _sources => {
+const Root = _sources => {
   const user = UserManager(_sources)
 
   const redirects = AuthRedirectManager({...user, ..._sources})
@@ -235,3 +237,16 @@ export default _sources => {
     openGraph,
   }
 }
+
+const IsMobile = Component => sources => {
+  const isMobile$ = sources.screenInfo$
+    .map(si => si.size <= 2)
+    .shareReplay(1)
+
+  return Component({
+    ...sources,
+    isMobile$,
+  })
+}
+
+export default IsMobile(Root)

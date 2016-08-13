@@ -1,5 +1,9 @@
 import path from 'path'
 import webpack from 'webpack'
+import ExtractTextPlugin from 'extract-text-webpack-plugin'
+import importUrl from 'postcss-import-url'
+
+const DEV = 'development'
 
 const DEV = 'development'
 
@@ -20,6 +24,7 @@ const basePlugins = [
   new webpack.EnvironmentPlugin([
     'BUILD_ENV',
   ]),
+  new ExtractTextPlugin('styles.css', {allChunks: true}),
 ]
 
 const plugins = {
@@ -58,7 +63,7 @@ module.exports = {
     path: path.join(__dirname, 'dist'),
     filename: 'bundle.js',
     sourceMapFilename: '[file].map',
-    // publicPath: '/',
+    publicPath: '/',
   },
   devtool: devtool,
   devServer: {
@@ -79,20 +84,18 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        loaders: [
-          'style',
-          'css?modules&importLoaders=1&localIdentName=[local]',
-        ],
+        loader: ExtractTextPlugin.extract(
+          'style-loader',
+          'css?modules&importLoaders=1&localIdentName=[local]!postcss',
+        ),
         include: __dirname,
       },
       {
         test: /\.scss/,
-        loaders: [
-          'style',
-          'css?modules&importLoaders=1&localIdentName=[local]',
-          'postcss',
-          'sass?outputStyle=expanded',
-        ],
+        loader: ExtractTextPlugin.extract(
+          'style-loader',
+          'css?modules&importLoaders=1&localIdentName=[local]!postcss!sass?outputStyle=expanded',
+        ),
       },
       {
         test: /\.(jpe?g|png|gif|svg)$/i,
@@ -118,4 +121,7 @@ module.exports = {
     },
   },
   plugins: plugins[ENV],
+  postcss: function postcss() {
+    return [importUrl]
+  },
 }

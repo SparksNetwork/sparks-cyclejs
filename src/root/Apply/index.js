@@ -67,7 +67,7 @@ const _Page = sources => RoutedComponent({...sources, routes$: of({
     isolate(Opp)({oppKey$: Observable.just(key), ..._sources}),
 })})
 
-export default sources => {
+const Apply = sources => {
   const _sources = {...sources, ..._Fetch(sources)}
 
   const desc = _Description(_sources)
@@ -103,3 +103,5 @@ export default sources => {
     openGraph,
   }
 }
+
+export default Apply
