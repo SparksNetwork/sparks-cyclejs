@@ -3,8 +3,12 @@ import webpack from 'webpack'
 import ExtractTextPlugin from 'extract-text-webpack-plugin'
 import importUrl from 'postcss-import-url'
 
+const DEV = 'development'
+
+const DEV = 'development'
+
 if (!process.env.BUILD_ENV) {
-  process.env.BUILD_ENV = 'development'
+  process.env.BUILD_ENV = DEV
 }
 const ENV = process.env.BUILD_ENV
 
@@ -51,6 +55,8 @@ const entry = {
   ],
 }
 
+const devtool = ENV === DEV ? 'source-map' : 'hidden-source-map'
+
 module.exports = {
   entry: entry[ENV],
   output: {
@@ -59,7 +65,7 @@ module.exports = {
     sourceMapFilename: '[file].map',
     publicPath: '/',
   },
-  devtool: 'source-map',
+  devtool: devtool,
   devServer: {
     inline: true,
     historyApiFallback: true,
