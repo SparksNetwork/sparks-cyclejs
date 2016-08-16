@@ -11,6 +11,7 @@ if (!process.env.BUILD_ENV) {
   process.env.BUILD_ENV = DEV
 }
 const ENV = process.env.BUILD_ENV
+const DEV = 'development'
 
 const srcPath = path.join(__dirname, '/src')
 const imagePath = path.join(__dirname, '/images')
