@@ -12,10 +12,8 @@ const _label = ({isApplied, isAccepted, isConfirmed}) =>
 
 const _Fetch = sources => {
   const opp$ = sources.item$.pluck('oppKey')
-    .tap(x => console.log('oppKey', x))
     .flatMapLatest(Opps.query.one(sources))
   const project$ = opp$.pluck('projectKey')
-    .tap(x => console.log('projectKey', x))
     .flatMapLatest(Projects.query.one(sources))
     .combineLatest(
       opp$.pluck('projectKey'),

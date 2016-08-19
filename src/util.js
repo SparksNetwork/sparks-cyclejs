@@ -10,7 +10,10 @@ import {div} from 'helpers'
 import isolate from '@cycle/isolate'
 
 export const PROVIDERS = {
-  google: {type: 'redirect', provider: 'google'},
+  google: {type: 'redirect', provider: 'google', scopes: [
+    'https://www.googleapis.com/auth/plus.login',
+    'email',
+  ]},
   facebook: {type: 'redirect', provider: 'facebook'},
   logout: {type: 'logout'},
 }
@@ -64,7 +67,7 @@ export const toQueryString = compose(
 *
 *   const rows$ = lr(data$, data => length > 0,
 *     l$ => l$.map(data => data.map(d => div(d))),
-*     $r => $r.map(() => div('no data')))
+*     r$ => r$.map(() => div('no data')))
 *
 */
 export const lr = (stream$, predicate, left, right) =>
@@ -72,6 +75,10 @@ export const lr = (stream$, predicate, left, right) =>
     left(stream$.filter(predicate)),
     right(stream$.filter(complement(predicate)))
   )
+
+export const switchStream = (stream$, predicate, left, right) =>
+  stream$.flatMapLatest(item =>
+    predicate(item) ? left(item) : right(item))
 
 export const startValue = (Control, value) => sources => {
   const value$ = new ReplaySubject(1)
@@ -106,9 +113,28 @@ export const requireSources = (cname, sources, ...sourceNames) =>
 export const trimTo = (val, len) =>
   val.length > len ? val.slice(0,len) + '...' : val
 
+/**
+ * Take a list of streams that emit a vdom each and return a single stream that
+ * emits a single vdom whose children are the emitted vdoms.
+ *
+ * @returns {Stream<VDOM>}
+ */
 export const combineLatestToDiv = (...domstreams) =>
   combineLatest(...domstreams, (...doms) => div({},doms))
 
+/**
+ * Take a list of components and return a single stream that emits a vdom where
+ * the class/sel is the first argument and the vdoms emitted by each component
+ * make up it's children.
+ *
+ * @example:
+ *
+ *   const card1 = Card(sources)
+ *   const card2 = Card(sources)
+ *   const DOM = combineDOMsToDiv('.cards', card1, card2)
+ *
+ * @returns {Stream<VDOM>}
+ */
 export const combineDOMsToDiv = (d, ...comps) =>
   combineLatest(...comps.map(c => c.DOM), (...doms) => div(d, doms))
 
@@ -141,7 +167,6 @@ function pluckFlat(component, key) {
 
 export function nestedComponent(match$, sources) {
   const component = match$.map(({path, value}) => {
-    // console.log('nestedComponent path$',path)
     return value({...sources, router: sources.router.path(path)})
   }).shareReplay(1)
 

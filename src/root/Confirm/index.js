@@ -1,14 +1,15 @@
 import {Observable as $} from 'rx'
+const {just} = $
 import combineLatestObj from 'rx-combine-latest-obj'
-import {objOf, last} from 'ramda'
+import {objOf, not, path, last} from 'ramda'
 // import isolate from '@cycle/isolate'
 
 import {Profiles} from 'components/remote'
 
 import SoloFrame from 'components/SoloFrame'
 import {ProfileForm} from 'components/ProfileForm'
+import {OkAndCancel} from 'components/sdm/Button'
 import {pageTitle} from 'helpers'
-import {submitAndCancel} from 'helpers/buttons'
 
 import {LargeAvatar} from 'components/sdm'
 
@@ -16,30 +17,15 @@ import {div} from 'helpers'
 
 // import {log} from 'util'
 
-const _fromGoogleData =
-  ({uid, google: {displayName, email, profileImageURL}}) => ({
-    uid,
-    fullName: displayName,
-    email,
-    portraitUrl: profileImageURL,
-  })
-
-const _fromFacebookData =
-  ({uid, facebook: {displayName, email, profileImageURL}}) => ({
-    uid,
-    fullName: displayName,
-    email,
-    portraitUrl: profileImageURL,
-  })
-
 const _fromAuthData$ = sources =>
-  sources.auth$.filter(a => !!a).map(({provider, ...auth}) =>
-    provider === 'google' && _fromGoogleData(auth) ||
-    provider === 'facebook' && _fromFacebookData(auth)
-  )
-
-const _submitAction$ = ({DOM}) =>
-  DOM.select('.submit').events('click').map(true)
+  sources.auth$.filter(Boolean)
+    .map(path(['providerData', '0']))
+    .map(user => ({
+      uid: user.uid,
+      fullName: user.displayName,
+      email: user.email,
+      portraitUrl: user.photoURL,
+    }))
 
 export default sources => {
   const authProfile$ = _fromAuthData$(sources)
@@ -52,8 +38,6 @@ export default sources => {
 
   const profileForm = ProfileForm({item$: authProfile$, ...sources})
 
-  const submit$ = _submitAction$(sources)
-
   const profile$ = profileForm.item$
     .combineLatest(
       portraitUrl$,
@@ -62,21 +46,28 @@ export default sources => {
 
   const valid$ = profileForm.valid$
 
+  const buttons = OkAndCancel({
+    ...sources,
+    okLabel$: just('yep, that\'s me!'),
+    cancelLabel$: just('let me login again'),
+    disabled$: valid$.map(not),
+  })
+
   const queue$ = profile$
-    .sample(submit$)
+    .sample(buttons.ok$)
     .map(objOf('values'))
     .map(Profiles.action.create)
 
   const viewState = {
-    valid$,
     auth$: sources.auth$,
     userProfile$: sources.userProfile$,
     portraitDOM$: pic.DOM,
     profileFormDOM$: profileForm.DOM,
+    buttonsDOM$: buttons.DOM,
   }
 
   const pageDOM = combineLatestObj(viewState)
-    .map(({valid, profileFormDOM, portraitDOM}) =>
+    .map(({profileFormDOM, portraitDOM, buttonsDOM}) =>
       div('.narrow', [
       // narrowCol(
         div('.row', [
@@ -84,10 +75,8 @@ export default sources => {
           div('.col-xs-12.col-sm-6.center',[portraitDOM]),
         ]),
         profileFormDOM,
-        valid ?
-          submitAndCancel('yup, that\'s me!', 'let me log in again') :
-          null,
-      ].filter(i => !!i))
+        buttonsDOM,
+      ].filter(Boolean))
     )
 
   const frame = SoloFrame({pageDOM, ...sources})
@@ -100,7 +89,10 @@ export default sources => {
       .map(last)
   )
 
-  const auth$ = frame.auth$
+  const auth$ = $.merge(
+    frame.auth$,
+    buttons.cancel$.map(() => ({type: 'logout'}))
+  )
   const DOM = frame.DOM
 
   return {DOM, route$, queue$, auth$}

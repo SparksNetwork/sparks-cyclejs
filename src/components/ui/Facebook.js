@@ -16,7 +16,6 @@ const _Facebook = (sources, dimensions, query) => {
     .map(prop('pathname'))
 
   const href$ = path$.map(path => absoluteUrl(path))
-    .tap(x => console.log('href$', x))
 
   const src = query.src
   const attrs = merge(defaultAttrs, dimensions)

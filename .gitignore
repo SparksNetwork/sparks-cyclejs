@@ -1,4 +1,5 @@
 *.local.*
+.env
 
 # Logs
 logs

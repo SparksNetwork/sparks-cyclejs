@@ -18,7 +18,6 @@ const MakePayment = sources => {
       (paymentNonce, key) => ({key, values: {paymentNonce}})
     )
     .map(Engagements.action.pay)
-    .tap(x => console.log('engagement payment action:', x))
 
   const isVisible$ = $.merge(
     $.just(true),

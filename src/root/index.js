@@ -1,10 +1,18 @@
 import {Observable as $} from 'rx'
-const {just, empty, merge} = $
+const {just, merge} = $
 
 import isolate from '@cycle/isolate'
-import {propOr, pick, join, objOf} from 'ramda'
+import {propOr, pick, join, compose, omit} from 'ramda'
 
-import AuthRoute from './AuthRoute'
+import {
+  AuthRoute,
+  AuthedKeyRoute,
+  KeyRoute,
+  AuthRedirectManager,
+  AuthedResponseManager,
+  UserManager,
+} from 'helpers/auth'
+
 import Login from './Login'
 import Logout from './Logout'
 import Confirm from './Confirm'
@@ -14,6 +22,7 @@ import Project from './Project'
 import Team from './Team'
 import Opp from './Opp'
 import Apply from './Apply'
+import ApplyToOpp from './ApplyToOpp'
 import Engagement from './Engagement'
 import Organize from './Organize'
 
@@ -23,23 +32,12 @@ import 'snabbdom-material/lib/index.css'
 import {siteUrl} from 'util'
 
 import {RoutedComponent} from 'components/ui'
+import {SwitchedComponent} from 'components/SwitchedComponent'
 
 import {log} from 'util'
 import {div} from 'helpers'
 
 import './styles.scss'
-
-/**
-* Returns a function that takes a key and returns a component representing a
-* page that requires the user to be logged in, passing the key to the component
-* as a stream with .just using the keyName.
-*/
-const KeyRoute = (component, keyName) => key => sources =>
-  isolate(component)({...sources, ...objOf(keyName, just(key))})
-
-const AuthedKeyRoute = (component, keyName) => key => AuthRoute(sources =>
-  isolate(component)({...sources, ...objOf(keyName, just(key))})
-)
 
 // Route definitions at this level
 const _routes = {
@@ -51,6 +49,7 @@ const _routes = {
   '/team/:key': AuthedKeyRoute(Team, 'teamKey$'),
   '/opp/:key': AuthedKeyRoute(Opp, 'oppKey$'),
   '/apply/:key': KeyRoute(Apply, 'projectKey$'),
+  '/applyTo/:key': AuthedKeyRoute(ApplyToOpp, 'oppKey$'),
   '/engaged/:key': AuthedKeyRoute(Engagement, 'engagementKey$'),
   '/organize/:key': AuthedKeyRoute(Organize, 'organizerKey$'),
   '/login': Login,
@@ -59,111 +58,17 @@ const _routes = {
   '/logout': Logout,
 }
 
-const AuthRedirectManager = sources => {
-  const redirectLogin$ = sources.userProfile$
-    .filter(Boolean)
-    .map(profile => profile.isAdmin ? '/admin' : '/dash')
-
-  // this is the only global redirect, always gets piped to the router
-  const redirectUnconfirmed$ = sources.userProfile$
-    .withLatestFrom(sources.auth$)
-    .filter(([profile,auth]) => !profile && !!auth)
-    .map(() => '/confirm')
-
-  return {
-    redirectLogin$,
-    //redirectLogout$,
-    redirectUnconfirmed$,
-  }
-}
-
-import {
-  Projects,
-  Engagements,
-} from 'components/remote'
-
-const UserManager = sources => {
-  const userProfileKey$ = sources.auth$
-    .flatMapLatest(auth =>
-      auth ? sources.firebase('Users', auth.uid) : just(null)
-    )
-    .shareReplay(1)
-
-  const userProfile$ = userProfileKey$
-    .distinctUntilChanged()
-    .flatMapLatest(key => {
-      return key ? sources.firebase('Profiles', key) : just(null)
-    })
-    .shareReplay(1)
-
-  const userName$ = userProfile$
-    .map(up => up && up.fullName || 'None')
-    .shareReplay(1)
-
-  const userPortraitUrl$ = userProfile$
-    .map(up => up && up.portraitUrl)
-    .shareReplay(1)
-
-  const user = {
-    projectsOwned$: userProfileKey$
-      .flatMapLatest(Projects.query.byOwner(sources)),
-    engagements$: userProfileKey$
-      .flatMapLatest(Engagements.query.byUser(sources)),
-  }
-
-  return {
-    userProfile$,
-    userProfileKey$,
-    userName$,
-    userPortraitUrl$,
-    user,
-  }
-}
-
-const AuthedResponseManager = sources => ({
-  responses$: sources.auth$
-    .flatMapLatest(auth => auth ? sources.queue$(auth.uid) : empty())
-    .pluck('val')
-    .share(),
-})
-
-const AuthedActionManager = sources => ({
-  queue$: sources.queue$
-    .withLatestFrom(sources.auth$)
-    .map(([action,auth]) => ({uid: auth && auth.uid, ...action})),
-})
-
 import {SideNav} from './SideNav'
-// import {ProfileSidenav} from 'components/profile'
-import {pluckLatest, pluckLatestOrNever} from 'util'
-
-const SwitchedComponent = sources => {
-  const comp$ = sources.Component$
-    .distinctUntilChanged()
-    .map(C => isolate(C)(sources))
-    .shareReplay(1)
-
-  return {
-    pluck: key => pluckLatestOrNever(key, comp$),
-    DOM: pluckLatest('DOM', comp$),
-    ...['auth$', 'queue$', 'route$'].reduce((a,k) =>
-      (a[k] = pluckLatestOrNever(k,comp$)) && a, {}
-    ),
-  }
-}
 
 const BlankSidenav = () => ({
   DOM: just(div('')),
 })
 
-const Root = _sources => {
-  const user = UserManager(_sources)
-
-  const redirects = AuthRedirectManager({...user, ..._sources})
-
-  const {responses$} = AuthedResponseManager(_sources)
-
-  const path$ = _sources.router.observable
+/**
+ * Injects path$ and previousRoute$ into component sources
+ */
+const PathManager = Component => sources => {
+  const path$ = sources.router.observable
     .pluck('pathname')
     .shareReplay(1)
 
@@ -176,22 +81,21 @@ const Root = _sources => {
   // confirm redirect doesnt work without this log line!!!  wtf??
   previousRoute$.subscribe(log('index.previousRoute$'))
 
-  const sources = {
-    ..._sources,
-    ...user,
-    ...redirects,
-    responses$,
+  return Component({
+    ...sources,
+    path$,
     previousRoute$,
-  }
+  })
+}
 
+const Root = sources => {
   const nav = SwitchedComponent({...sources,
     Component$: sources.userProfile$
-      .map(up => up ? SideNav : BlankSidenav),
+      .map(up => up ? isolate(SideNav) : isolate(BlankSidenav)),
   })
 
-  nav.route$.subscribe(x => console.log('navroute',x))
-
-  const page = RoutedComponent({...sources,
+  const page = RoutedComponent({
+    ...omit(['path$'], sources),
     routes$: just(_routes),
     navDOM$: nav.DOM,
   })
@@ -202,19 +106,20 @@ const Root = _sources => {
 
   const focus$ = page.focus$ || $.empty()
 
-  const {queue$} = AuthedActionManager({...sources, queue$: page.queue$})
+  const queue$ = page.queue$ || $.empty()
 
   const openGraph = merge(
     $.of({site_name: 'Sparks.Network'}),
-    path$.map(path => ({url: join('', [siteUrl(), path])})),
+    sources.path$.map(path => ({url: join('', [siteUrl(), path])})),
     page.openGraph,
   )
 
   const router = merge(
     page.route$,
     nav.pluck('route$'),
-    redirects.redirectUnconfirmed$,
+    sources.redirectUnconfirmed$,
   )
+  .tap(x => console.log(x))
 
   // Refresh bugsnag on page change, send user uid
   const bugsnag = merge(
@@ -238,6 +143,9 @@ const Root = _sources => {
   }
 }
 
+/**
+* Inject isMobile$ stream into the component sources
+*/
 const IsMobile = Component => sources => {
   const isMobile$ = sources.screenInfo$
     .map(si => si.size <= 2)
@@ -249,4 +157,11 @@ const IsMobile = Component => sources => {
   })
 }
 
-export default IsMobile(Root)
+// The returned component is Root wrapped in each of these helpers
+export default compose(
+  AuthedResponseManager,
+  UserManager,
+  AuthRedirectManager,
+  IsMobile,
+  PathManager,
+)(Root)

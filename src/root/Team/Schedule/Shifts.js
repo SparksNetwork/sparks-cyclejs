@@ -151,7 +151,6 @@ const _Item = sources => {
   )
 
   const edit$ = ed.click$.withLatestFrom(key$, (c,k) => k)
-    .tap(x => console.log('edit!',x))
 
   const content = ShiftContent(sources)
 
@@ -192,19 +191,11 @@ const _EditDialog = sources => {
       (key,shifts) => shifts.find(s => key === s.$key)
     )
     .map(({start, date, hours, ...s}) => ({...s,
-      // start: moment(date).add(start, 'hours'),
       start: moment(start).hours() + moment(start).minutes() / 60,
       hours,
       date,
     }))
-    .tap(x => console.log('shift',x))
     .shareReplay(1)
-  // Y U NO
-  // const shift$ = sources.edit$
-  //   .tap(k => console.log('edit',k))
-  //   .flatMapLatest(ShiftsRemote.query.one)
-  //   .tap(s => console.log('shift',s))
-  //   // .shareReplay(1)
 
   const form = ShiftForm({...sources, item$: shift$})
   const dialog = Dialog({...sources,
@@ -213,12 +204,9 @@ const _EditDialog = sources => {
     contentDOM$: form.DOM,
   })
 
-  form.item$.subscribe(x => console.log('item to submit', x))
-
   return {
     DOM: dialog.DOM,
     queue$: dialog.submit$.withLatestFrom(form.item$, (s,i) => i)
-    .tap(n => console.log('new item', n))
     .withLatestFrom(
       sources.date$,
       sources.edit$,

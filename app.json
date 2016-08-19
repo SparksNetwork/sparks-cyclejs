@@ -9,7 +9,13 @@
     "BUILD_ENV": {
       "required": true
     },
-    "BUILD_FIREBASE_HOST": {
+    "FIREBASE_API_KEY": {
+      "required": true
+    },
+    "FIREBASE_AUTH_DOMAIN": {
+      "required": true
+    },
+    "FIREBASE_DATABASE_URL": {
       "required": true
     },
     "NODE_MODULES_CACHE": {

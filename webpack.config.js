@@ -5,8 +5,6 @@ import importUrl from 'postcss-import-url'
 
 const DEV = 'development'
 
-const DEV = 'development'
-
 if (!process.env.BUILD_ENV) {
   process.env.BUILD_ENV = DEV
 }
@@ -18,13 +16,16 @@ const imagePath = path.join(__dirname, '/images')
 console.log(ENV)
 
 const basePlugins = [
-  new webpack.DefinePlugin({
-    __FIREBASE_HOST__: 'window.Sparks.FIREBASE_HOST',
-  }),
   new webpack.EnvironmentPlugin([
     'BUILD_ENV',
+    'FIREBASE_API_KEY',
+    'FIREBASE_AUTH_DOMAIN',
+    'FIREBASE_DATABASE_URL',
   ]),
-  new ExtractTextPlugin('styles.css', {allChunks: true}),
+  new ExtractTextPlugin('styles.css', {allChunks: true, disable: ENV === 'development'}),
+  new webpack.DefinePlugin({
+    Sparks: 'window.Sparks',
+  }),
 ]
 
 const plugins = {
@@ -57,6 +58,14 @@ const entry = {
 
 const devtool = ENV === DEV ? 'source-map' : 'hidden-source-map'
 
+function extractOrNot(fallback, loader) {
+  if (ENV === 'development') {
+    return [fallback, loader].join('!')
+  } else {
+    return ExtractTextPlugin.extract(fallback, loader)
+  }
+}
+
 module.exports = {
   entry: entry[ENV],
   output: {
@@ -84,7 +93,7 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        loader: ExtractTextPlugin.extract(
+        loader: extractOrNot(
           'style-loader',
           'css?modules&importLoaders=1&localIdentName=[local]!postcss',
         ),
@@ -92,7 +101,7 @@ module.exports = {
       },
       {
         test: /\.scss/,
-        loader: ExtractTextPlugin.extract(
+        loader: extractOrNot(
           'style-loader',
           'css?modules&importLoaders=1&localIdentName=[local]!postcss!sass?outputStyle=expanded',
         ),

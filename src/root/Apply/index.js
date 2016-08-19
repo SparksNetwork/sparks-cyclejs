@@ -25,7 +25,7 @@ import {
 // import {log} from 'util'
 import {combineLatestToDiv, mergeSinks} from 'util'
 
-const _Fetch = sources => {
+const Fetch = component => sources => {
   const project$ = sources.projectKey$
     .flatMapLatest(Projects.query.one(sources))
     .shareReplay(1)
@@ -39,11 +39,12 @@ const _Fetch = sources => {
     .flatMapLatest(ProjectImages.query.one(sources))
     .shareReplay(1)
 
-  return {
+  return component({
+    ...sources,
     project$,
     projectImage$,
     opps$,
-  }
+  })
 }
 
 const _Title = sources => ResponsiveTitle({...sources,
@@ -68,18 +69,16 @@ const _Page = sources => RoutedComponent({...sources, routes$: of({
 })})
 
 const Apply = sources => {
-  const _sources = {...sources, ..._Fetch(sources)}
-
-  const desc = _Description(_sources)
-  const page = _Page(_sources)
+  const desc = _Description(sources)
+  const page = _Page(sources)
 
   const pageDOM = combineLatestToDiv(desc.DOM, page.DOM)
     .shareReplay(1)
     .tap(sources.prerender.ready)
 
   const title = _Title({
-    ..._sources,
-    projectImage$: pageDOM.delay(100).flatMap(() => _sources.projectImage$),
+    ...sources,
+    projectImage$: pageDOM.delay(100).flatMap(() => sources.projectImage$),
   })
 
   const frame = SoloFrame({...sources,
@@ -88,11 +87,11 @@ const Apply = sources => {
   })
 
   const openGraph = merge(
-    _sources.project$.map(project => ({
+    sources.project$.map(project => ({
       title: project.name,
       description: project.description,
     })),
-    _sources.project$.filter(prop('facebookImageUrl'))
+    sources.project$.filter(prop('facebookImageUrl'))
       .map(prop('facebookImageUrl'))
       .map(objOf('image'))
   )
@@ -104,4 +103,4 @@ const Apply = sources => {
   }
 }
 
-export default Apply
+export default Fetch(Apply)
