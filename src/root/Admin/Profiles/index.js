@@ -1,4 +1,5 @@
 import {Observable as $} from 'rx'
+const {just, merge} = $
 import isolate from '@cycle/isolate'
 import {mergeSinks} from 'util'
 import {
@@ -14,9 +15,13 @@ import {iconSrc} from 'helpers'
 
 import {
   List,
-  ListItemClickable,
+  ListItem,
   InputControl,
 } from 'components/sdm'
+
+import {
+  Clickable,
+} from 'components/behaviors'
 
 import {
   ProfilesFetcher,
@@ -55,7 +60,7 @@ const ProfileListItem = sources => {
       iconSrc(profile.portraitUrl),
     ]))
 
-  const li = isolate(ListItemClickable)({
+  const li = Clickable(ListItem)({
     ...sources,
     title$: profile$.pluck('fullName'),
     subtitle$: profile$.pluck('email'),
@@ -64,6 +69,7 @@ const ProfileListItem = sources => {
 
   return {
     ...li,
+    click$: profile$.sample(li.click$),
   }
 }
 
@@ -77,19 +83,26 @@ const ProfileList = sources => ({
 
 const SearchResults = sources => {
   const profiles$ = sources.profiles$
+  const list = ProfileList(sources)
 
   const oneProfile$ = profiles$
-    .map(propEq('length', 1))
-    .distinctUntilChanged()
-    .shareReplay(1)
+    .filter(propEq('length', 1))
+    .map(head)
 
-  const control$ = oneProfile$.map(oneProfile =>
-    oneProfile ?
-      ProfileView({
-        ...sources,
-        profile$: profiles$.map(head),
-      }) :
-      ProfileList(sources))
+  const selectedProfile$ = merge(
+    oneProfile$,
+    list.pluck('click$'),
+    sources.key$.map(always(null)),
+  )
+  .startWith(null)
+  .distinctUntilChanged()
+  .shareReplay(1)
+
+  const control$ = selectedProfile$.map(profile =>
+      profile ?
+        ProfileView({...sources, profile$: just(profile)}) :
+        list
+    )
     .shareReplay(1)
 
   return {

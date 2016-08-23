@@ -72,38 +72,19 @@ export const List = sources => {
       just(div('',[]))
     ).switch()
 
-  const route$ = controls$.flatMapLatest(children =>
-    mergeOrFlatMapLatest('route$', ...children)
-  )
-
-  const queue$ = controls$.flatMapLatest(children =>
-    mergeOrFlatMapLatest('queue$', ...children)
-  )
-
-  const edit$ = controls$.flatMapLatest(children =>
-    mergeOrFlatMapLatest('edit$', ...children)
-  )
-
-  const lastIndex$ = controls$.flatMapLatest(children =>
-    mergeOrFlatMapLatest('lastIndex$', ...children)
-  )
-
-  const assignment$ = controls$.flatMapLatest(c =>
-    mergeOrFlatMapLatest('assignment$', ...c)
-  )
-
-  const date$ = controls$.flatMapLatest(c =>
-    mergeOrFlatMapLatest('date$', ...c)
+  const pluck = key => controls$.flatMapLatest(children =>
+    mergeOrFlatMapLatest(key, ...children)
   )
 
   return {
     DOM,
-    queue$,
-    route$,
-    edit$,
-    lastIndex$,
-    assignment$,
-    date$,
+    queue$: pluck('queue$'),
+    route$: pluck('route$'),
+    edit$: pluck('edit$'),
+    lastIndex$: pluck('lastIndex$'),
+    assignment$: pluck('assignment$'),
+    date$: pluck('date$'),
+    pluck,
   }
 }
 
