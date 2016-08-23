@@ -32,7 +32,7 @@ const SearchBox = sources => {
   })
 
   const vtree$ = input.DOM.map(i =>
-    div('.list-filter', [i]))
+    div([div('.list-filter', [i])]))
 
   return {
     ...input,
@@ -43,7 +43,7 @@ const SearchBox = sources => {
 }
 
 const ListWithFilter = sources => {
-  const searchBox = SearchBox(sources)
+  const searchBox = isolate(SearchBox)(sources)
   const term$ = searchBox.term$
     .map(ifElse(Boolean, toLower, always('')))
     .distinctUntilChanged()
@@ -81,11 +81,8 @@ const ListWithFilter = sources => {
   const selected$ = merge(
     oneRow$,
     list.pluck('click$'),
-    searchBox.key$.map(always(null))
+    //searchBox.key$.map(always(null))
   )
-  .startWith(null)
-  .distinctUntilChanged()
-  .shareReplay(1)
 
   return {
     ...mergeSinks(searchBox, list),

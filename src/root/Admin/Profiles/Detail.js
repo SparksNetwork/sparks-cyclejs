@@ -1,26 +1,28 @@
 import {Observable as $} from 'rx'
-const {just} = $
+const {just, of, combineLatest} = $
 
 import {
-  path, ifElse, prop, always, compose, join, applySpec, pathOr, propOr, cond, T,
+  path, ifElse, prop, always, compose, join, applySpec, pathOr, propOr, cond,
+  T, lensPath, set, apply,
 } from 'ramda'
 
 import combineLatestObj from 'rx-combine-latest-obj'
 import {div, img, span, a} from 'cycle-snabbdom'
 
-import {formatTime, mergeSinks} from 'util'
+import {formatTime, mergeSinks, requireSources} from 'util'
 
 import {
   List,
   ListWithHeader,
   ListItemLoadingHeader,
   ListItem,
+  ListItemHeader,
   LargeCard,
-  TitledCard,
+  Icon,
 } from 'components/sdm'
 
 import {
-  Collapsible, Navigatable,
+  Clickable, Collapsible, Navigatable,
 } from 'components/behaviors'
 
 import {
@@ -32,7 +34,11 @@ import {
   AssignmentsFetcher,
   EngagementsFetcher,
   OrganizersFetcher,
+  ProfileFetcher,
 } from './fetcher'
+
+const superLens = lensPath(['data', 'supernova'])
+const keyLens = lensPath(['key'])
 
 const role = cond([
   [prop('isAdmin'), always('Administrator')],
@@ -166,11 +172,24 @@ const ArrivalListItem = sources => {
   })
 }
 
-const ProfileView = sources => {
+const Detail = ProfileFetcher(sources => {
+  requireSources('ProfileView', sources, 'profile$')
+
   const profile$ = sources.profile$
   const organizers$ = OrganizersFetcher(sources)
   const engagements$ = EngagementsFetcher(sources)
   const arrivals$ = ArrivalsFetcher(sources)
+
+  const backButton = Clickable(Icon)({
+    ...sources,
+    iconName$: of('arrow_back'),
+  })
+
+  const header = ListItemHeader({
+    ...sources,
+    title$: profile$.map(prop('fullName')),
+    leftDOM$: backButton.DOM,
+  })
 
   const orgHeader = ListItemLoadingHeader({
     ...sources,
@@ -236,7 +255,7 @@ const ProfileView = sources => {
     arrListDOM$: arrList.DOM,
     profile$,
   })
-    .map(({orgListDOM, engListDOM, arrListDOM, profile}) => [
+    .map(({orgListDOM, engListDOM, arrListDOM, profile}) => div([
       div('.row', [
         div('.col-xs-4.profile-portrait.big', {
           style: {position: 'relative'},
@@ -255,20 +274,34 @@ const ProfileView = sources => {
       listRow(orgListDOM),
       listRow(engListDOM),
       listRow(arrListDOM),
-    ])
-  .shareReplay(1)
+    ]))
 
-  const card = TitledCard({
+  const card = LargeCard({
     ...sources,
-    content$,
-    title$: profile$.pluck('fullName'),
-    cardComponent: LargeCard,
+    content$: combineLatest(header.DOM, content$),
   })
 
-  return {
-    DOM: card.DOM,
-    ...mergeSinks(...children),
-  }
-}
+  const DOM = combineLatest(
+    profile$.map(prop('$key')),
+    card.DOM
+      .map(set(superLens, {
+        in: {className: 'slide-from-right'},
+        out: {className: 'fade-out', duration: 500},
+      })),
+  )
+  .map(apply(set(keyLens)))
 
-export {ProfileView}
+  const sinks = mergeSinks(...children)
+
+  const route$ = sinks.route$.merge(
+    backButton.click$.map(always(''))
+      .map(sources.createHref))
+
+  return {
+    DOM,
+    ...sinks,
+    route$,
+  }
+})
+
+export {Detail}
