@@ -1,5 +1,5 @@
 import {Observable as $} from 'rx'
-const {of, merge} = $
+const {of} = $
 import {div} from 'cycle-snabbdom'
 import {mergeSinks} from 'util'
 import {RoutedComponent} from 'components/ui'
@@ -36,7 +36,6 @@ const ViewAndDetail = sources => {
   return {
     ...mergeSinks(view, detail),
     DOM,
-    // route$: merge(view.route$, detail.route$.map(sources.createHref)),
   }
 }
 

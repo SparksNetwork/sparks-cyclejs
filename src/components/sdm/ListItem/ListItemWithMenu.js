@@ -22,7 +22,8 @@ import {Menu} from 'components/sdm'
  * - leftDOM$
  * - rightDOM$
  * - isVisible$
- * - disable$ [^false|] : determines whether the drop down list item is disabled (`^true|`) or not
+ * - disable$ [^false|] : determines whether the drop down list item is
+ *   disabled (`^true|`) or not
  * @returns {{DOM: Observable<VDOM>}}
  * @constructor
  */
@@ -40,7 +41,6 @@ export const ListItemWithMenu = sources => {
   const isOpen$ = sources.disable$
     .flatMapLatest(disable => (disable ?
           $.empty() :
-          // item$.pluck('click$') // For some reasons, that does not work, but ListItemClickable(sources).click$ does...
           ListItemClickable(sources).click$
       ).map(true).startWith(false)
     )
