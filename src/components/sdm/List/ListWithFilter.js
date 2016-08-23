@@ -12,7 +12,7 @@ import {
 import {mergeSinks} from 'util'
 
 const matchesTerm = (term) =>
-  compose(any(text => text.includes(term)), prop('search'))
+  compose(any(text => text.includes(term)), prop('filter'))
 
 const prepareText = compose(
   split(' '),
@@ -22,9 +22,9 @@ const prepareText = compose(
 )
 
 const SearchBox = sources => {
-  const focus$ = sources.DOM.select('.profiles-search').observable
+  const focus$ = sources.DOM.select('.list-filter').observable
     .filter(complement(isEmpty))
-    .map({selector: '.profiles-search input'})
+    .map({selector: '.list-filter input'})
 
   const input = isolate(InputControl)({
     label$: $.of('Search'),
@@ -32,7 +32,7 @@ const SearchBox = sources => {
   })
 
   const vtree$ = input.DOM.map(i =>
-    div('.profiles-search', [i]))
+    div('.list-filter', [i]))
 
   return {
     ...input,
@@ -53,7 +53,7 @@ const ListWithFilter = sources => {
 
   const preparedRows$ = combineLatest(sources.rows$, searchFields$)
     .map(([rows, fields]) =>
-      rows.map(row => ({...row, search: prepareText(fields, row)}))
+      rows.map(row => ({...row, filter: prepareText(fields, row)}))
     )
     .startWith([])
 
