@@ -4,17 +4,23 @@ import {div} from 'helpers'
 import {combineLatestToDiv} from 'util'
 
 import {
-  List,
+  ListWithFilter,
 } from 'components/sdm'
 
 import {ViewWithDetail} from 'components/ui'
 
 import Detail from './Detail'
 import Item from './Item'
+import {ProfilesFetcher} from './fetch'
 
-const AppList = sources => List({...sources,
+const AppList = sources => ListWithFilter({...sources,
   Control$: of(Item),
-  rows$: sources.engagements$,
+  rows$: sources.profiles$,
+  searchFields$: of([
+    ['profile', 'fullName'],
+    ['profile', 'email'],
+    ['profile', 'phone'],
+  ]),
 })
 
 const EmptyNotice = sources => ({
@@ -25,7 +31,7 @@ const EmptyNotice = sources => ({
 
 const View = sources => {
   const mt = EmptyNotice({...sources, items$: sources.engagements$})
-  const list = AppList(sources)
+  const list = ProfilesFetcher(AppList)(sources)
 
   const DOM = combineLatestToDiv(mt.DOM, list.DOM)
 

@@ -6,19 +6,23 @@ import {InputControl} from 'components/sdm'
 import isolate from '@cycle/isolate'
 import {div} from 'cycle-snabbdom'
 import {
-  compose, any, prop, split, toLower, join, props, complement, isEmpty, ifElse,
-  take, useWith, filter, allPass, always, map, propEq, head,
+  allPass, always, any, complement, compose, filter, flatten, flip, head,
+  ifElse, isEmpty, join, map, of, path, prop, propEq, split, take, toLower,
+  useWith,
 } from 'ramda'
 import {mergeSinks} from 'util'
 
 const matchesTerm = (term) =>
   compose(any(text => text.includes(term)), prop('filter'))
 
+const extractProps = (props, obj) =>
+  map(compose(flip(path)(obj), flatten, of))(props)
+
 const prepareText = compose(
   split(' '),
   toLower,
   join(' '),
-  props
+  extractProps,
 )
 
 const SearchBox = sources => {
