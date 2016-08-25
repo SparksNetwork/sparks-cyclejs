@@ -2,40 +2,37 @@ import {Observable as $} from 'rx'
 const {just, of, combineLatest} = $
 
 import {
-  path, ifElse, prop, always, compose, join, applySpec, pathOr, propOr, cond,
+  prop, always, cond,
   T, lensPath, set, apply,
 } from 'ramda'
 
 import combineLatestObj from 'rx-combine-latest-obj'
-import {div, img, span, a} from 'cycle-snabbdom'
+import {div, img} from 'cycle-snabbdom'
 
-import {formatTime, mergeSinks, requireSources} from 'util'
+import {mergeSinks, requireSources} from 'util'
 
 import {
-  List,
   ListWithHeader,
   ListItemLoadingHeader,
-  ListItem,
   ListItemHeader,
   LargeCard,
   Icon,
 } from 'components/sdm'
 
-import {
-  Clickable, Collapsible, Navigatable,
-} from 'components/behaviors'
-
-import {
-  Loader,
-} from 'components/ui'
+import {ViewWithDetail} from 'components/ui'
+import {EngagementView} from 'components/EngagedList/EngagementView'
+import {Clickable} from 'components/behaviors'
 
 import {
   ArrivalsFetcher,
-  AssignmentsFetcher,
   EngagementsFetcher,
   OrganizersFetcher,
   ProfileFetcher,
 } from './fetcher'
+
+import {ArrivalListItem} from './ArrivalListItem'
+import {EngagementListItem} from './EngagementListItem'
+import {OrganizerListItem} from './OrganizerListItem'
 
 const superLens = lensPath(['data', 'supernova'])
 const keyLens = lensPath(['key'])
@@ -46,134 +43,8 @@ const role = cond([
   [T, always('Volunteer')],
 ])
 
-const engStatus = cond([
-  [prop('declined'), always('Declined')],
-  [prop('isPaid'), always('Paid and confirmed')],
-  [prop('isConfirmed'), always('Confirmed')],
-  [prop('isAccepted'), always('Accepted')],
-  [prop('isApplied'), always('Applied')],
-  [T, always('Unknown')],
-])
-
-const OrganizerListItem = sources => {
-  return Navigatable(ListItem)({
-    ...sources,
-    title$: sources.item$
-      .map(path(['project', 'name'])),
-    subtitle$: sources.item$
-      .map(ifElse(prop('isAccepted'), always('Accepted'), always('Invited'))),
-    path$: sources.item$
-      .map(compose(join(''), applySpec([
-        always('/project/'),
-        prop('projectKey'),
-      ]))),
-  })
-}
-
-const InnerEngagementListItem = sources => {
-  const assignmentsDOM$ = sources.assignments$
-    .map(assignments =>
-      just(div('.title', `${assignments.length} Assignments`)))
-    .startWith(Loader(sources).DOM)
-    .switch()
-
-  const DOM = $.combineLatest(
-    sources.item$,
-    assignmentsDOM$
-  ).map(([eng, assignmentsDOM]) =>
-    div('.list-item', [
-      div('.xcol-sm-1', [
-        span('.icon-plus'),
-      ]),
-      div('.content.xcol-sm-3', [
-        div('.title', pathOr('err', ['project', 'name'], eng)),
-      ]),
-      div('.content.xcol-sm-3', [
-        div('.title', pathOr('err', ['opp', 'name'], eng)),
-        div('.subtitle', engStatus(eng)),
-      ]),
-      div('.content.xcol-sm-3', [assignmentsDOM]),
-      div('.content.xcol-sm-3', [
-        a({attrs: {href: `/engaged/${eng.$key}`}}, 'View engagement page'),
-      ]),
-    ])
-  )
-
-  return {DOM}
-}
-
-const TeamListItem = sources => {
-  const li = sources => {
-    const ass$ = sources.item$
-
-    const DOM = ass$.map(ass =>
-      div('.list-item', [
-        div('.content-xcol-sm-4', [
-          div('.title', pathOr('err', ['team', 'name'], ass)),
-          div('.subtitle', 'Team'),
-        ]),
-        div('.content-xcol-sm-4', [
-          div('.title', propOr('no time', 'startTime', ass)),
-          div('.subtitle', 'Start Time'),
-        ]),
-        div('.content-xcol-sm-4', [
-          div('.title', propOr('no time', 'endTime', ass)),
-          div('.subtitle', 'End Time'),
-        ]),
-      ])
-    )
-
-    return {DOM}
-  }
-
-  return Navigatable(li)({
-    ...sources,
-    path$: sources.item$
-      .map(compose(join(''), applySpec([
-        always('/team/'),
-        prop('teamKey'),
-      ]))),
-  })
-}
-
-const EngagementListItem = sources => {
-  const assignments$ = AssignmentsFetcher({
-    ...sources,
-    engagement$: sources.item$,
-  })
-
-  const teamsList = List({
-    ...sources,
-    Control$: just(TeamListItem),
-    rows$: assignments$.startWith([]),
-    emptyDOM: just(div('No assignments')),
-  })
-
-  const engagementListItem = Collapsible(InnerEngagementListItem)({
-    ...sources,
-    assignments$,
-    contentDOM$: teamsList.DOM,
-  })
-
-  return {
-    ...mergeSinks(teamsList, engagementListItem),
-    DOM: engagementListItem.DOM,
-  }
-}
-
-const ArrivalListItem = sources => {
-  const arr$ = sources.item$
-
-  return ListItem({
-    ...sources,
-    title$: arr$.map(pathOr('err', ['project', 'name'])),
-    subtitle$: arr$.map(arr =>
-      `At ${formatTime(arr.arrivedAt)}`),
-  })
-}
-
-const Detail = ProfileFetcher(sources => {
-  requireSources('ProfileView', sources, 'profile$')
+const Profile = ProfileFetcher(sources => {
+  requireSources('Profile', sources, 'profile$')
 
   const profile$ = sources.profile$
   const organizers$ = OrganizersFetcher(sources)
@@ -304,4 +175,12 @@ const Detail = ProfileFetcher(sources => {
   }
 })
 
-export {Detail}
+const ProfileView = sources => {
+  return ViewWithDetail({
+    ...sources,
+    viewControl: Profile,
+    detailControl: EngagementView,
+  }, {cols: [2, 10]})
+}
+
+export {ProfileView}

@@ -1,7 +1,6 @@
 import {Observable as $} from 'rx'
 const {of} = $
-import {div} from 'helpers'
-import {combineLatestToDiv} from 'util'
+import {requireSources} from 'util'
 
 import {
   ListWithFilter,
@@ -9,7 +8,7 @@ import {
 
 import {ViewWithDetail} from 'components/ui'
 
-import Detail from './Detail'
+import {EngagementView} from './EngagementView'
 import Item from './Item'
 import {ProfilesFetcher} from './fetch'
 
@@ -23,29 +22,17 @@ const AppList = sources => ListWithFilter({...sources,
   ]),
 })
 
-const EmptyNotice = sources => ({
-  DOM: sources.items$.map(i =>
-    i.length > 0 ? null : div({},['Empty notice'])
-  ),
-})
-
 const View = sources => {
-  const mt = EmptyNotice({...sources, items$: sources.engagements$})
-  const list = ProfilesFetcher(AppList)(sources)
-
-  const DOM = combineLatestToDiv(mt.DOM, list.DOM)
-
-  return {
-    DOM,
-    route$: list.route$,
-  }
+  return ProfilesFetcher(AppList)(sources)
 }
 
 const EngagedList = sources => {
+  requireSources('EngagedList', sources, 'engagements$')
+
   return ViewWithDetail({
     ...sources,
     viewControl: View,
-    detailControl: Detail,
+    detailControl: EngagementView,
   })
 }
 

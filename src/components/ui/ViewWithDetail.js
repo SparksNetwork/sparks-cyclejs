@@ -17,9 +17,10 @@ const ViewOnly = sources => {
   }
 }
 
-const ViewAndDetail = sources => {
+const ViewAndDetail = (sources, options) => {
   const view = sources.viewControl(sources)
   const detail = sources.detailControl(sources)
+  const [viewCol, detailCol] = options.cols || [6, 6]
 
   const DOM = $.combineLatest(
     view.DOM,
@@ -27,8 +28,8 @@ const ViewAndDetail = sources => {
   )
   .map(([view, detail]) =>
     div('.row', [
-      div('.col-md-6.hidden-sm-down', [view]),
-      div('.col-md-6.col-xs-12', [detail]),
+      div(`.col-md-${viewCol}.hidden-sm-down`, [view]),
+      div(`.col-md-${detailCol}.col-xs-12`, [detail]),
     ])
   )
   .shareReplay(1)
@@ -39,16 +40,16 @@ const ViewAndDetail = sources => {
   }
 }
 
-const ViewWithDetail = sources => {
+const ViewWithDetail = (sources, options = {}) => {
   const createHref = sources.router.createHref
 
   return RoutedComponent({
     ...sources,
     createHref,
     routes$: of({
-      '/': ViewOnly,
+      '/': sources => ViewOnly(sources, options),
       '/show/:key': key => sources =>
-        ViewAndDetail({...sources, key$: of(key)}),
+        ViewAndDetail({...sources, key$: of(key)}, options),
     }),
   })
 }

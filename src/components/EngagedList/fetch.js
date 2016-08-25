@@ -34,15 +34,16 @@ export const ProfilesFetcher = component => sources => {
 export const EngagementFetcher = component => sources => {
   const profileKey$ = sources.item$.map(prop('profileKey'))
   const profile$ = sources.item$.map(prop('profile'))
+  const oppKey$ = sources.item$.map(prop('oppKey'))
 
-  const assignments$ = sources.oppKey$.flatMapLatest(oppKey =>
+  const assignments$ = oppKey$.flatMapLatest(oppKey =>
     AssignmentsFetcher({...sources, profileKey$})
       .assignments$
       .map(filter(propEq('oppKey', oppKey)))
   )
 
   const commitments$ =
-    sources.oppKey$.flatMapLatest(
+    oppKey$.flatMapLatest(
       Commitments.query.byOpp(sources)
     )
     .map(volShifts)
@@ -62,6 +63,7 @@ export const EngagementFetcher = component => sources => {
     ...sources,
     profileKey$,
     profile$,
+    oppKey$,
     shifts$,
     assignments$,
     commitments$,

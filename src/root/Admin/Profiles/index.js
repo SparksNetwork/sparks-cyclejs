@@ -12,7 +12,7 @@ import {
 } from './fetcher'
 
 import {ProfileListItem} from './ProfileListItem'
-import {Detail} from './Detail'
+import {ProfileView} from './ProfileView'
 
 require('./styles.scss')
 
@@ -39,7 +39,7 @@ const ProfileList = sources => {
   return ViewWithDetail({
     ...sources,
     viewControl: View,
-    detailControl: Detail,
+    detailControl: ProfileView,
   })
 }
 
