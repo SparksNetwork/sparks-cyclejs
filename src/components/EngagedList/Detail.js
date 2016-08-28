@@ -4,6 +4,7 @@ const {of, merge, combineLatest} = $
 import {combineDOMsToDiv} from 'util'
 import {
   add, always, apply, equals, flip, ifElse, indexOf, map, modulo, nth, objOf,
+  compose, lte, curry,
   prop, lensPath, set, of as rof,
 } from 'ramda'
 
@@ -51,11 +52,17 @@ const Fetch = component => sources => {
     .flatMapLatest(Assignments.query.byEngagement(sources))
     .shareReplay(1)
 
+  const approvedMemberships$ = memberships$
+    .map(memberships => memberships.filter(m => m.isAccepted))
+  const hasApprovedMemberships$ = approvedMemberships$
+    .map(memberships => memberships.length > 0)
+
   return component({
     profile$,
     engagement$,
     memberships$,
     assignments$,
+    hasApprovedMemberships$,
     ...sources,
   })
 }
@@ -83,6 +90,15 @@ const _Remove = sources => hideable(ActionButton)({...sources,
 //   combineDOMsToDiv('.center', dec, rem) :
 //   combineDOMsToDiv('.center', ac, rem)
 
+function _whichButtons(ac, dec, rem, {isConfirmed, isAccepted, declined}, hasApprovedMemberships) {
+  if (isConfirmed) { return null }
+  if (isAccepted) { return combineDOMsToDiv('.center', dec, rem) }
+  if (declined) { return combineDOMsToDiv('.center', ac, rem) }
+  return combineDOMsToDiv('.center', ac, dec, rem)
+}
+
+const whichButtons = curry(_whichButtons)
+
 const _Actions = (sources) => {
   const ac = _Accept(sources)
   const dec = _Decline(sources)
@@ -95,13 +111,26 @@ const _Actions = (sources) => {
   //     () => combineDOMsToDiv('.center', ac, dec, rem),
   //   ))
 
-  const DOM = sources.engagement$
-    .map(({isConfirmed, isAccepted, declined}) => {
+  const DOM = $.combineLatest(
+    sources.engagement$,
+    sources.hasApprovedMemberships$,
+    ({isConfirmed, isAccepted, declined}, hasApprovedMemberships) => {
       if (isConfirmed) { return null }
       if (isAccepted) { return combineDOMsToDiv('.center', dec, rem) }
-      if (declined) { return combineDOMsToDiv('.center', ac, rem) }
-      return combineDOMsToDiv('.center', ac, dec, rem)
-    })
+      if (declined && hasApprovedMemberships) { return combineDOMsToDiv('.center', ac, rem)}
+      if (declined) { return combineDOMsToDiv('.center', rem) }
+      if (hasApprovedMemberships) { return combineDOMsToDiv('.center', ac, dec, rem)}
+      return combineDOMsToDiv('.center', dec, rem)
+    }
+  )
+
+  // const DOM = sources.engagement$
+  //   .map(({isConfirmed, isAccepted, declined}) => {
+  //     if (isConfirmed) { return null }
+  //     if (isAccepted) { return combineDOMsToDiv('.center', dec, rem) }
+  //     if (declined) { return combineDOMsToDiv('.center', ac, rem) }
+  //     return combineDOMsToDiv('.center', ac, dec, rem)
+  //   })
     // .map(prop('isConfirmed'))
     // .map(ifElse(Boolean,
     //   () => null,
