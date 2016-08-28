@@ -1,9 +1,8 @@
 import {Observable as $} from 'rx'
-const {just} = $
-import {pathOr, prop, always, T, cond} from 'ramda'
+const {just, merge} = $
+import {path, prop, always, T, cond} from 'ramda'
 import {List, Link} from 'components/sdm'
-import {Collapsible} from 'components/behaviors'
-import {div, span} from 'cycle-snabbdom'
+import {div} from 'cycle-snabbdom'
 import {Loader} from 'components/ui'
 import {mergeSinks} from 'util'
 
@@ -29,21 +28,40 @@ const InnerEngagementListItem = sources => {
   const engagementLink = Link({
     ...sources,
     content$: just('View engagement'),
-    path$: sources.item$.map(eng =>
-      sources.createHref(`/show/${eng.$key}`)),
+    path$: sources.item$
+      .map(prop('$key'))
+      .map(sources.createHref.item),
+  })
+
+  const projectLink = Link({
+    ...sources,
+    content$: sources.item$.map(path(['project', 'name'])),
+    path$: sources.item$
+      .map(path(['project', '$key']))
+      .map(key => `/project/${key}`),
+  })
+
+  const oppLink = Link({
+    ...sources,
+    content$: sources.item$.map(path(['opp', 'name'])),
+    path$: sources.item$
+      .map(path(['opp', '$key']))
+      .map(key => `/opp/${key}`),
   })
 
   const DOM = $.combineLatest(
     sources.item$,
+    projectLink.DOM,
+    oppLink.DOM,
     assignmentsDOM$,
     engagementLink.DOM,
-  ).map(([eng, assignmentsDOM, linkDOM]) =>
+  ).map(([eng, projectLinkDOM, oppLinkDOM, assignmentsDOM, linkDOM]) =>
     div('.list-item', [
       div('.content.xcol-sm-3', [
-        div('.title', pathOr('err', ['project', 'name'], eng)),
+        div('.title', [projectLinkDOM]),
       ]),
       div('.content.xcol-sm-3', [
-        div('.title', pathOr('err', ['opp', 'name'], eng)),
+        div('.title', [oppLinkDOM]),
         div('.subtitle', engStatus(eng)),
       ]),
       div('.content.xcol-sm-3', [assignmentsDOM]),
@@ -51,8 +69,14 @@ const InnerEngagementListItem = sources => {
     ])
   )
 
+  const route$ = merge(
+    engagementLink.route$,
+    projectLink.route$,
+    oppLink.route$
+  )
+
   return {
-    route$: engagementLink.route$,
+    route$,
     DOM,
   }
 }

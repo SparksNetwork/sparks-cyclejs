@@ -40,8 +40,9 @@ const Item = sources => {
     title$: sources.profile$.map(prop('fullName')),
     iconSrc$: sources.profile$.map(prop('portraitUrl')),
     rightDOM$: eac.DOM,
-    path$: sources.item$.map(({$key}) =>
-      sources.createHref(`/show/${$key}`)),
+    path$: sources.item$
+      .map(prop('$key'))
+      .map(sources.createHref.item),
     classes$: $.combineLatest(
       sources.item$.map(prop('$key')),
       sources.key$ || of(false),

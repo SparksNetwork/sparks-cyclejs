@@ -207,10 +207,8 @@ const Engagement = sources => {
   )
 
   const route$ = merge(
-    nextEngKey$.map(key => `/show/${key}`)
-      .map(sources.createHref),
-    backButton.click$.map(always(''))
-      .map(sources.createHref),
+    nextEngKey$.map(sources.createHref.item),
+    backButton.click$.map(sources.createHref.list),
     c.route$,
   )
 

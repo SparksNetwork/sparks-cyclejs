@@ -1,37 +1,37 @@
 import {Observable} from 'rx'
 const {of, combineLatest} = Observable
+import {prop, compose, fromPairs, map} from 'ramda'
 
 import {TabbedPage} from 'components/ui'
 
 import EngagedList from 'components/EngagedList'
 
+const statuses = ['applied', 'ok', 'confirmed', 'never']
+const labels = {
+  applied: 'Applied',
+  ok: 'OK',
+  confirmed: 'Confirmed',
+  never: 'Never',
+}
+const paths = {applied: '/'}
+
 const _TabMaker = sources => ({
-  tabs$: combineLatest(
-    sources.applied$,
-    sources.priority$,
-    sources.ok$,
-    sources.never$,
-    (ap,pr,ok,nv) => [
-      {path: '/', label: `${ap.length} Applied`},
-      pr.length > 0 && {path: '/priority', label: `${pr.length} Priority`},
-      ok.length > 0 && {path: '/ok', label: `${ok.length} OK`},
-      nv.length > 0 && {path: '/never', label: `${nv.length} Never`},
-    ].filter(x => !!x)
-  ),
+  tabs$: combineLatest(...statuses.map(status =>
+    sources[`${status}$`].map(prop('length')).map(count => ({
+      path: paths[status] || `/${status}`,
+      label: `${count} ${labels[status]}`,
+    }))
+  )),
 })
 
-const Applied = sources => EngagedList({...sources,
-  engagements$: sources.applied$,
+const StatusList = status => sources => EngagedList({...sources,
+  engagements$: sources[`${status}$`],
 })
-const Priority = sources => EngagedList({...sources,
-  engagements$: sources.priority$,
-})
-const OK = sources => EngagedList({...sources,
-  engagements$: sources.ok$,
-})
-const Never = sources => EngagedList({...sources,
-  engagements$: sources.never$,
-})
+
+const makeRoutes = compose(
+  fromPairs,
+  map(status => [paths[status] || `/${status}`, StatusList(status)])
+)
 
 export default sources => {
   const _sources = sources
@@ -41,12 +41,7 @@ export default sources => {
 
     ...TabbedPage({..._sources,
       tabs$: _TabMaker(_sources).tabs$,
-      routes$: of({
-        '/': Applied,
-        '/priority': Priority,
-        '/ok': OK,
-        '/never': Never,
-      }),
+      routes$: of(makeRoutes(statuses)),
     }),
   }
 }

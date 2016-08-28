@@ -33,7 +33,7 @@ const EngagedList = sources => {
     ...sources,
     viewControl: View,
     detailControl: EngagementView,
-  })
+  }, {name: 'engagement'})
 }
 
 export default EngagedList

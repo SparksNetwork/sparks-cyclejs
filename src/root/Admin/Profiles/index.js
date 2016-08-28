@@ -26,8 +26,8 @@ const View = sources => {
 
   const route$ = list.selected$.map(profile =>
     profile ?
-      sources.createHref(`/show/${profile.$key}`) :
-      sources.createHref('/'))
+      sources.createHref.item(profile.$key) :
+      sources.createHref.list())
 
   return {
     ...list,
@@ -40,7 +40,7 @@ const ProfileList = sources => {
     ...sources,
     viewControl: View,
     detailControl: ProfileView,
-  })
+  }, {name: 'profile'})
 }
 
 export default ProfilesFetcher(ProfileList)

@@ -165,8 +165,7 @@ const Profile = ProfileFetcher(sources => {
   const sinks = mergeSinks(...children)
 
   const route$ = sinks.route$.merge(
-    backButton.click$.map(always(''))
-      .map(sources.createHref))
+    backButton.click$.map(sources.createHref.list))
 
   return {
     DOM,
@@ -180,7 +179,7 @@ const ProfileView = sources => {
     ...sources,
     viewControl: Profile,
     detailControl: EngagementView,
-  }, {cols: [2, 10]})
+  }, {name: 'engagement', cols: [2, 10]})
 }
 
 export {ProfileView}
