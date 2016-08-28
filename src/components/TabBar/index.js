@@ -14,7 +14,8 @@ const _view = ({label}) =>
   div({class: {'tab-label-content': true}},[
     h('label',{attrs: {for: label}, style: {
       color: material.primaryFontColor},
-    },[label]),
+    },label),
+    // },[label]),
   ])
 
 const Tab = sources => {

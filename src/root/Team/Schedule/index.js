@@ -1,12 +1,16 @@
 import {Observable} from 'rx'
 const {of, combineLatest} = Observable
 
+import {compose, sum, map, defaultTo, pluck} from 'ramda'
+
 import {TabbedPage} from 'components/ui'
 import Overview from './Overview'
 import Shifts from './Shifts'
 import {Shifts as ShiftsRemote} from 'components/remote'
 
 import {log} from 'util'
+
+import {div} from 'cycle-snabbdom'
 
 import {localTime} from 'util'
 
@@ -15,14 +19,40 @@ const fromPath = pathName => {
   return items[4]
 }
 
+const sumPropOrZero = propName =>
+  compose(sum, map(defaultTo(0)), pluck(propName))
+
+const shiftPeopleHours =
+  compose(sum, map(s => s.people * s.hours || 0))
+
+const percent = (numerator, denominator) =>
+  defaultTo(0, Math.floor(100 * numerator / denominator))
+
+const avgHours = (h, p) =>
+  defaultTo(0, Math.floor(10 * h / p) / 10)
+
 const _Fetch = sources => {
   const shifts$ = sources.teamKey$
     .flatMapLatest(ShiftsRemote.query.byTeam(sources))
     // .tap(log('shifts$'))
 
+  const people$ = shifts$
+    .map(sumPropOrZero('people'))
+
+  const assigned$ = shifts$
+    .map(sumPropOrZero('assigned'))
+
+  const assignedPercent$ =
+    combineLatest(assigned$, people$, percent)
+
+  const hours$ = shifts$
+    .map(shiftPeopleHours)
+
+  const averageHoursPerShift$ =
+    combineLatest(hours$, people$, avgHours)
+
   const shiftDates$ = shifts$
     .map(arr => arr.map(a => localTime(a.date).format('YYYY-MM-DD')))
-    // .tap(log('shiftDates$'))
 
   const selectedDate$ = sources.router.observable.pluck('pathname')
     .map(fromPath)
@@ -40,13 +70,25 @@ const _Fetch = sources => {
     shiftDates$,
     selectedDate$,
     allDates$,
+    people$,
+    assigned$,
+    assignedPercent$,
+    averageHoursPerShift$,
   }
 }
+
+const tabLabel = d => [
+  div('', localTime(d).format('ddd')),
+  div('', d),
+]
+  // [`${localTime(d).format('ddd')}`, d]
+  // `${localTime(d).format('ddd')} ${d}`
 
 const TabBuilder = sources => {
   const overview$ = of({path: '/', label: 'Overview'})
   const dateTabs$ = sources.allDates$
-    .map(arr => arr.map(d => ({path: '/shifts/' + d, label: d})))
+    .map(arr => arr.map(d => ({path: '/shifts/' + d, label: tabLabel(d)})))
+    // .map(arr => arr.map(d => ({path: '/shifts/' + d, label: d})))
     .tap(log('dateTabs$'))
 
   const tabs$ = combineLatest(overview$, dateTabs$)
