@@ -61,12 +61,12 @@ const Fetch = component => sources => {
 }
 
 const _Accept = sources => ActionButton({...sources,
-  label$: of('OK'),
+  label$: of('Accept'),
   params$: of({isAccepted: true, priority: false, declined: false}),
 })
 
 const _Decline = sources => ActionButton({...sources,
-  label$: of('never'),
+  label$: of('Reject'),
   params$: of({isAccepted: false, priority: false, declined: true}),
   classNames$: of(['red']),
 })
@@ -78,17 +78,35 @@ const _Remove = sources => hideable(ActionButton)({...sources,
   isVisible$: sources.userProfile$.pluck('isAdmin'),
 })
 
+// const actionsPossible = isConfirmed =>
+//   isConfirmed ?
+//   combineDOMsToDiv('.center', dec, rem) :
+//   combineDOMsToDiv('.center', ac, rem)
+
 const _Actions = (sources) => {
   const ac = _Accept(sources)
   const dec = _Decline(sources)
   const rem = _Remove(sources)
 
+  // const DOM = sources.engagement$
+  //   .map(prop('isConfirmed'))
+  //   .map(ifElse(Boolean,
+  //     () => null,
+  //     () => combineDOMsToDiv('.center', ac, dec, rem),
+  //   ))
+
   const DOM = sources.engagement$
-    .map(prop('isConfirmed'))
-    .map(ifElse(Boolean,
-      () => null,
-      () => combineDOMsToDiv('.center', ac, dec, rem),
-    ))
+    .map(({isConfirmed, isAccepted, declined}) => {
+      if (isConfirmed) { return null }
+      if (isAccepted) { return combineDOMsToDiv('.center', dec, rem) }
+      if (declined) { return combineDOMsToDiv('.center', ac, rem) }
+      return combineDOMsToDiv('.center', ac, dec, rem)
+    })
+    // .map(prop('isConfirmed'))
+    // .map(ifElse(Boolean,
+    //   () => null,
+    //   () => combineDOMsToDiv('.center', ac, dec, rem),
+    // ))
 
   return {
     DOM,

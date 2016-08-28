@@ -14,8 +14,8 @@ const _TabMaker = sources => ({
     (ap,pr,ok,nv) => [
       {path: '/', label: `${ap.length} Applied`},
       pr.length > 0 && {path: '/priority', label: `${pr.length} Priority`},
-      ok.length > 0 && {path: '/ok', label: `${ok.length} OK`},
-      nv.length > 0 && {path: '/never', label: `${nv.length} Never`},
+      ok.length > 0 && {path: '/ok', label: `${ok.length} Accepted`},
+      nv.length > 0 && {path: '/never', label: `${nv.length} Rejected`},
     ].filter(x => !!x)
   ),
 })

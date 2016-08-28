@@ -1,3 +1,4 @@
+import {cond, prop, T, always} from 'ramda'
 import {Observable as $} from 'rx'
 const {of, merge} = $
 import {
@@ -11,6 +12,8 @@ import {
 } from 'components/ui'
 import {ListItemCollapsible} from 'components/sdm'
 import {combineDOMsToDiv} from 'util'
+
+import {div} from 'cycle-snabbdom'
 
 const TeamQ = sources => QuotingListItem({...sources,
   profileKey$: sources.project$.pluck('ownerProfileKey'),
@@ -26,26 +29,28 @@ const TeamQandA = sources => ({
   DOM: combineDOMsToDiv('', TeamQ(sources), TeamAnswer(sources)),
 })
 
-const getTeamTitle = ({isAccepted = false, isDeclined = false}, {name}) => {
-  if (isAccepted === true) { return `${name} - Accepted` }
-  return isDeclined ? `${name} - Declined` : `${name}`
+function statusLabel({isAccepted, isDeclined}) {
+  if (isAccepted) { return div({style: {color: 'green'}}, 'APPROVED') }
+  if (isDeclined) { return div({class: {disabled: true}}, 'DENIED') }
+  return div({class: {accent: true}}, '?')
 }
 
 const TeamItem = sources => {
   const team$ = sources.item$.pluck('teamKey')
     .flatMapLatest(Teams.query.one(sources))
 
-  const title$ = sources.item$.combineLatest(team$, getTeamTitle)
+  const title$ = team$.pluck('name')
+  const rightDOM$ = sources.item$.map(statusLabel)
 
   const qa = TeamQandA({...sources, team$})
 
   const okButton = ActionButton({...sources,
-    label$: of('Ok'),
+    label$: of('Approve'),
     params$: of({isAccepted: true, isDeclined: false}),
   })
 
   const neverButton = ActionButton({...sources,
-    label$: of('Never'),
+    label$: of('Deny'),
     params$: of({isAccepted: false, isDeclined: true}),
     classNames$: of(['red']),
   })
@@ -57,9 +62,15 @@ const TeamItem = sources => {
     }))
     .map(Memberships.action.update)
 
-  const contentDOM$ = combineDOMsToDiv('', qa, okButton, neverButton)
+  // const contentDOM$ = combineDOMsToDiv('', qa, okButton, neverButton)
 
-  const li = ListItemCollapsible({...sources, title$, contentDOM$})
+  const contentDOM$ = sources.item$.map(({isAccepted, isDeclined}) => {
+    if (isAccepted) { return combineDOMsToDiv('', qa, neverButton)}
+    if (isDeclined) { return combineDOMsToDiv('', qa, okButton)}
+    return combineDOMsToDiv('', qa, okButton, neverButton)
+  })
+
+  const li = ListItemCollapsible({...sources, title$, rightDOM$, contentDOM$})
   return {...li, queue$: merge(li.queue$, queue$)}
 }
 
