@@ -81,14 +81,11 @@ const tabLabel = d => [
   div('', localTime(d).format('ddd')),
   div('', d),
 ]
-  // [`${localTime(d).format('ddd')}`, d]
-  // `${localTime(d).format('ddd')} ${d}`
 
 const TabBuilder = sources => {
   const overview$ = of({path: '/', label: 'Overview'})
   const dateTabs$ = sources.allDates$
     .map(arr => arr.map(d => ({path: '/shifts/' + d, label: tabLabel(d)})))
-    // .map(arr => arr.map(d => ({path: '/shifts/' + d, label: d})))
     .tap(log('dateTabs$'))
 
   const tabs$ = combineLatest(overview$, dateTabs$)

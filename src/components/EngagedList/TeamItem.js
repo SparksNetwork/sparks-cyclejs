@@ -62,8 +62,6 @@ const TeamItem = sources => {
     }))
     .map(Memberships.action.update)
 
-  // const contentDOM$ = combineDOMsToDiv('', qa, okButton, neverButton)
-
   const contentDOM$ = sources.item$.map(({isAccepted, isDeclined}) => {
     if (isAccepted) { return combineDOMsToDiv('', qa, neverButton)}
     if (isDeclined) { return combineDOMsToDiv('', qa, okButton)}

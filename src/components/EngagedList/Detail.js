@@ -4,7 +4,6 @@ const {of, merge, combineLatest} = $
 import {combineDOMsToDiv} from 'util'
 import {
   add, always, apply, equals, flip, ifElse, indexOf, map, modulo, nth, objOf,
-  compose, lte, curry,
   prop, lensPath, set, of as rof,
 } from 'ramda'
 
@@ -85,31 +84,10 @@ const _Remove = sources => hideable(ActionButton)({...sources,
   isVisible$: sources.userProfile$.pluck('isAdmin'),
 })
 
-// const actionsPossible = isConfirmed =>
-//   isConfirmed ?
-//   combineDOMsToDiv('.center', dec, rem) :
-//   combineDOMsToDiv('.center', ac, rem)
-
-function _whichButtons(ac, dec, rem, {isConfirmed, isAccepted, declined}, hasApprovedMemberships) {
-  if (isConfirmed) { return null }
-  if (isAccepted) { return combineDOMsToDiv('.center', dec, rem) }
-  if (declined) { return combineDOMsToDiv('.center', ac, rem) }
-  return combineDOMsToDiv('.center', ac, dec, rem)
-}
-
-const whichButtons = curry(_whichButtons)
-
 const _Actions = (sources) => {
   const ac = _Accept(sources)
   const dec = _Decline(sources)
   const rem = _Remove(sources)
-
-  // const DOM = sources.engagement$
-  //   .map(prop('isConfirmed'))
-  //   .map(ifElse(Boolean,
-  //     () => null,
-  //     () => combineDOMsToDiv('.center', ac, dec, rem),
-  //   ))
 
   const DOM = $.combineLatest(
     sources.engagement$,
@@ -123,19 +101,6 @@ const _Actions = (sources) => {
       return combineDOMsToDiv('.center', dec, rem)
     }
   )
-
-  // const DOM = sources.engagement$
-  //   .map(({isConfirmed, isAccepted, declined}) => {
-  //     if (isConfirmed) { return null }
-  //     if (isAccepted) { return combineDOMsToDiv('.center', dec, rem) }
-  //     if (declined) { return combineDOMsToDiv('.center', ac, rem) }
-  //     return combineDOMsToDiv('.center', ac, dec, rem)
-  //   })
-    // .map(prop('isConfirmed'))
-    // .map(ifElse(Boolean,
-    //   () => null,
-    //   () => combineDOMsToDiv('.center', ac, dec, rem),
-    // ))
 
   return {
     DOM,

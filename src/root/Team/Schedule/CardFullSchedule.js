@@ -36,9 +36,13 @@ const assignmentItemView = (profile, arrivals, engagement) =>
     img({class: {avatar: true}, attrs: {src: profile.portraitUrl}}),
     div('.name', [profile.fullName]),
     div('.phone', [profile.phone]),
-    a({class: {phone: true}, attrs: {href: 'mailto:' + profile.email}}, [profile.email]),
+    a({
+      class: {phone: true},
+      attrs: {href: 'mailto:' + profile.email},
+    }, [
+      profile.email,
+    ]),
     statusDiv(engagement, arrivals),
-    // arrivals.length > 0 ? 'ONSITE' : '',
   ])
 
 const AssignmentItem = sources => {
@@ -165,7 +169,6 @@ export const CardFullSchedule = sources => {
 
   return {
     DOM: card.DOM,
-    // openAndPrint: printable$.sample(print.click$),
     openAndPrint: print.click$.withLatestFrom(printable$, (cl,pr) => pr),
   }
 }
