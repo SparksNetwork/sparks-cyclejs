@@ -1,7 +1,7 @@
 import {Observable as $} from 'rx'
 const {of, combineLatest} = $
 import {
-  prop, filter, propEq, whereEq, map,
+  apply, compose, filter, map, prop, propEq, whereEq,
 } from 'ramda'
 import moment from 'moment'
 
@@ -21,12 +21,15 @@ export const ProfilesFetcher = component => sources => {
   const query = Profiles.query.one(sources)
 
   const profiles$ = sources.engagements$.map(
-    map(engagement =>
-      query(engagement.profileKey)
-        .map(profile => ({...engagement, profile}))
+    compose(
+      map(engagement =>
+        query(engagement.profileKey)
+          .map(profile => ({...engagement, profile}))
+      ),
+      filter(prop('profileKey'))
     )
   )
-  .flatMapLatest(engagements => combineLatest(...engagements))
+  .flatMapLatest(apply(combineLatest))
 
   return component({...sources, profiles$})
 }
