@@ -58,7 +58,7 @@ const DateControl = sources => {
     ...sources,
     options$: just(
       addIndex(map)((m, idx) =>
-        ({...m, label: monthsShort[idx]}))(rangeOptions(1,12))
+        ({...m, label: monthsShort[idx]}))(rangeOptions(1,13))
     ),
     label$: just('Month'),
     value$: inputValue$.map(m => m && m[1]),

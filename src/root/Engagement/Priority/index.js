@@ -18,11 +18,9 @@ export default sources => {
 
   const DOM = combineDOMsToDiv('.cardcontainer',who,confirm,app,r2w,pms,ee)
 
-  r2w.openAndPrint.subscribe(x => console.log('@priority/index'))
-
   return {
     DOM,
     route$: $.merge(confirm.route$, app.route$),
-    openAndPrint: r2w.openAndPrint, //  pr.click$.withLatestFrom(printable$, (cl,pr) => pr),
+    openAndPrint: r2w.openAndPrint,
   }
 }

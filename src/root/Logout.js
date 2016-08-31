@@ -11,7 +11,7 @@ const Logout = sources => {
 
   return {
     DOM: just(div('please wait...')),
-    auth$: just(PROVIDERS.logout).tap(x => console.log('logout auth', x)),
+    auth$: just(PROVIDERS.logout),
   }
 }
 

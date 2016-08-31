@@ -1,10 +1,10 @@
 import {Observable} from 'rx'
 const {just, merge, combineLatest} = Observable
-
-// import isolate from '@cycle/isolate'
+import {not, find, propEq} from 'ramda'
 
 import {h5, a} from 'cycle-snabbdom'
 import {div} from 'helpers'
+import {combineLatestToDiv, combineDOMsToDiv, switchStream} from 'util'
 
 import {CommitmentItemPassive} from 'components/commitment'
 
@@ -25,7 +25,6 @@ import {
 import {
   QuotingListItem,
   TitleListItem,
-  LoginButtons,
   DescriptionListItem,
 } from 'components/ui'
 
@@ -61,10 +60,6 @@ const Chooser = sources => {
   }
 }
 
-const _redirectResponses = ({responses$}) => responses$
-  .filter(({domain,event}) => domain === 'Engagements' && event === 'create')
-  .map(response => '/engaged/' + response.payload + '/application/question')
-
 const Title = sources => TitleListItem({...sources,
   title$: sources.opp$.pluck('name'),
 })
@@ -92,9 +87,13 @@ export default sources => {
   const userEngagments$ = sources.userProfileKey$
     .flatMapLatest(Engagements.query.byUser(sources))
 
-  const hasPriorEngagmentsForOpp$ = userEngagments$.withLatestFrom(oppKey$,
-    (engs, oppKey) => engs.filter(e => e.oppKey === oppKey)
-  ).map(engs => engs.length > 0 ? true : false)
+  const priorEngagmentForOpp$ = switchStream(sources.auth$, Boolean,
+    () => combineLatest(
+      userEngagments$,
+      oppKey$,
+      (engs, oppKey) => find(propEq('oppKey', oppKey))(engs)),
+    () => just(null),
+  )
 
   const _sources = {...sources, opp$, oppKey$, commitments$}
 
@@ -102,7 +101,6 @@ export default sources => {
   const title = Title(_sources)
   const chooser = Chooser(_sources)
   const desc = Quote(_sources)
-  const logins = LoginButtons(sources)
 
   const applyNow = RaisedButton({...sources,
     label$: just('Apply Now!'),
@@ -125,48 +123,44 @@ export default sources => {
     ])),
   })
 
-  // combine controls to make sinks
-  const newApplication$ = combineLatest(
-    oppKey$,
-    sources.userProfileKey$,
-    (oppKey, userProfileKey) => ({oppKey, profileKey: userProfileKey}),
-  )
-
-  const queue$ = newApplication$
-    .sample(applyNow.click$)
-    .map(Engagements.action.create)
-
   const route$ = merge(
-    _redirectResponses(sources),
     chooser.route$,
+    oppKey$.map(oppKey =>
+      `/applyTo/${oppKey}`)
+      .sample(applyNow.click$),
   ).share()
 
-  const DOM = combineLatest(
-    hasPriorEngagmentsForOpp$,
-    sources.auth$,
-    applyNow.DOM,
-    logins.DOM,
-    needHelp.DOM,
-    title.DOM,
-    chooser.DOM,
-    desc.DOM,
-    gives.DOM,
-    gets.DOM,
-    (hasApplied, auth, anDOM, lDOM, nhDOM, ...doms) => div({},[
-      ...doms,
-      auth ? // eslint-disable-line no-nested-ternary
-        hasApplied ?
-          h5(`You've already applied for this opportunity!`) :
-          anDOM :
-        lDOM,
-      nhDOM,
-    ])
+  const informationDOM = combineDOMsToDiv('',
+    title,
+    chooser,
+    desc,
+    gives,
+    gets,
+  )
+
+  const alreadyAppliedDOM = combineLatest(
+      priorEngagmentForOpp$.filter(Boolean)
+    )
+    .map(() => h5('You\'ve already applied for this opportunity!'))
+
+  const applyDOM = combineLatest(
+      priorEngagmentForOpp$.filter(not)
+    )
+    .flatMapLatest(() => applyNow.DOM)
+
+  const actionDOM = merge(
+    alreadyAppliedDOM,
+    applyDOM
+  )
+
+  const DOM = combineLatestToDiv(
+    informationDOM,
+    actionDOM,
+    needHelp.DOM
   )
 
   return {
     DOM,
-    auth$: logins.auth$,
-    queue$,
     route$,
   }
 }

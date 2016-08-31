@@ -46,7 +46,21 @@ We are currently using:
 
 From the command line:
 
-`git clone https://github.com/sdebaun/sparks-cyclejs && cd sparks-cyclejs && npm run start`
+```
+git clone https://github.com/SparksNetwork/sparks-cyclejs 
+cd sparks-cyclejs
+git submodule update --init
+npm install
+```
+
+## Running
+
+```
+FIREBASE_API_KEY=xxx \
+FIREBASE_AUTH_DOMAIN=xxx \
+FIREBASE_DATABASE_URL=xxx \
+npm start
+```
 
 ## Services
 
@@ -60,21 +74,7 @@ We're using several services to manage deployment:
 
 ** `master` branch is deployed to `production` server
 
-* [surge.sh](http://surge.sh) is serving up both of those servers.
-
 ## Usage
-
-### Credentials
-
-All credentials are stored in the services that use them.  Currently that consists of SURGE_NAME and SURGE_TOKEN, stored in CircleCI; they let the `gulp deploy` task do its magic.
-
-### Gulp Commands
-
-`gulp serve`: run a local webpack development server at `http://localhost:8080`
-
-`gulp build`: use webpack to compile into dist/
-
-`gulp deploy --domain <domain>`: use [surge.sh](http://surge.sh) to deploy to the specified host.
 
 ## Internals
 

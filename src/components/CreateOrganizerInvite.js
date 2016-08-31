@@ -24,7 +24,6 @@ const CreateOrganizerListItem = sources => {
       (values, projectKey) => ({values: {...values, projectKey}})
     )
     .map(Organizers.action.create)
-    .tap(x => console.log('', x))
 
   return {
     DOM: listItem.DOM,

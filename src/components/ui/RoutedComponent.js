@@ -1,41 +1,21 @@
-import {Observable} from 'rx'
-const {empty} = Observable
-// import {log} from 'util'
+import {SwitchedComponent} from 'components/SwitchedComponent'
 
-const pluckLatest = (k,s$) => s$.pluck(k).switch()
-
-const pluckLatestOrNever = (k,s$) =>
-  s$.map(c => c[k] || empty()).switch()
-
-const sinks = [
-  'auth$',
-  'queue$',
-  'route$',
-  'focus$',
-  'openAndPrint',
-  'openGraph',
-]
-
+/**
+* Specialized version of SwitchComponent that takes a routes object and
+* switches between components based on the route.
+*/
 export const RoutedComponent = sources => {
   const comp$ = sources.routes$
     .map(routes => sources.router.define(routes))
     .switch()
     .distinctUntilChanged(({path}) => path)
     .filter(({path, value}) => path && value)
-    .map(({path, value}) => {
-      const c = value({...sources, router: sources.router.path(path)})
-      return {
-        ...c,
-        DOM: c.DOM,
-      }
-    })
+    .map(({path, value}) =>
+      sources => value({...sources, router: sources.router.path(path)}))
     .shareReplay(1)
 
-  return {
-    pluck: key => pluckLatestOrNever(key, comp$),
-    DOM: pluckLatest('DOM', comp$),
-    ...sinks.reduce((a,k) =>
-      (a[k] = pluckLatestOrNever(k,comp$)) && a, {}
-    ),
-  }
+  return SwitchedComponent({
+    ...sources,
+    Component$: comp$,
+  })
 }

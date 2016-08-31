@@ -99,7 +99,6 @@ export default _sources => {
   const loggedIn$ = sources.userProfileKey$
     .filter(Boolean)
     .flatMapLatest(key => sources.userProfile$.map(merge({key})))
-    .tap(u => console.log(u))
 
   const notAccepted$ = sources.organizer$
     .filter(complement(prop('isAccepted')))
