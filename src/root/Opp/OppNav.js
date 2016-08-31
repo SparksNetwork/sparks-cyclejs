@@ -26,7 +26,7 @@ const _Manage = sources => ListItemNavigating({...sources,
 const _Confirmed = sources => ListItemNavigating({...sources,
   title$: sources.confirmed$.map(c => `${c.length || 0} Confirmed`),
   iconName$: just('people'),
-  path$: just('/confirmed'),
+  path$: just('/engaged/confirmed'),
 })
 
 const _Engaged = sources => ListItemNavigating({...sources,

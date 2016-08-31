@@ -127,12 +127,22 @@ export function ArrivalsFetcher(sources) {
     .shareReplay(1)
 }
 
-export function ProfilesFetcher(sources) {
+export const ProfilesFetcher = component => sources => {
   const profiles$ = Profiles.query.all(sources)()
     .map(sortBySurname)
     .shareReplay(1)
 
-  return {
+  return component({
+    ...sources,
     profiles$,
-  }
+  })
+}
+
+export const ProfileFetcher = component => sources => {
+  const profile$ = sources.key$.flatMapLatest(Profiles.query.one(sources))
+
+  return component({
+    ...sources,
+    profile$,
+  })
 }

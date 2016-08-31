@@ -1,46 +1,39 @@
 import {Observable as $} from 'rx'
 const {of} = $
-import {div} from 'helpers'
-import {combineLatestToDiv} from 'util'
+import {requireSources} from 'util'
 
 import {
-  List,
+  ListWithFilter,
 } from 'components/sdm'
 
 import {ViewWithDetail} from 'components/ui'
 
-import Detail from './Detail'
+import {EngagementView} from './EngagementView'
 import Item from './Item'
+import {ProfilesFetcher} from './fetch'
 
-const AppList = sources => List({...sources,
+const AppList = sources => ListWithFilter({...sources,
   Control$: of(Item),
-  rows$: sources.engagements$,
-})
-
-const EmptyNotice = sources => ({
-  DOM: sources.items$.map(i =>
-    i.length > 0 ? null : div({},['Empty notice'])
-  ),
+  rows$: sources.profiles$,
+  searchFields$: of([
+    ['profile', 'fullName'],
+    ['profile', 'email'],
+    ['profile', 'phone'],
+  ]),
 })
 
 const View = sources => {
-  const mt = EmptyNotice({...sources, items$: sources.engagements$})
-  const list = AppList(sources)
-
-  const DOM = combineLatestToDiv(mt.DOM, list.DOM)
-
-  return {
-    DOM,
-    route$: list.route$,
-  }
+  return ProfilesFetcher(AppList)(sources)
 }
 
 const EngagedList = sources => {
+  requireSources('EngagedList', sources, 'engagements$')
+
   return ViewWithDetail({
     ...sources,
     viewControl: View,
-    detailControl: Detail,
-  })
+    detailControl: EngagementView,
+  }, {name: 'engagement'})
 }
 
 export default EngagedList

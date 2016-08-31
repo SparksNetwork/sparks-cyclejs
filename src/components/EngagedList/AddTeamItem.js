@@ -49,7 +49,7 @@ const AddTeamItem = sources => {
 
   const route$ = queue$.map(() =>
     sources.engagementKey$
-      .map(key => '/ok/show/' + key)
+      .map(key => '/ok/engagement/' + key)
       .map(sources.createHref)
   ).switch().shareReplay(1)
 

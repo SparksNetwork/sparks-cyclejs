@@ -17,9 +17,10 @@ const ViewOnly = sources => {
   }
 }
 
-const ViewAndDetail = sources => {
+const ViewAndDetail = (sources, options) => {
   const view = sources.viewControl(sources)
   const detail = sources.detailControl(sources)
+  const [viewCol, detailCol] = options.cols || [6, 6]
 
   const DOM = $.combineLatest(
     view.DOM,
@@ -27,8 +28,8 @@ const ViewAndDetail = sources => {
   )
   .map(([view, detail]) =>
     div('.row', [
-      div('.col-md-6.hidden-sm-down', [view]),
-      div('.col-md-6.col-xs-12', [detail]),
+      div(`.col-md-${viewCol}.hidden-sm-down`, [view]),
+      div(`.col-md-${detailCol}.col-xs-12`, [detail]),
     ])
   )
   .shareReplay(1)
@@ -39,17 +40,28 @@ const ViewAndDetail = sources => {
   }
 }
 
-const ViewWithDetail = sources => {
+/**
+* @param {Stream<router>} sources.router
+* @param {string} options.name
+* @param {Array<number, number>} options.cols the screen split, should be 2
+*   numbers that add up to 12.
+*/
+const ViewWithDetail = (sources, options = {}) => {
   const createHref = sources.router.createHref
+  const name = options.name || 'show'
+  const path = `/${name}/:key`
+
+  createHref.list = () => createHref('')
+  createHref.item = key => createHref(`/${name}/${key}`)
+
+  const routes = {'/': sources => ViewOnly(sources, options)}
+  routes[path] = key => sources =>
+    ViewAndDetail({...sources, key$: of(key)}, options)
 
   return RoutedComponent({
     ...sources,
     createHref,
-    routes$: of({
-      '/': ViewOnly,
-      '/show/:key': key => sources =>
-        ViewAndDetail({...sources, key$: of(key)}),
-    }),
+    routes$: of(routes),
   })
 }
 
