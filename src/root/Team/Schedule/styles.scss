@@ -6,6 +6,15 @@
 
 $profileAvatarSize: 120px;
 
+.status {
+	&.unconfirmed {
+		color: red;
+	}
+	&.arrived {
+		color: green;
+	}
+}
+
 .printablePage {
 	.day {
 		xpage-break-after: always;
@@ -100,6 +109,8 @@ $profileAvatarSize: 120px;
 				}
 				.phone {
 					font-size: 10px;
+					line-height: 12px;
+					margin-top: 4px;
 					font-weight: bold;
 					color: #999;
 				}

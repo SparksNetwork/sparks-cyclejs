@@ -74,6 +74,11 @@ const Fetch = component => sources => {
     .flatMapLatest(Assignments.query.byEngagement(sources))
     .shareReplay(1)
 
+  const approvedMemberships$ = memberships$
+    .map(memberships => memberships.filter(m => m.isAccepted))
+  const hasApprovedMemberships$ = approvedMemberships$
+    .map(memberships => memberships.length > 0)
+
   return component({
     profile$,
     project$,
@@ -83,18 +88,19 @@ const Fetch = component => sources => {
     opps$,
     memberships$,
     assignments$,
+    hasApprovedMemberships$,
     teams$,
     ...sources,
   })
 }
 
 const _Accept = sources => ActionButton({...sources,
-  label$: of('OK'),
+  label$: of('Accept'),
   params$: of({isAccepted: true, priority: false, declined: false}),
 })
 
 const _Decline = sources => ActionButton({...sources,
-  label$: of('never'),
+  label$: of('Reject'),
   params$: of({isAccepted: false, priority: false, declined: true}),
   classNames$: of(['red']),
 })
@@ -111,12 +117,18 @@ const _Actions = (sources) => {
   const dec = _Decline(sources)
   const rem = _Remove(sources)
 
-  const DOM = sources.engagement$
-    .map(prop('isConfirmed'))
-    .map(ifElse(Boolean,
-      () => null,
-      () => combineDOMsToDiv('.center', ac, dec, rem),
-    ))
+  const DOM = $.combineLatest(
+    sources.engagement$,
+    sources.hasApprovedMemberships$,
+    ({isConfirmed, isAccepted, declined}, hasApprovedMemberships) => {
+      if (isConfirmed) { return null }
+      if (isAccepted) { return combineDOMsToDiv('.center', dec, rem) }
+      if (declined && hasApprovedMemberships) { return combineDOMsToDiv('.center', ac, rem)}
+      if (declined) { return combineDOMsToDiv('.center', rem) }
+      if (hasApprovedMemberships) { return combineDOMsToDiv('.center', ac, dec, rem)}
+      return combineDOMsToDiv('.center', dec, rem)
+    }
+  )
 
   return {
     DOM,

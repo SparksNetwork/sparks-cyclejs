@@ -11,6 +11,7 @@ import {
   ListItemNewTarget,
   ListItemHeader,
 } from 'components/sdm'
+import {div} from 'cycle-snabbdom'
 import Collapsible from 'components/behaviors/Collapsible'
 
 const OppQ = sources => QuotingListItem({...sources,
@@ -27,9 +28,17 @@ const OppAnswer = sources => QuotingListItem({...sources,
   subtitle$: of('Volunteer'),
 })
 
+function statusLabel({isAccepted, declined}) {
+  if (isAccepted) { return div({style: {color: 'green'}}, 'APPROVED') }
+  if (declined) { return div({class: {disabled: true}}, 'REJECTED') }
+  return div({class: {accent: true}}, '?')
+}
+
 const ViewEngagement = sources => ListItemNewTarget({
   iconName$: of('link'),
-  title$: of('See their Engagement Page'),
+  title$: sources.opp$.pluck('name'),
+  subtitle$: of('Click to see their Engagement Page'),
+  rightDOM$: sources.engagement$.map(statusLabel),
   url$: sources.engagement$.map(prop('$key'))
     .map(k => `/engaged/${k}`),
 })

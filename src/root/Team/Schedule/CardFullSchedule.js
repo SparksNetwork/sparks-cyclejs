@@ -9,7 +9,7 @@ import {
 } from 'components/sdm'
 
 import isolate from '@cycle/isolate'
-import {div, img} from 'cycle-snabbdom'
+import {div, img, a} from 'cycle-snabbdom'
 
 import {combineDOMsToDiv, localTime} from 'util'
 
@@ -22,12 +22,27 @@ const PrintItem = sources => ListItemClickable({...sources,
   iconName$: $.of('print'),
 })
 
+const statusDiv = (engagement, arrivals) => {
+  if (!engagement.isConfirmed) {
+    return div('.status.unconfirmed', ['NEEDS TO CONFIRM'])
+  }
+  if (arrivals.length > 0) {
+    return div('.status.arrived', ['ONSITE'])
+  }
+}
+
 const assignmentItemView = (profile, arrivals, engagement) =>
   div('.assignment', [
     img({class: {avatar: true}, attrs: {src: profile.portraitUrl}}),
-    div('.name', [profile.fullName, engagement.isConfirmed ? '' : '(!)']),
+    div('.name', [profile.fullName]),
     div('.phone', [profile.phone]),
-    arrivals.length > 0 ? 'ONSITE' : '',
+    a({
+      class: {phone: true},
+      attrs: {href: 'mailto:' + profile.email},
+    }, [
+      profile.email,
+    ]),
+    statusDiv(engagement, arrivals),
   ])
 
 const AssignmentItem = sources => {
@@ -154,7 +169,6 @@ export const CardFullSchedule = sources => {
 
   return {
     DOM: card.DOM,
-    // openAndPrint: printable$.sample(print.click$),
     openAndPrint: print.click$.withLatestFrom(printable$, (cl,pr) => pr),
   }
 }

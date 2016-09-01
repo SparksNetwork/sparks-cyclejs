@@ -4,7 +4,7 @@ import combineLatestObj from 'rx-combine-latest-obj'
 import {div} from 'cycle-snabbdom'
 
 import {ListItemClickable} from './ListItemClickable'
-import {ListItemDisable} from './ListItemDisable'
+// import {ListItemDisable} from './ListItemDisable'
 import {Menu} from 'components/sdm'
 
 /**
@@ -29,21 +29,24 @@ import {Menu} from 'components/sdm'
  */
 export const ListItemWithMenu = sources => {
   // Set values of optional sources
-  sources.disable$ = (sources.disable$ || $.just(false)).share()
+  // sources.disable$ = (sources.disable$ || $.just(false)).share()
 
-  const item$ = sources.disable$
-    .map(disable => disable ?
-      ListItemDisable(sources) :
-      ListItemClickable(sources)
-    )
-    .share()
+  // const item$ = sources.disable$
+  //   .map(disable => disable ?
+  //     ListItemDisable(sources) :
+  //     ListItemClickable(sources)
+  //   )
+  //   .share()
 
-  const isOpen$ = sources.disable$
-    .flatMapLatest(disable => (disable ?
-          $.empty() :
-          ListItemClickable(sources).click$
-      ).map(true).startWith(false)
-    )
+  // const isOpen$ = sources.disable$
+  //   .flatMapLatest(disable => (disable ?
+  //         $.empty() :
+  //         ListItemClickable(sources).click$
+  //     ).map(true).startWith(false)
+  //   )
+
+  const item = ListItemClickable(sources)
+  const isOpen$ = item.click$.map(true).startWith(false)
 
   const children$ = sources.menuItems$ || $.just([])
 
@@ -54,8 +57,10 @@ export const ListItemWithMenu = sources => {
   })
 
   const viewState = {
-    itemDOM$: item$.pluck('DOM'),
+    itemDOM$: item.DOM,
     menuDOM$: menu.DOM,
+    // itemDOM$: item$.pluck('DOM'),
+    // menuDOM$: menu.DOM,
   }
 
   const DOM = combineLatestObj(viewState)
