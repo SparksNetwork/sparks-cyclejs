@@ -10,6 +10,7 @@ import {
 import isolate from '@cycle/isolate'
 
 import {
+  Profiles,
   Projects,
   Engagements,
 } from 'components/remote'
@@ -80,6 +81,7 @@ export const ProfileMigration = component => sources => {
       [nth(0), ([auth]) => {
         // Construct the old uid:
         const provider = auth.providerData[0]
+        console.log(provider)
         const name = compose(head, split('.'), prop('providerId'))(provider)
 
         // If the old uid is in the format xxx-xxx-xxx then use it directly,
@@ -91,13 +93,25 @@ export const ProfileMigration = component => sources => {
 
         const uid = uidReplacer(provider.uid)
 
+        // Email search isn't reliable, but we do know that the email
+        // provided by firebase 3 is the one owned by the user
+        const email = auth.email || provider.email
+        const byEmail$ = (email ?
+          Profiles.query.byEmail(sources)(email) : just([]))
+          .map(head)
+          .map(p => p ? p.$key : null)
+
+        const byUid$ = sources.firebase('Users', uid)
+
         // Search, only migrate if found
-        return sources.firebase('Users', uid).map(profileKey => ({
-          migrate: Boolean(profileKey),
-          profileKey,
-          fromUid: uid,
-          toUid: auth.uid,
-        }))
+        return combineLatest(byUid$, byEmail$)
+          .map(([uiduid, emailuid]) => uiduid || emailuid)
+          .map(profileKey => ({
+            migrate: Boolean(profileKey),
+            profileKey,
+            fromUid: uid,
+            toUid: auth.uid,
+          }))
       }],
 
       // Else: fall through with a null key
