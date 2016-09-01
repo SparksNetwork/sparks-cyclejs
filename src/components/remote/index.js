@@ -60,6 +60,7 @@ export const Profiles = {
   query: {
     one: filterOne('Profiles'),
     all: filterAll('Profiles'),
+    byEmail: filterBy('Profiles', 'email'),
   },
   action: {
     create: actionCreator('Profiles', 'create'),
