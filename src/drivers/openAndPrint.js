@@ -26,8 +26,13 @@ export default function openAndPrintDriver(html$) {
       WinPrint.document.write(buildHtml(html, style))
       WinPrint.document.close()
       WinPrint.focus()
-      WinPrint.print()
-      WinPrint.close()
+      // no idea why, but all of the sudden the printed reports were f'd
+      // trial and error determined that putting print/close in a timeout
+      // gave browser enough time to render page correctly?
+      setTimeout(function printIt() {
+        WinPrint.print()
+        WinPrint.close()
+      },0)
     })
 
   return Observable.empty()

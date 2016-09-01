@@ -10,6 +10,7 @@ export * from './Menu'
 export * from './Avatar'
 
 export * from './Button'
+export * from './Link'
 export * from './Icon'
 
 export {Fab} from './Fab'

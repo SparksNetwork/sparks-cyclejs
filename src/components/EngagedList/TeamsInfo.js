@@ -27,7 +27,7 @@ const TeamsInfo = sources => {
 
   const header = Collapsible(ListItemHeader)({
     ...sources,
-    title$: of('Applied to Teams'),
+    title$: of('Teams'),
     iconName$: of('people'),
     rightDOM$: sources.memberships$.map(compose(div, rof, prop('length'))),
     contentDOM$: combineDOMsToDiv('', addToTeam, list),

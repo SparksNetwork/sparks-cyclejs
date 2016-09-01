@@ -33,13 +33,7 @@ const AddTeamItem = sources => {
     .map(objOf('values'))
     .map(Memberships.action.create)
 
-  const updateEngagement$ = sources.engagementKey$
-    .sample(li.click$)
-    .map(engagementKey => ({key: engagementKey, values: {isAccepted: true}}))
-    .map(Engagements.action.update)
-
-  const queue$ = merge(createMembership$, updateEngagement$)
-    .share()
+  const queue$ = createMembership$.share()
 
   const DOM = sources.item$.combineLatest(sources.memberships$,
     (item, memberships) => !memberships.some(m => m.teamKey === item.$key) ?
@@ -47,13 +41,7 @@ const AddTeamItem = sources => {
       of(div([null]))
   ).switch()
 
-  const route$ = queue$.map(() =>
-    sources.engagementKey$
-      .map(key => '/ok/show/' + key)
-      .map(sources.createHref)
-  ).switch().shareReplay(1)
-
-  return {...li, DOM, queue$, route$}
+  return {...li, DOM, queue$}
 }
 
 export default AddTeamItem

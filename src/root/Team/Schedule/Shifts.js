@@ -213,8 +213,8 @@ const _EditDialog = sources => {
       ({start, hours, ...values}, date, key) => ({
         key, values: {
           ...values,
-          start: localTime(date).add(start,'hours').format(),
-          end: localTime(date).add(start,'hours').add(hours,'hours').format(),
+          start: moment(date).add(start,'hours').format(),
+          end: moment(date).add(start,'hours').add(hours,'hours').format(),
         },
       })
     )
