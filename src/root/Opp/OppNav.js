@@ -30,18 +30,11 @@ const _Confirmed = sources => ListItemNavigating({...sources,
   path$: just('/engaged/confirmed'),
 })
 
-// const _Engaged = sources => ListItemNavigating({...sources,
-//   title$: sources.applied$.map(c => `${c.length || 0} Applied`),
-//   iconName$: just('event_available'),
-//   path$: just('/engaged'),
-// })
-
 const _List = sources => {
   const childs = [
     isolate(_Glance,'glance')(sources),
     isolate(_Manage,'manage')(sources),
     isolate(_Confirmed,'confirmed')(sources),
-    // isolate(_Engaged,'enaged')(sources),
   ]
 
   return {

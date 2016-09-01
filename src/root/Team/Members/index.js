@@ -69,22 +69,30 @@ const TabMaker = sources => ({
     sources.applied$,
     sources.ok$,
     sources.never$,
-    sources.confirmed$,
-    (ap,ok,nv,cf) => [
+    (ap,ok,nv) => [
       {path: '/', label: `${ap.length} Applied`},
-      {path: '/ok', label: `${ok.length} OK`},
-      {path: '/confirmed', label: `${cf.length} Confirmed`},
-      {path: '/never', label: `${nv.length} Never`},
+      {path: '/ok', label: `${ok.length} Accepted`},
+      {path: '/never', label: `${nv.length} Denied`},
     ].filter(Boolean)
   ),
 })
 
 const EngagementsFetcher = component => sources => {
   const query = Engagements.query.one(sources)
+  const mquery = Memberships.query.byEngagement(sources)
 
-  const engagements$ = sources.memberships$
+  const raw$ = sources.memberships$
     .map(map(compose(query, prop('engagementKey'))))
     .flatMapLatest(m => combineLatest(...m))
+
+  const bad$ = raw$
+    .map(filter(e => !e.profileKey))
+    .map(map(compose(mquery, prop('$key'))))
+    .flatMapLatest(m => combineLatest(...m))
+  bad$.subscribe(ms => console.warn('bad memberships', ms))
+
+  const engagements$ = raw$
+    .map(filter(e => e.profileKey))
 
   return component({...sources, engagements$})
 }
