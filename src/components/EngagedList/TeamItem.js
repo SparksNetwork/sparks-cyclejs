@@ -30,7 +30,7 @@ const TeamQandA = sources => ({
 })
 
 function statusLabel({isAccepted, isDeclined}) {
-  if (isAccepted) { return div({style: {color: 'green'}}, 'APPROVED') }
+  if (isAccepted) { return div({style: {color: 'green'}}, 'ACCEPTED') }
   if (isDeclined) { return div({class: {disabled: true}}, 'DENIED') }
   return div({class: {accent: true}}, '?')
 }
@@ -45,7 +45,7 @@ const TeamItem = sources => {
   const qa = TeamQandA({...sources, team$})
 
   const okButton = ActionButton({...sources,
-    label$: of('Approve'),
+    label$: of('Accept'),
     params$: of({isAccepted: true, isDeclined: false}),
   })
 
