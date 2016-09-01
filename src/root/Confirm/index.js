@@ -1,7 +1,7 @@
 import {Observable as $} from 'rx'
-const {just} = $
+const {just, combineLatest} = $
 import combineLatestObj from 'rx-combine-latest-obj'
-import {objOf, not, path, last} from 'ramda'
+import {objOf, not, path, last, head} from 'ramda'
 // import isolate from '@cycle/isolate'
 
 import {Profiles} from 'components/remote'
@@ -53,7 +53,8 @@ export default sources => {
     disabled$: valid$.map(not),
   })
 
-  const queue$ = profile$
+  const queue$ = combineLatest(profile$, valid$)
+    .filter(last).map(head) // filter until valid$ is true
     .sample(buttons.ok$)
     .map(objOf('values'))
     .map(Profiles.action.create)
