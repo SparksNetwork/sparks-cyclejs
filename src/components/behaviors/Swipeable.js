@@ -8,7 +8,7 @@ function newScope() {
   return `swipeable-${++counter}`
 }
 
-const Swipeable = Component => sources => {
+export const Swipeable = Component => sources => {
   const swipeableScope = newScope()
 
   const start$ = sources.DOM.select(`.${swipeableScope}`)

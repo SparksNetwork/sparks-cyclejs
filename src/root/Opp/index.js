@@ -26,7 +26,6 @@ import {ProjectQuickNavMenu} from 'components/project'
 import Glance from './Glance'
 import Manage from './Manage'
 import Engaged from './Engaged'
-import Confirmed from './Confirmed'
 
 import {FetchEngagements} from './FetchEngagements'
 
@@ -72,7 +71,6 @@ const _Page = sources => RoutedComponent({...sources, routes$: of({
   '/': Glance,
   '/manage': Manage,
   '/engaged': Engaged,
-  '/confirmed': Confirmed,
 })})
 
 const Opp = sources => {

@@ -30,6 +30,9 @@ import {
   Engagements,
   Memberships,
   Profiles,
+  Projects,
+  Opps,
+  Teams,
 } from 'components/remote'
 
 import {hideable, mergeSinks} from 'util'
@@ -41,12 +44,32 @@ const Fetch = component => sources => {
   const engagement$ = sources.engagementKey$
     .flatMapLatest(Engagements.query.one(sources))
     .shareReplay(1)
+
+  const oppKey$ = engagement$.map(prop('oppKey'))
+
+  const opp$ = sources.opp$ || oppKey$.flatMapLatest(Opps.query.one(sources))
+    .shareReplay(1)
+
+  const project$ = sources.project$ || opp$.map(prop('projectKey'))
+    .flatMapLatest(Projects.query.one(sources))
+    .shareReplay(1)
+
+  const teams$ = sources.teams$ || project$.map(prop('$key'))
+    .flatMapLatest(Teams.query.byProject(sources))
+    .shareReplay(1)
+
+  const opps$ = sources.opps$ || project$.map(prop('$key'))
+    .flatMapLatest(Opps.query.byProject(sources))
+    .shareReplay(1)
+
   const profile$ = engagement$.map(prop('profileKey'))
     .flatMapLatest(Profiles.query.one(sources))
     .shareReplay(1)
+
   const memberships$ = sources.engagementKey$
     .flatMapLatest(Memberships.query.byEngagement(sources))
     .shareReplay(1)
+
   const assignments$ = sources.engagementKey$
     .flatMapLatest(Assignments.query.byEngagement(sources))
     .shareReplay(1)
@@ -58,10 +81,15 @@ const Fetch = component => sources => {
 
   return component({
     profile$,
+    project$,
     engagement$,
+    oppKey$,
+    opp$,
+    opps$,
     memberships$,
     assignments$,
     hasApprovedMemberships$,
+    teams$,
     ...sources,
   })
 }
@@ -143,7 +171,7 @@ const _Content = sources => {
   }
 }
 
-const Detail = sources => {
+const Engagement = sources => {
   const c = _Content(sources)
 
   const backButton = Clickable(Icon)({
@@ -162,9 +190,14 @@ const Detail = sources => {
     content$: combineDOMsToDiv('', header, c).map(rof),
   })
 
+  // TODO: This is a sink that emits the position of this engagement in the
+  // engagement list, but now this component is used from elsewhere it makes no
+  // sense.
+  const engagements$ = sources.engagements$ || of([])
+
   const index$ = combineLatest(
     sources.engagementKey$,
-    sources.engagements$.map(map(prop('$key'))),
+    engagements$.map(map(prop('$key'))),
   )
   .map(apply(indexOf))
 
@@ -178,7 +211,7 @@ const Detail = sources => {
     .map(add(index))
   )
 
-  const nextEngKey$ = sources.engagements$.flatMapLatest(engs =>
+  const nextEngKey$ = engagements$.flatMapLatest(engs =>
     nextIndex$
       .map(flip(modulo)(engs.length))
       .map(flip(nth)(engs))
@@ -186,10 +219,8 @@ const Detail = sources => {
   )
 
   const route$ = merge(
-    nextEngKey$.map(key => `/show/${key}`)
-      .map(sources.createHref),
-    backButton.click$.map(always(''))
-      .map(sources.createHref),
+    nextEngKey$.map(sources.createHref.item),
+    backButton.click$.map(sources.createHref.list),
     c.route$,
   )
 
@@ -225,9 +256,8 @@ const Detail = sources => {
   }
 }
 
-export default function(sources) {
-  return Fetch(Detail)({
+export const EngagementView = sources =>
+  Fetch(Engagement)({
     ...sources,
     engagementKey$: sources.key$,
   })
-}
