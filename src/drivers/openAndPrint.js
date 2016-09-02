@@ -1,47 +1,36 @@
-import {Observable} from 'rx'
+import {Subject} from 'rx'
 
-function forEach(arrayLike, f) {
-  let l = arrayLike.length
+export default function makeOpenAndPrintDriver(rootElementSelector) {
+  const stream = new Subject()
 
-  for (let i = 0; i < l; ++i) {
-    f(arrayLike[i], i)
+  return function openAndPrintDriver(element$) {
+    element$.subscribe((element) => {
+      // get the current page
+      const rootElement = document.querySelector(rootElementSelector)
+
+      // make a clone of the current element to print
+      // to keep origin intact where it belongs
+      const clone = element.cloneNode(element)
+
+      // rmeove the current page from document
+      document.body.removeChild(rootElement)
+
+      // add cloned element to document
+      document.body.appendChild(clone)
+
+      // open print dialogue - this is blocking
+      window.print()
+
+      // remove clone from document
+      document.body.removeChild(clone)
+
+      // put back the original page
+      document.body.appendChild(rootElement)
+
+      // push into dummy stream
+      stream.onNext(null)
+    })
+
+    return stream
   }
-}
-
-function createPage(element) {
-  // open window
-  const WinPrint = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0') // eslint-disable-line max-len
-
-  const base = document.createElement('base')
-  base.href = window.location.origin
-
-  // give the new window all of the same head elements
-  forEach(document.head.cloneNode(true).children, node => {
-    WinPrint.document.head.appendChild(node.cloneNode(true))
-  })
-
-  // Append the elements children to the new windows body
-  forEach(element.cloneNode(true).children, node => {
-    WinPrint.document.body.appendChild(node.cloneNode(true))
-  })
-
-  // focus the new window
-  WinPrint.focus()
-
-  return WinPrint
-}
-
-export default function openAndPrintDriver(element$) {
-  element$.map(createPage)
-  // give time to load stylesheets
-  .debounce(100)
-  .subscribe(WinPrint => {
-    // open the print window - blocking
-    WinPrint.print()
-
-    // close popup window when print page has closed
-    WinPrint.close()
-  })
-
-  return Observable.empty()
 }
