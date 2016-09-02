@@ -8,26 +8,31 @@ function forEach(arrayLike, f) {
   }
 }
 
-export default function openAndPrintDriver(element$) {
-  element$.map(element => {
-    // open window
-    const WinPrint = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0') // eslint-disable-line max-len
+function createPage(element) {
+  // open window
+  const WinPrint = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0') // eslint-disable-line max-len
 
-    // give the new window all of the same head elements
-    forEach(document.head.cloneNode(true).children, node => {
-      WinPrint.document.head.appendChild(node)
-    })
+  const base = document.createElement('base')
+  base.href = window.location.origin
 
-    // Append the elements children to the new windows body
-    forEach(element.cloneNode(true).children, node => {
-      WinPrint.document.body.appendChild(node)
-    })
-
-    // focus the new window
-    WinPrint.focus()
-
-    return WinPrint
+  // give the new window all of the same head elements
+  forEach(document.head.cloneNode(true).children, node => {
+    WinPrint.document.head.appendChild(node.cloneNode(true))
   })
+
+  // Append the elements children to the new windows body
+  forEach(element.cloneNode(true).children, node => {
+    WinPrint.document.body.appendChild(node.cloneNode(true))
+  })
+
+  // focus the new window
+  WinPrint.focus()
+
+  return WinPrint
+}
+
+export default function openAndPrintDriver(element$) {
+  element$.map(createPage)
   // give time to load stylesheets
   .debounce(100)
   .subscribe(WinPrint => {
