@@ -1,46 +1,34 @@
 import {Observable} from 'rx'
 
-const STYLESHEET = window.location.origin + '/scss/styles.css'
+export default function openAndPrintDriver(element$) {
+  element$.map(element => {
+    // open window
+    const WinPrint = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0') // eslint-disable-line max-len
 
-function buildHtml(html) {
-  return Observable
-    .fromPromise(fetch(STYLESHEET).then(res => res.text()))
-    .map((stylesheet) =>
-      Array.prototype.slice.call(document.querySelectorAll('style'))
-        .map(style => style.innerHTML)
-        .reduce((a, b) => a + b, stylesheet)
-    )
-    .map(styles => `
-      <html>
-        <head>
-          <style>
-            ${styles}
-          </style>
-        </head>
-        <body>
-          ${html}
-        </body>
-      </html>
-      `
-    )
-}
-
-export default function openAndPrintDriver(html$) {
-  html$
-    .map(buildHtml)
-    .switch()
-    .map(html => {
-      const WinPrint = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0') // eslint-disable-line max-len
-      WinPrint.document.write(html)
-      WinPrint.focus()
-
-      return WinPrint
+    // give the new window all of the same head elements
+    Array.from(document.head.cloneNode(true).children).forEach(node => {
+      WinPrint.document.head.appendChild(node)
     })
-    .debounce(50)
-    .subscribe(WinPrint => {
-      WinPrint.print()
-      WinPrint.close()
+
+    // Append the elements children to the new windows body
+    Array.from(element.cloneNode(true).children).forEach(node => {
+      WinPrint.document.body.appendChild(node)
     })
+
+    // focus the new window
+    WinPrint.focus()
+
+    return WinPrint
+  })
+  // give time to load stylesheets
+  .debounce(100)
+  .subscribe(WinPrint => {
+    // open the print window - blocking
+    WinPrint.print()
+
+    // close popup window when print page has closed
+    WinPrint.close()
+  })
 
   return Observable.empty()
 }
