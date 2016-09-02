@@ -1,17 +1,25 @@
 import {Observable} from 'rx'
 
+function forEach(arrayLike, f) {
+  let l = arrayLike.length
+
+  for (let i = 0; i < l; ++i) {
+    f(arrayLike, i)
+  }
+}
+
 export default function openAndPrintDriver(element$) {
   element$.map(element => {
     // open window
     const WinPrint = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0') // eslint-disable-line max-len
 
     // give the new window all of the same head elements
-    Array.from(document.head.cloneNode(true).children).forEach(node => {
+    forEach(document.head.cloneNode(true).children, node => {
       WinPrint.document.head.appendChild(node)
     })
 
     // Append the elements children to the new windows body
-    Array.from(element.cloneNode(true).children).forEach(node => {
+    forEach(element.cloneNode(true).children, node => {
       WinPrint.document.body.appendChild(node)
     })
 
