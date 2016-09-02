@@ -4,7 +4,7 @@ function forEach(arrayLike, f) {
   let l = arrayLike.length
 
   for (let i = 0; i < l; ++i) {
-    f(arrayLike, i)
+    f(arrayLike[i], i)
   }
 }
 
