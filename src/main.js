@@ -1,3 +1,4 @@
+/* global Sparks */
 import {run} from '@cycle/core'
 
 // drivers
@@ -11,7 +12,7 @@ import {
   makeAuthDriver, makeFirebaseDriver, makeQueueDriver,
 } from '@sparksnetwork/cyclic-fire'
 import screenInfoDriver from 'drivers/screenInfo'
-import openAndPrintDriver from 'drivers/openAndPrint'
+import makeOpenAndPrintDriver from 'drivers/openAndPrint'
 import makeBugsnagDriver from 'drivers/bugsnag'
 import makeFocusNextDriver from 'drivers/focusNext'
 import makePrerenderDriver from 'drivers/prerender'
@@ -27,9 +28,9 @@ try {
   firebase.app()
 } catch (err) {
   firebase.initializeApp({
-    apiKey: Sparks.FIREBASE_API_KEY, // eslint-disable-line
-    authDomain: Sparks.FIREBASE_AUTH_DOMAIN, // eslint-disable-line
-    databaseURL: Sparks.FIREBASE_DATABASE_URL, // eslint-disable-line
+    apiKey: Sparks.FIREBASE_API_KEY,
+    authDomain: Sparks.FIREBASE_AUTH_DOMAIN,
+    databaseURL: Sparks.FIREBASE_DATABASE_URL,
   })
 }
 const fbRoot = firebase.database().ref()
@@ -47,7 +48,7 @@ const {sources, sinks} = run(Root, {
   bugsnag: makeBugsnagDriver({
     releaseStage: process.env.BUILD_ENV || 'development',
   }),
-  openAndPrint: openAndPrintDriver,
+  openAndPrint: makeOpenAndPrintDriver('#root'),
   prerender: makePrerenderDriver(),
   openGraph: makeOpenGraphDriver(),
 })
