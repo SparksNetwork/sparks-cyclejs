@@ -28,6 +28,7 @@ const prepareText = compose(
 const SearchBox = sources => {
   const focus$ = sources.DOM.select('.list-filter').observable
     .filter(complement(isEmpty))
+    .first()
     .map({selector: '.list-filter input'})
 
   const input = isolate(InputControl)({
