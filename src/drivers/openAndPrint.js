@@ -1,39 +1,36 @@
-import {Observable} from 'rx'
+import {Subject} from 'rx'
 
-function buildHtml(html, style) {
-  return `
-  <html>
-    <head>
-      <style>
-        ${style}
-      </style>
-    </head>
-    <body>
-      ${html}
-    </body>
-  </html>
-  `
-}
+export default function makeOpenAndPrintDriver(rootElementSelector) {
+  const stream = new Subject()
 
-export default function openAndPrintDriver(html$) {
-  const style = Array.prototype.slice.call(document.querySelectorAll('style'))
-    .map(x => x.innerHTML)
-    .reduce(function concatStrings(x, y) { return x + y}, '')
+  return function openAndPrintDriver(element$) {
+    element$.subscribe((element) => {
+      // get the current page
+      const rootElement = document.querySelector(rootElementSelector)
 
-  html$
-    .subscribe(html => {
-      const WinPrint = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0') // eslint-disable-line max-len
-      WinPrint.document.write(buildHtml(html, style))
-      WinPrint.document.close()
-      WinPrint.focus()
-      // no idea why, but all of the sudden the printed reports were f'd
-      // trial and error determined that putting print/close in a timeout
-      // gave browser enough time to render page correctly?
-      setTimeout(function printIt() {
-        WinPrint.print()
-        WinPrint.close()
-      },0)
+      // make a clone of the current element to print
+      // to keep origin intact where it belongs
+      const clone = element.cloneNode(element)
+
+      // rmeove the current page from document
+      document.body.removeChild(rootElement)
+
+      // add cloned element to document
+      document.body.appendChild(clone)
+
+      // open print dialogue - this is blocking
+      window.print()
+
+      // remove clone from document
+      document.body.removeChild(clone)
+
+      // put back the original page
+      document.body.appendChild(rootElement)
+
+      // push into dummy stream
+      stream.onNext(null)
     })
 
-  return Observable.empty()
+    return stream
+  }
 }

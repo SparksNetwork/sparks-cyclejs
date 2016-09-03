@@ -165,11 +165,10 @@ export const CardFullSchedule = sources => {
   const printable$ = sources.DOM.select('.printable')
     .observable
     .filter(e => e.length === 1)
-    .map(e => e[0].innerHTML)
+    .map(e => e[0])
 
   return {
     DOM: card.DOM,
-    openAndPrint: print.click$.withLatestFrom(printable$, (cl,pr) => pr),
+    openAndPrint: printable$.sample(print.click$),
   }
 }
-
