@@ -14,7 +14,8 @@ import {
 } from 'components/sdm'
 
 import codeIcons from 'components/opp/codeIcons'
-import codeTitles from 'components/opp/codeTitles'
+// import codeTitles from 'components/opp/codeTitles'
+import {codeTitles, codeSubtitles, codePriority} from 'components/commitment'
 import {div} from 'cycle-snabbdom'
 
 const Delete = sources => MenuItem({...sources,
@@ -37,6 +38,11 @@ const CommitmentItem = sources => {
   const listItem = ListItemWithMenu({...sources,
     iconName$: item$.map(({code}) => codeIcons[code]),
     title$: item$.map(({code, ...vals}) => codeTitles[code](vals)),
+    subtitle$: item$.map(({code, ...vals}) =>
+      codeSubtitles[code] ?
+      codeSubtitles[code](vals) :
+      null
+    ),
     menuItems$: just([deleteItem.DOM, editItem.DOM]),
   })
 
@@ -66,6 +72,9 @@ const CommitmentItemPassive = sources => ListItem({...sources,
 })
 
 const CommitmentList = sources => List({...sources,
+  rows$: sources.rows$.map(a =>
+    a.sort((a,b) => codePriority[a] - codePriority[b])
+  ),
   Control$: just(CommitmentItem),
 })
 

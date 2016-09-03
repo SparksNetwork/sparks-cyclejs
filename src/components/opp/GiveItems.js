@@ -37,8 +37,24 @@ const ShiftCountInput = sources => InputControl({
   ...sources,
 })
 
+const ShiftMinLengthInput = sources => InputControl({
+  label$: just('Shortest Shift? (in hours)'),
+  value$: just(4),
+  ...sources,
+})
+
+const ShiftMaxLengthInput = sources => InputControl({
+  label$: just('Shortest Shift? (in hours)'),
+  value$: just(6),
+  ...sources,
+})
+
 const GiveShiftForm = sources => Form({...sources,
-  Controls$: just([{field: 'count', Control: ShiftCountInput}]),
+  Controls$: just([
+    {field: 'count', Control: ShiftCountInput},
+    {field: 'minLength', Control: ShiftMinLengthInput},
+    {field: 'maxLength', Control: ShiftMaxLengthInput},
+  ]),
 })
 
 export {GiveShiftForm}
@@ -59,6 +75,11 @@ const PaymentAmountInput = sources => InputControl({
   label$: just('How much do they pay?'),
   ...sources,
 })
+
+// const PaymentAmountInput = sources => InputControl({
+//   label$: just('How much do they pay?'),
+//   ...sources,
+// })
 
 const GivePaymentForm = sources => Form({...sources,
   Controls$: just([{field: 'amount', Control: PaymentAmountInput}]),
