@@ -64,13 +64,16 @@ const ListWithFilter = sources => {
 
   const preparedTerm$ = term$.map(compose(map(matchesTerm), split(' ')))
 
-  const rows$ = combineLatest(preparedTerm$, preparedRows$,
+  const allRows$ = combineLatest(preparedTerm$, preparedRows$,
     compose(
-      take(20),
+      // take(20),
       useWith(filter, [allPass])
     )
   )
   .shareReplay(1)
+
+  const rowLimit$ = sources.rowLimit$ || $.just(20)
+  const rows$ = combineLatest(rowLimit$, allRows$, take)
 
   const list = List({
     ...sources,
