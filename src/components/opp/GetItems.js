@@ -35,10 +35,16 @@ const TrackedDescriptionInput = sources => InputControl({
   ...sources,
 })
 
+const TrackedAllocationRuleInput = sources => InputControl({
+  label$: just('How and when are they getting this thing?'),
+  ...sources,
+})
+
 const GetTrackedForm = sources => Form({
   Controls$: just([
     {field: 'count', Control: TrackedCountInput},
     {field: 'description', Control: TrackedDescriptionInput},
+    {field: 'allocationRule', Control: TrackedAllocationRuleInput},
   ]),
   ...sources,
 })
@@ -52,27 +58,27 @@ export const GetTracked = makeMenuItemFormPopup({
 
 // TICKET
 
-const EventCodeInput = sources => InputControl({
-  label$: just('What is your Eventbrite Event Code?'),
+const TicketTypeInput = sources => InputControl({
+  label$: just('What ticket or pass are your volunteers receiving?'),
   ...sources,
 })
 
-const TicketTypeInput = sources => InputControl({
-  label$: just('What is your Eventbrite Ticket Type?'),
+const TicketRetailValueInput = sources => InputControl({
+  label$: just('What is the total retail value of this ticket?'),
   ...sources,
 })
 
 const GetTicketForm = sources => Form({
   Controls$: just([
-    {field: 'eventCode', Control: EventCodeInput},
     {field: 'ticketType', Control: TicketTypeInput},
+    {field: 'retailValue', Control: TicketRetailValueInput},
   ]),
   ...sources,
 })
 
 export const GetTicket = makeMenuItemFormPopup({
   FormControl: GetTicketForm,
-  title: 'A Ticket to an event',
+  title: 'A Ticket or pass to an event',
   iconName: codeIcons['ticket'],
   className: 'ticket',
 })
@@ -80,7 +86,7 @@ export const GetTicket = makeMenuItemFormPopup({
 // HELP
 
 const HelpWhoInput = sources => InputControl({
-  label$: just('Who are they helping?'),
+  label$: just('Who or what are they helping?'),
   ...sources,
 })
 

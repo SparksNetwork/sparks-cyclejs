@@ -1,12 +1,12 @@
 export const codeTitles = {
   help: ({who}) => 'To help ' + who,
-  ticket: ({ticketType}) => 'A ' + ticketType + ' ticket',
+  ticket: ({ticketType}) => ticketType,
   tracked: ({count, description}) => count + ' ' + description,
   schwag: ({what}) => what,
   waiver: ({who}) => 'A waiver for ' + who,
-  deposit: ({amount}) => `Commit to an accountability payment of ${amount}`,
-  payment: ({amount, what}) => `A payment of ${amount} when `,
-  shifts: ({count}) => 'Work ' + count + ' shifts',
+  deposit: ({amount}) => `Commit to an accountability payment of $${amount}`,
+  payment: ({amount}) => `A nonrefundable payment of $${amount}`,
+  shifts: ({count}) => `Work ${count} ${count > 1 ? 'shifts' : 'shift'}`,
 }
 
 export const codePriority = {
@@ -23,17 +23,14 @@ export const codePriority = {
 export const codeSubtitles = {
   ticket: ({retailValue}) =>
     retailValue ?
-    'A ' + retailValue + ' retail value.' :
+    `A $${retailValue} retail value.` :
     null,
   tracked: ({allocationRule}) => allocationRule || null,
   deposit: () => 'This will only be charged if you arrive at the event but do not complete your shifts.',
-  payment: ({discount}) =>
-    discount ?
-    `A ${discount} discount` :
-    null,
-  shifts: ({minLength, maxLength}) =>
+  payment: () => 'Paid upon confirmation, no payment needed to apply.',
+  shifts: ({count, minLength, maxLength}) =>
     minLength && maxLength ?
-    `(from ${minLength} to ${maxLength} hours each)` :
+    `From ${minLength} to ${maxLength} hours${count > 1 ? ' each' : ''}.` :
     null,
 }
 

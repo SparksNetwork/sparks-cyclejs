@@ -69,11 +69,16 @@ const CommitmentItem = sources => {
 const CommitmentItemPassive = sources => ListItem({...sources,
   iconName$: sources.item$.map(({code}) => codeIcons[code]),
   title$: sources.item$.map(({code, ...vals}) => codeTitles[code](vals)),
+  subtitle$: sources.item$.map(({code, ...vals}) =>
+    codeSubtitles[code] ?
+    codeSubtitles[code](vals) :
+    null
+  ),
 })
 
 const CommitmentList = sources => List({...sources,
   rows$: sources.rows$.map(a =>
-    a.sort((a,b) => codePriority[a] - codePriority[b])
+    a.sort((a,b) => codePriority[a.code] - codePriority[b.code])
   ),
   Control$: just(CommitmentItem),
 })
