@@ -12,8 +12,16 @@ const SchwagWhatInput = sources => InputControl({
   ...sources,
 })
 
+const SchwagDescriptionInput = sources => InputControl({
+  label$: just('Describe it more fully. Make it fun!'),
+  ...sources,
+})
+
 const GetSchwagForm = sources => Form({...sources,
-  Controls$: just([{field: 'what', Control: SchwagWhatInput}]),
+  Controls$: just([
+    {field: 'what', Control: SchwagWhatInput},
+    {field: 'description', Control: SchwagDescriptionInput},
+  ]),
 })
 
 export const GetSchwag = makeMenuItemFormPopup({

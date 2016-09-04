@@ -6,7 +6,7 @@ import {h5, a} from 'cycle-snabbdom'
 import {div} from 'helpers'
 import {combineLatestToDiv, combineDOMsToDiv, switchStream} from 'util'
 
-import {CommitmentItemPassive} from 'components/commitment'
+import {CommitmentList, CommitmentItemPassive} from 'components/commitment'
 
 import {
   ListItem,
@@ -69,9 +69,14 @@ const Quote = sources => QuotingListItem({...sources,
   profileKey$: sources.project$.pluck('ownerProfileKey'),
 })
 
-const CommitmentList = sources => ListWithHeader({...sources,
+import {codePriority} from 'components/commitment'
+
+const CommitmentListPassive = sources => ListWithHeader({...sources,
   headerDOM: ListItemHeader(sources).DOM,
   Control$: just(CommitmentItemPassive),
+  rows$: sources.rows$.map(a =>
+    a.sort((a,b) => codePriority[a.code] - codePriority[b.code])
+  ),
 })
 
 export default sources => {
@@ -106,12 +111,12 @@ export default sources => {
     label$: just('Apply Now!'),
   })
 
-  const gives = CommitmentList({...sources,
+  const gives = CommitmentListPassive({...sources,
     title$: just('you GIVE'),
     rows$: commitments$.map(cs => cs.filter(({party}) => party === 'vol')),
   })
 
-  const gets = CommitmentList({...sources,
+  const gets = CommitmentListPassive({...sources,
     title$: just('you GET'),
     rows$: commitments$.map(cs => cs.filter(({party}) => party === 'org')),
   })

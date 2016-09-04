@@ -26,6 +26,7 @@ export const codeSubtitles = {
     `A $${retailValue} retail value.` :
     null,
   tracked: ({allocationRule}) => allocationRule || null,
+  schwag: ({description}) => description || null,
   deposit: () => 'This will only be charged if you arrive at the event but do not complete your shifts.',
   payment: () => 'Paid upon confirmation, no payment needed to apply.',
   shifts: ({count, minLength, maxLength}) =>
