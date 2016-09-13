@@ -100,7 +100,9 @@ const Root = sources => {
     navDOM$: nav.DOM,
   })
 
-  const DOM = page.DOM
+  const _DOM = page.DOM.shareReplay(1)
+  // when done with printing reattach event liteners
+  const DOM = _DOM.merge(_DOM.sample(sources.openAndPrint))
 
   const auth$ = page.auth$
 

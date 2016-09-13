@@ -15,6 +15,7 @@ import {ProfilesFetcher} from './fetch'
 const AppList = sources => ListWithFilter({...sources,
   Control$: of(Item),
   rows$: sources.profiles$,
+  rowLimit$: of(200),
   searchFields$: of([
     ['profile', 'fullName'],
     ['profile', 'email'],

@@ -4,7 +4,8 @@
 import {Observable as $} from 'rx'
 const {just, empty, combineLatest, merge} = $
 import {
-  objOf, always, ifElse, compose, cond, nth, head, split, prop, join, T,
+  objOf, always, ifElse, compose, cond, nth, head, split, prop, join, T, test,
+  identity,
 } from 'ramda'
 import isolate from '@cycle/isolate'
 
@@ -80,7 +81,15 @@ export const ProfileMigration = component => sources => {
         // Construct the old uid:
         const provider = auth.providerData[0]
         const name = compose(head, split('.'), prop('providerId'))(provider)
-        const uid = join(':', [name, provider.uid])
+
+        // If the old uid is in the format xxx-xxx-xxx then use it directly,
+        // otherwise prepend the provider name, i.e. google:1234
+        const uidReplacer = cond([
+          [test(/.+-.+/), identity],
+          [T, uid => join(':', [name, uid])],
+        ])
+
+        const uid = uidReplacer(provider.uid)
 
         // Search, only migrate if found
         return sources.firebase('Users', uid).map(profileKey => ({
