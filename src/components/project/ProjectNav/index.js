@@ -11,6 +11,7 @@ import {Opps, Teams} from 'components/remote'
 // import {log} from 'util'
 
 import {
+  // ListItem,
   ListItemNavigating,
   ListItemWithDialog,
   ListWithHeader,
@@ -119,13 +120,16 @@ const OppListNavigatingAndAdding = sources => {
   }
 }
 
+import OppBlock from './OppBlock'
+
 const ProjectNav = sources => {
   const glance = isolate(Glance,'glance')(sources)
   const manage = isolate(Manage,'manage')(sources)
+  const opps = OppBlock(sources)
 
-  const opps = OppListNavigatingAndAdding({...sources,
-    rows$: sources.opps$,
-  })
+  // const opps = OppListNavigatingAndAdding({...sources,
+  //   rows$: sources.opps$,
+  // })
 
   // const teams = TeamListNavigatingAndAdding({...sources,
   //   rows$: sources.teams$,

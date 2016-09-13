@@ -229,7 +229,8 @@ export const AuthRoute = Component => sources => {
 * keyName.
 */
 export const KeyRoute = (component, keyName) => key => sources =>
-  isolate(component)({...sources, ...objOf(keyName, just(key))})
+  // isolate(component)({...sources, ...objOf(keyName, just(key))})
+  component({...sources, ...objOf(keyName, just(key))})
 
 /**
 * Returns a function that takes a key and returns a component representing a

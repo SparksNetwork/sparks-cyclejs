@@ -1,7 +1,7 @@
 require('./styles.scss')
 
 import {Observable} from 'rx'
-const {just, combineLatest} = Observable
+const {just, combineLatest, merge, never} = Observable
 
 import {icon, div} from 'helpers'
 
@@ -21,7 +21,12 @@ const QuickNav = sources => {
     ),
   })
 
-  const isOpen$ = item.click$.map(true).startWith(false)
+  // const isOpen$ = item.click$.map(true).startWith(false)
+  const isOpen$ = merge(
+    item.click$.map(true),
+    sources.isOpen$ || never(),
+  ).startWith(false)
+
 
   const children$ = sources.menuItems$ || just([])
 

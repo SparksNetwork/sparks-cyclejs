@@ -1,5 +1,7 @@
 import {Observable} from 'rx'
-const {combineLatest} = Observable
+const {combineLatest, just} = Observable
+
+import {flatten} from 'ramda'
 
 import AppFrame from 'components/AppFrame'
 import Header from 'components/Header'
@@ -12,13 +14,14 @@ import {nestedComponent, mergeOrFlatMapLatest} from 'util'
 
 import Design from './Design'
 import Manage from './Manage'
+import ProjectOpps from './Opps'
 
 const _routes = {
   // isolating breaks child tab navigation?
   '/': Design,
   '/manage': Manage,
   '/teams': Manage,
-  '/opps': Manage,
+  '/opps': ProjectOpps,
 }
 
 import {
@@ -28,6 +31,7 @@ import {
   Opps,
   Organizers,
   Arrivals,
+  Engagements,
 } from 'components/remote'
 
 const Fetch = sources => {
@@ -44,6 +48,17 @@ const Fetch = sources => {
 
   const opps$ = projectKey$
     .flatMapLatest(Opps.query.byProject(sources))
+    .tap(o => console.log('opps',o))
+
+  const engagements$ = opps$
+    .flatMapLatest(opps =>
+      opps.length > 0 ?
+      combineLatest(
+        ...opps.map(o => Engagements.query.byOpp(sources)(o.$key)),
+        (...opps) => flatten(opps),
+      ) :
+      just([])
+    )
 
   const organizers$ = sources.projectKey$
     .flatMapLatest(Organizers.query.byProject(sources))
@@ -59,6 +74,7 @@ const Fetch = sources => {
     opps$,
     organizers$,
     arrivals$,
+    engagements$,
   }
 }
 
@@ -72,11 +88,13 @@ export default _sources => {
 
   const tabsDOM = page$.flatMapLatest(page => page.tabBarDOM)
 
-  const subtitleDOM$ = combineLatest(
-    sources.isMobile$,
-    page$.flatMapLatest(page => page.pageTitle),
-    (isMobile, pageTitle) => isMobile ? pageTitle : null,
-  )
+  // const subtitleDOM$ = combineLatest(
+  //   sources.isMobile$,
+  //   page$.flatMapLatest(page => page.pageTitle),
+  //   (isMobile, pageTitle) => isMobile ? pageTitle : null,
+  // )
+
+  const subtitleDOM$ = page$.flatMapLatest(p => p.pageTitle)
 
   const title = ResponsiveTitle({...sources,
     tabsDOM$: tabsDOM,
