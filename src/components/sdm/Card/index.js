@@ -7,6 +7,10 @@ export const Grid = sources => ({
   DOM: sources.content$.map(content => div('.grid',content)),
 })
 
+export const CardContainer = sources => ({
+  DOM: sources.content$.map(content => div('.cardcontainer',content)),
+})
+
 export const LargeCard = sources => {
   const elevation$ = sources.elevation$ || $.just(1)
   const content$ = sources.content$ || $.just('need content$')

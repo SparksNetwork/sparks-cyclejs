@@ -1,26 +1,22 @@
 import {Observable} from 'rx'
 const {of} = Observable
 
-import ComingSoon from 'components/ComingSoon'
 import {TabbedPage} from 'components/ui'
 
-import Describe from './Describe'
-import Staff from './Staff'
-const Connect = ComingSoon('Manage/Connect')
+import Arrivals from './Arrivals'
+import Checkin from './Checkin'
 
 export default sources => ({
-  pageTitle: of('Manage Project'),
+  pageTitle: of('Manage Live'),
 
   ...TabbedPage({...sources,
     tabs$: of([
-      {path: '/', label: 'Describe'},
-      {path: '/staff', label: 'Staff'},
-      // {path: '/connect', label: 'Connect'},
+      {path: '/', label: 'Arrivals'},
+      {path: '/checkin', label: 'Shift Checkin'},
     ]),
     routes$: of({
-      '/': Describe,
-      '/staff': Staff,
-      '/connect': Connect,
+      '/': Arrivals,
+      '/checkin': Checkin,
     }),
   }),
 })

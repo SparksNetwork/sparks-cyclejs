@@ -10,13 +10,15 @@ import {ResponsiveTitle} from 'components/Title'
 
 import {nestedComponent, mergeOrFlatMapLatest} from 'util'
 
-import Glance from './Glance'
+import Design from './Design'
 import Manage from './Manage'
 
 const _routes = {
   // isolating breaks child tab navigation?
-  '/': Glance,
+  '/': Design,
   '/manage': Manage,
+  '/teams': Manage,
+  '/opps': Manage,
 }
 
 import {

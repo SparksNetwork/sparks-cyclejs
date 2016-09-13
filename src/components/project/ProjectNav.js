@@ -27,13 +27,13 @@ import {
 } from 'components/opp'
 
 const Glance = sources => ListItemNavigating({...sources,
-  title$: just('At a Glance'),
+  title$: just('Design'),
   iconName$: just('home'),
   path$: just(sources.router.createHref('/')),
 })
 
 const Manage = sources => ListItemNavigating({...sources,
-  title$: just('Manage'),
+  title$: just('Manage Live'),
   iconName$: just('settings'),
   path$: just(sources.router.createHref('/manage')),
 })
@@ -123,19 +123,21 @@ const ProjectNav = sources => {
   const glance = isolate(Glance,'glance')(sources)
   const manage = isolate(Manage,'manage')(sources)
 
-  const teams = TeamListNavigatingAndAdding({...sources,
-    rows$: sources.teams$,
-  })
-
   const opps = OppListNavigatingAndAdding({...sources,
     rows$: sources.opps$,
   })
 
-  const childs = [glance, manage, opps, teams]
+  // const teams = TeamListNavigatingAndAdding({...sources,
+  //   rows$: sources.teams$,
+  // })
+
+  // const childs = [glance, manage, opps, teams]
+  const childs = [glance, manage, opps]
 
   const route$ = merge(...childs.map(c => c.route$))
 
-  const queue$ = merge(opps.queue$, teams.queue$)
+  // const queue$ = merge(opps.queue$, teams.queue$)
+  const queue$ = opps.queue$
 
   const DOM = combineLatest(
     sources.titleDOM,
