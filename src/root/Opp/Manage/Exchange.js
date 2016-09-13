@@ -1,6 +1,7 @@
 import {Observable} from 'rx'
-const {just, merge, combineLatest} = Observable
+const {just, never, merge, combineLatest} = Observable
 import {objOf} from 'ramda'
+import {mapObjIndexed} from 'ramda'
 
 import isolate from '@cycle/isolate'
 import {AddCommitmentGive, AddCommitmentGet} from 'components/opp'
@@ -11,43 +12,29 @@ import {div} from 'helpers'
 
 import {CommitmentList} from 'components/commitment'
 
-function buildEditForm(giveList, getList, sources) {
-  const edit$ = merge(giveList.edit$, getList.edit$)
-    .map(({code, $key, party, ...others}) => {
-      const objectKey = Object.keys(others)
-        .filter(k => k !== 'code' && k !== 'oppKey')[0]
-      const value = others[objectKey]
-      const popup = codePopups[code]({
+function EditFormPopup(sources) {
+  const key$ = sources.editItem$.pluck('$key')
+
+  const Popup$ = sources.editItem$
+    .map(({code, ...others}) =>
+      codePopups[code]({
         isOpen$: just(true),
-        value$: just(value),
+        item$: just({code, ...others}),
         ...sources,
       })
+    ).share()
 
-      return {
-        code,
-        party,
-        objectKey,
-        key: $key,
-        item: popup.item$,
-        submit: popup.submit$,
-        modalDOM: popup.modalDOM,
-      }
-    }).share()
+  const item$ = Popup$.pluck('item$').switch()
+  const submit$ = Popup$.pluck('submit$').switch()
 
-  const editItem$ = edit$.pluck('item').switch()
-  const submit$ = edit$.pluck('submit').switch()
-
-  const editQueue$ = editItem$.sample(submit$)
-    .withLatestFrom(edit$, sources.oppKey$,
-      (item, {code, key, party, objectKey}, oppKey) => {
-        let object = {key, values: {code, party, oppKey}}
-        object.values[objectKey] = item[objectKey]
-        return object
-      })
+  const editQueue$ = item$.sample(submit$)
+    .map(mapObjIndexed(v => v || null))
+    .withLatestFrom(key$)
+    .map(([values, key]) => ({key, values}))
     .map(Commitments.action.update)
 
   const modalDOM = merge(
-    edit$.pluck('modalDOM').switch().startWith(null),
+    Popup$.pluck('modalDOM').switch().startWith(null),
     submit$.map(null),
   )
 
@@ -63,8 +50,9 @@ export default sources => {
 
   const giveList = CommitmentList({...sources, rows$: gives$})
   const getList = CommitmentList({...sources, rows$: gets$})
+  const editItem$ = merge(giveList.edit$, getList.edit$)
 
-  const {modalDOM, editQueue$} = buildEditForm(giveList, getList, sources)
+  const {modalDOM, editQueue$} = EditFormPopup({editItem$, ...sources})
 
   const addGive = isolate(AddCommitmentGive)(sources)
   const addGet = isolate(AddCommitmentGet)(sources)

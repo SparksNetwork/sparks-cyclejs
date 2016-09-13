@@ -1,12 +1,12 @@
 import {Observable} from 'rx'
 const {just, merge, combineLatest} = Observable
-import {not, find, propEq} from 'ramda'
+import {not, find, propEq, reduce} from 'ramda'
 
 import {h5, a} from 'cycle-snabbdom'
 import {div} from 'helpers'
 import {combineLatestToDiv, combineDOMsToDiv, switchStream} from 'util'
 
-import {CommitmentItemPassive} from 'components/commitment'
+import {CommitmentList, CommitmentItemPassive} from 'components/commitment'
 
 import {
   ListItem,
@@ -69,9 +69,24 @@ const Quote = sources => QuotingListItem({...sources,
   profileKey$: sources.project$.pluck('ownerProfileKey'),
 })
 
-const CommitmentList = sources => ListWithHeader({...sources,
+const Discount = sources => ListItem({...sources,
+  title$: sources.discount$.map(d =>
+    (d > 0 ?
+      `This volunteer program gets you a $${d} discount off the retail price for this event, and lots of other perks.` :
+      'Help out this project by contributing your time and effort.'
+    ) +
+    ' Applying for this opportunity is totally free! '
+  ),
+})
+
+import {codePriority} from 'components/commitment'
+
+const CommitmentListPassive = sources => ListWithHeader({...sources,
   headerDOM: ListItemHeader(sources).DOM,
   Control$: just(CommitmentItemPassive),
+  rows$: sources.rows$.map(a =>
+    a.sort((a,b) => codePriority[a.code] - codePriority[b.code])
+  ),
 })
 
 export default sources => {
@@ -95,23 +110,36 @@ export default sources => {
     () => just(null),
   )
 
-  const _sources = {...sources, opp$, oppKey$, commitments$}
+  const discount$ = commitments$.map(reduce((a,x) => {
+    console.log('commitment reducing', x)
+    if (x.code === 'ticket') {
+      return a + (Number(x.retailValue) || 0)
+    }
+    if (x.code === 'payment') {
+      return a - (Number(x.amount) || 0)
+    }
+    return a
+  }, 0))
+  .tap(d => console.log('discount', d))
+
+  const _sources = {...sources, opp$, oppKey$, commitments$, discount$}
 
   // delegate to controls
   const title = Title(_sources)
   const chooser = Chooser(_sources)
   const desc = Quote(_sources)
+  const discount = Discount(_sources)
 
   const applyNow = RaisedButton({...sources,
     label$: just('Apply Now!'),
   })
 
-  const gives = CommitmentList({...sources,
+  const gives = CommitmentListPassive({...sources,
     title$: just('you GIVE'),
     rows$: commitments$.map(cs => cs.filter(({party}) => party === 'vol')),
   })
 
-  const gets = CommitmentList({...sources,
+  const gets = CommitmentListPassive({...sources,
     title$: just('you GET'),
     rows$: commitments$.map(cs => cs.filter(({party}) => party === 'org')),
   })
@@ -134,6 +162,7 @@ export default sources => {
     title,
     chooser,
     desc,
+    discount,
     gives,
     gets,
   )
