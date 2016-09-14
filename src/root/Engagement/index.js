@@ -112,6 +112,7 @@ const _Fetch = sources => {
   const memberships$ = sources.engagementKey$
     .flatMapLatest(Memberships.query.byEngagement(sources))
 
+  const isApplied$ = engagement$.pluck('isApplied')
   const isConfirmed$ = engagement$.pluck('isConfirmed')
 
   const isApplicationComplete$ = $.combineLatest(
@@ -153,8 +154,9 @@ const _Fetch = sources => {
     amountDeposit$,
     amountSparks$,
     amountNonrefund$,
-    isConfirmed$,
     isApplicationComplete$,
+    isApplied$,
+    isConfirmed$,
     requiredAssignments$,
     selectedAssignments$,
     neededAssignments$,
@@ -173,8 +175,6 @@ import {label} from 'components/engagement'
 
 const Engagement = sources => {
   const _sources = {...sources, ..._Fetch(sources)}
-
-  // const nav = ProfileSidenav(_sources)
 
   const tabs$ = _sources.engagement$.map(({isAccepted}) => [
     {path: '/', label: 'Priority'},

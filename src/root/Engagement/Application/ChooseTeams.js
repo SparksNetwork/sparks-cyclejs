@@ -284,16 +284,6 @@ const Next = sources => {
   }
 }
 
-/*
-const Next = sources => ListItemNavigating({...sources,
-  title$: just('Pick more or finish'),
-  subtitle$:
-    of('The more teams you\'re part of, the more shifts you can choose from!'),
-  leftDOM$: just(null),
-  path$:
-    sources.engagementKey$.map(k => `/engaged/${k}`),
-})*/
-
 export default sources => {
   const _sources = {...sources, ...Fetch(sources)}
 
