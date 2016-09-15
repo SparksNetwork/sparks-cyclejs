@@ -1,4 +1,6 @@
-import {Observable as $} from 'rx'
+import {Observable} from 'rx'
+const {merge} = Observable
+
 import {combineDOMsToDiv} from 'util'
 import {complement, not, prop, propEq, allPass} from 'ramda'
 
@@ -6,7 +8,6 @@ import isolate from '@cycle/isolate'
 import {hideable} from 'util'
 
 import {CardUpcomingShifts} from './CardUpcomingShifts'
-import {CardApplicationNextSteps} from './CardApplicationNextSteps'
 import {CardEnergyExchange} from './CardEnergyExchange'
 import {CardConfirmNow} from './CardConfirmNow'
 import {CardPickMoreShifts} from './CardPickMoreShifts'
@@ -17,7 +18,8 @@ import CardApplying from './CardApplying'
 import CardApplied from './CardApplied'
 
 const isApplying = propEq('isApplied', false)
-const isApplied = prop('isApplied')
+// const isApplied = prop('isApplied')
+const isApplied = allPass([prop('isApplied'), complement(prop('isAccepted'))])
 const isConfirmed = prop('isConfirmed')
 
 export default sources => {
@@ -31,18 +33,16 @@ export default sources => {
   const applied = hideable(CardApplied)({...sources,
     isVisible$: sources.engagement$.map(isApplied),
   })
-  // const nextapplying = CardNextApplying(sources)
-  // const confirm = isolate(CardConfirmNow)(sources)
-  // const app = isolate(CardApplicationNextSteps)(sources)
-  // const r2w = isolate(CardUpcomingShifts)(sources)
-  // const pms = isolate(CardPickMoreShifts)(sources)
+  const confirm = isolate(CardConfirmNow)(sources)
+  const r2w = isolate(CardUpcomingShifts)(sources)
+  const pms = isolate(CardPickMoreShifts)(sources)
   const ee = isolate(CardEnergyExchange)(sources)
 
-  const DOM = combineDOMsToDiv('.cardcontainer',info,admin,applying,applied,ee)
+  const DOM = combineDOMsToDiv('.cardcontainer',info,admin,applying,applied,confirm,r2w,pms,ee)
 
   return {
     DOM,
-    route$: applying.route$,
+    route$: merge(applying.route$, confirm.route$),
     // route$: $.merge(applying.route$),
     // openAndPrint: r2w.openAndPrint,
   }
