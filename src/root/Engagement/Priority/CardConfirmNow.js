@@ -27,7 +27,7 @@ const CNCard = sources => {
   const pmt = ToDoPayment(sources)
 
   const card = TitledCard({...sources,
-    title$: $.just('Lock in Your Spot'),
+    title$: $.just('Confirm to Lock in Your Spot'),
     content$: $.combineLatest(sh.DOM, pmt.DOM),
   })
 

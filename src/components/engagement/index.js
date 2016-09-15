@@ -7,4 +7,4 @@ export const label = ({isApplied, isAccepted, isConfirmed}) =>
   isConfirmed && 'Confirmed' ||
     isAccepted && 'Accepted' ||
       isApplied && 'Applied' ||
-        'Unknown'
+        'Applying'

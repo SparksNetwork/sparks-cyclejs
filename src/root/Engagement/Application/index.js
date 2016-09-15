@@ -1,240 +1,112 @@
-import {Observable as $} from 'rx'
-// const {just, merge, combineLatest} = Observable
+import {Observable} from 'rx'
+const {just, merge, never, combineLatest} = Observable
+
+import {not} from 'ramda'
+import isolate from '@cycle/isolate'
 
 // import {log} from 'util'
 
 import {combineDOMsToDiv} from 'util'
 
-import {LargeCard} from 'components/sdm'
+import {
+  LargeCard,
+  RaisedButton,
+  ListItem,
+} from 'components/sdm'
 
-// const _label = ({isApplied, isAccepted, isConfirmed}) =>
-//   isConfirmed && 'Confirmed' ||
-//     isAccepted && 'Accepted' ||
-//       isApplied && 'Applied' ||
-//         'Unknown'
+import {
+  TitleListItem,
+  StepListItem,
+} from 'components/ui'
 
-// const _Fetch = sources => {
-//   const projects$ = sources.userProfileKey$
-//     .flatMapLatest(Projects.query.byOwner(sources))
+import {
+  Engagements,
+} from 'components/remote'
 
-//   const engagements$ = sources.userProfileKey$
-//     .flatMapLatest(Engagements.query.byUser(sources))
-//     .shareReplay(1)
+import {cond, both, prop, complement, always} from 'ramda'
 
-//   const acceptedEngagements$ = engagements$
-//     .map(engagements => engagements.filter(e => !!e.isAccepted))
-
-//   const organizers$ = sources.userProfileKey$
-//     .flatMapLatest(Organizers.query.byUser(sources))
-
-//   return {
-//     projects$,
-//     engagements$,
-//     organizers$,
-//     acceptedEngagements$,
-//   }
-// }
-
-// const hideable = Control => sources => {
-//   const ctrl = Control(sources)
-//   const {DOM, ...sinks} = ctrl
-//   return {
-//     DOM: sources.isVisible$.flatMapLatest(v => v ? DOM : $.just(null)),
-//     ...sinks,
-//   }
-// }
-
-// const _EngagementFetcher = sources => {
-//   const opp$ = sources.item$.pluck('oppKey')
-//     .flatMapLatest(Opps.query.one(sources))
-//   const projectKey$ = opp$.pluck('projectKey')
-//   const project$ = projectKey$
-//     .flatMapLatest(Projects.query.one(sources))
-//   const projectImage$ = projectKey$
-//     .flatMapLatest(ProjectImages.query.one(sources))
-
-//   return {
-//     opp$,
-//     projectKey$,
-//     project$,
-//     projectImage$,
-//   }
-// }
-
-// const EngagedCard = sources => {
-//   const _sources = {...sources, ..._EngagementFetcher(sources)}
-
-//   return NavigatingComplexCard({..._sources,
-//     src$: _sources.projectImage$.map(p => p && p.dataUrl || null),
-//     title$: _sources.project$.pluck('name'),
-//     // subtitle$: opp$.pluck('name'),
-//     subtitle$: $.combineLatest(
-//       _sources.opp$.pluck('name'),
-//       _sources.item$,
-//       (name, item) => `${name} | ${_label(item)}`
-//     ),
-//     path$: _sources.item$.map(({$key}) => `/engaged/${$key}`),
-//   })
-// }
-
-// const EngagedList = sources => PartialList({...sources,
-//   rows$: sources.engagements$,
-//   Control$: $.just(EngagedCard),
-// })
-
-// const ManagedCard = sources => NavigatingComplexCard({...sources,
-//   title$: sources.item$.pluck('name'),
-//   subtitle$: $.just('Owner'),
-//   path$: sources.item$.map(({$key}) => `/project/${$key}`),
-// })
-
-// const ManagedList = sources => PartialList({...sources,
-//   rows$: sources.projects$,
-//   Control$: $.just(ManagedCard),
-// })
-
-// const ConfirmListItem = sources => {
-//   const _sources = {...sources, ..._EngagementFetcher(sources)}
-//   return ListItemNavigating({..._sources,
-//     leftDOM$: ProjectAvatar(_sources).DOM,
-//     title$: _sources.project$.pluck('name'),
-//     subtitle$: _sources.opp$.map(({name}) => `${name} | Accepted`),
-//     path$: _sources.item$.map(({$key}) => `/engaged/${$key}/schedule`),
-//   })
-// }
-
-// const ConfirmationsList = sources => PartialList({...sources,
-//   rows$: sources.acceptedEngagements$,
-//   Control$: $.just(ConfirmListItem),
-// })
-
-// const ConfirmationsNeededCard = sources => {
-//   const list = ConfirmationsList(sources)
-//   const contents$ = list.contents$
-//     .map(contents => [
-//      'You\'ve been approved for these opportunities. ' +
-//      'Confirm now to lock in your spot!', ...contents]
-//      )
-//   const card = hideable(TitledCard)({...sources,
-//     elevation$: $.just(2),
-//     isVisible$: sources.acceptedEngagements$.map(c => c.length > 0),
-//     content$: contents$,
-//     title$: $.just('Confirm Your Spot!'),
-//   })
-//   return {
-//     ...card,
-//     route$: list.route$,
-//   }
-// }
-
-/*
-import PickTeams from '../OldApplication/ChooseTeams'
-
-const PTCard = sources => {
-  const aq = PickTeams(sources)
-  return {
-    ...TitledCard({...sources,
-      content$: $.just([aq.DOM]),
-    }),
-    route$: aq.route$,
-    queue$: aq.queue$,
-  }
-}
-
-/*
-const PickTeamsCard = sources => PTCard({...sources,
-  elevation$: $.just(2),
-  // isVisible$: sources.engagement$.map(e => e.isApplied && !e.isAccepted),
-  title$: $.just('Choose Some Teams'),
-})
-
-import AnswerQuestion from '../OldApplication/AnswerQuestion'
-
-const AQCard = sources => {
-  const aq = AnswerQuestion(sources)
-  return {
-    ...TitledCard({...sources,
-      content$: $.just([aq.DOM]),
-    }),
-    route$: aq.route$,
-    queue$: aq.queue$,
-  }
-}
-
-const ApplicationQCard = sources => AQCard({...sources,
-  elevation$: $.just(2),
-  // isVisible$: sources.engagement$.map(e => e.isApplied && !e.isAccepted),
-  title$: $.just('Answer the Question'),
-})
-
-const CombinedList = sources => ({
-  DOM: sources.contents$.map(contents => div('.cardcontainer',contents)),
-})
-*/
-
-// const CardList = sources => {
-//   const teams = PickTeamsCard(sources)
-//   const app = ApplicationQCard(sources)
-//   // const conf = ConfirmationsNeededCard(sources)
-//   // const managed = ManagedList(sources)
-//   // const engaged = EngagedList(sources)
-
-//   const contents$ = $.combineLatest(
-//     teams.DOM,
-//     app.DOM,
-//     // conf.DOM,
-//     // managed.contents$,
-//     // engaged.contents$,
-//     (c, a) => [c, a]
-//     // (w, c, m, e) => [w, c, ...m, ...e]
-//   )
-
-//   return {
-//     ...CombinedList({...sources,
-//       contents$,
-//     }),
-//     route$: $.merge(teams.route$, app.route$),
-//     queue$: $.merge(teams.queue$, app.queue$),
-//     // route$: $.merge(managed.route$, engaged.route$, conf.route$),
-//   }
-// }
-
-// const CardList = sources => ({DOM: $.just(div('',[]))})
-
-// export default sources => {
-//   // const _sources = {...sources, ..._Fetch(sources)}
-//   const cards = CardList(sources)
-
-//   return {
-//     DOM: cards.DOM,
-//     route$: cards.route$,
-//   }
-// }
-import {TitleListItem} from 'components/ui'
+const appTitle = cond([
+  [complement(prop('isApplied')), always('Finish Your Application')],
+  [both(prop('isApplied'), complement(prop('isAccepted'))), always('Awaiting Acceptance')],
+  [prop('isAccepted'), always('Application Accepted')],
+])
 
 const _Title = sources => TitleListItem({...sources,
-  title$: sources.engagement$.map(({isAccepted}) =>
-    isAccepted ? 'Application Accepted' : 'Your Application'
-  ),
+  title$: sources.engagement$.map(appTitle),
+})
+
+const appInstruct = cond([
+  [complement(prop('isApplied')), always('Applying is easy! Just answer the organizer\'s question and pick which teams you\'re interested in.')],
+  [both(prop('isApplied'), complement(prop('isAccepted'))), always('You\'ve sent in your application. Forget something? You can update it until it\'s approved.')],
+  [prop('isAccepted'), always('You\'ve been approved, now confirm to pick your shifts and lock in your spot!')],
+])
+
+const _Instruct = sources => ListItem({...sources,
+  title$: sources.engagement$.map(appInstruct),
 })
 
 import {Step1} from './Step1'
 import {Step2} from './Step2'
 
-export default sources => {
+const Step3 = sources => {
+  const inst = ListItem({...sources,
+    title$: just('Looking good! Send your application to the organizer by clicking the shiny, candy-like, turquoise button.'),
+  })
+  const rb = isolate(RaisedButton)({...sources,
+    label$: just(`Send In My Application`),
+  })
+
+  const li = StepListItem({...sources,
+    title$: just('Step 3: Submit Your Application'),
+    contentDOM$: combineDOMsToDiv('.step3', inst, rb),
+  })
+
+  const queue$ = sources.engagementKey$
+    .sample(rb.click$)
+    .map(key => ({key, values: {isApplied: true}}))
+    .map(Engagements.action.update)
+    // .tap(q => console.log('update isApplied',q))
+
+  const route$ = sources.engagementUrl$
+    .sample(rb.click$)
+
+  // const queue$ = rb.click$.combineLatest(
+  //   sources.engagementKey$,
+  //   (c,key) => ({key, values: {isApplied: true}})
+  // ).map(Engagements.action.update)
+
+  return {
+    ...li,
+    queue$,
+    route$,
+  }
+}
+
+export default _sources => {
+  const sources = {..._sources,
+    questionAnswered$: _sources.engagement$.map(prop('answer')).map(Boolean),
+    teamsPicked$: _sources.memberships$.map(m => m.length > 0),
+  }
+
   const t = _Title(sources)
-  const s1 = Step1(sources)
-  const s2 = Step2(sources)
-  // const aq = AnswerQuestion(sources)
-  // const pt = PickTeams(sources)
+  const i = _Instruct(sources)
+  const s1 = Step1({...sources,
+    isOpen$: sources.questionAnswered$.map(not),
+  })
+  const s2 = Step2({...sources,
+    isOpen$: sources.questionAnswered$,
+  })
+  const s3 = Step3({...sources,
+    isOpen$: sources.teamsPicked$,
+  })
 
   const card = LargeCard({...sources,
-    content$: $.combineLatest(t.DOM, s1.DOM, s2.DOM),
+    content$: combineLatest(t.DOM, i.DOM, s1.DOM, s2.DOM, s3.DOM),
   })
 
   return {
     DOM: combineDOMsToDiv('.cardcontainer',card),
-    queue$: $.merge(s1.queue$, s2.queue$),
-    route$: $.merge(s2.route$),
+    queue$: merge(s1.queue$, s2.queue$, s3.queue$),
+    route$: s3.route$,
   }
 }

@@ -12,7 +12,6 @@ export const Step1 = sources => {
   const li = StepListItem({...sources,
     title$: $.just('Step 1: Answer the Question'),
     contentDOM$: aq.DOM,
-    isOpen$: sources.engagement$.map(({answer}) => !answer),
   })
 
   return {

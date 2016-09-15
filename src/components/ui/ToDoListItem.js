@@ -1,3 +1,6 @@
+import {Observable} from 'rx'
+const {never, just, combineLatest} = Observable
+
 import {div, icon} from 'helpers'
 
 import {
@@ -13,10 +16,19 @@ const ToDoListItem = sources => {
       ])
     )
 
-  return ListItemNavigating({...sources,
+  const li = ListItemNavigating({...sources,
     leftDOM$,
     classes$: sources.isDone$.map(isDone => ({disabled: isDone})),
   })
+
+  const route$ = combineLatest(li.route$, sources.isDone$,
+    (route, isDone) => isDone ? false : route
+  ).filter(Boolean)
+
+  return {
+    ...li,
+    route$,
+  }
 }
 
 export {ToDoListItem}
