@@ -67,6 +67,9 @@ const Step3 = sources => {
     .map(Engagements.action.update)
     // .tap(q => console.log('update isApplied',q))
 
+  const route$ = sources.engagementUrl$
+    .sample(rb.click$)
+
   // const queue$ = rb.click$.combineLatest(
   //   sources.engagementKey$,
   //   (c,key) => ({key, values: {isApplied: true}})
@@ -75,6 +78,7 @@ const Step3 = sources => {
   return {
     ...li,
     queue$,
+    route$,
   }
 }
 
@@ -103,6 +107,6 @@ export default _sources => {
   return {
     DOM: combineDOMsToDiv('.cardcontainer',card),
     queue$: merge(s1.queue$, s2.queue$, s3.queue$),
-    route$: merge(s2.route$),
+    route$: s3.route$,
   }
 }
