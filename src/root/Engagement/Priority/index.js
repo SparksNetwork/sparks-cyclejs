@@ -14,6 +14,7 @@ import {CardPickMoreShifts} from './CardPickMoreShifts'
 import CardProjectInfo from './CardProjectInfo'
 import CardAdmin from './CardAdmin'
 import CardApplying from './CardApplying'
+import CardApplied from './CardApplied'
 
 const isApplying = propEq('isApplied', false)
 const isApplied = prop('isApplied')
@@ -27,6 +28,9 @@ export default sources => {
   const applying = hideable(CardApplying)({...sources,
     isVisible$: sources.engagement$.map(isApplying),
   })
+  const applied = hideable(CardApplied)({...sources,
+    isVisible$: sources.engagement$.map(isApplied),
+  })
   // const nextapplying = CardNextApplying(sources)
   // const confirm = isolate(CardConfirmNow)(sources)
   // const app = isolate(CardApplicationNextSteps)(sources)
@@ -34,7 +38,7 @@ export default sources => {
   // const pms = isolate(CardPickMoreShifts)(sources)
   const ee = isolate(CardEnergyExchange)(sources)
 
-  const DOM = combineDOMsToDiv('.cardcontainer',info,admin,applying,ee)
+  const DOM = combineDOMsToDiv('.cardcontainer',info,admin,applying,applied,ee)
 
   return {
     DOM,

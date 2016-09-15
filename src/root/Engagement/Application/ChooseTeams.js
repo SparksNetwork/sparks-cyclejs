@@ -26,7 +26,6 @@ import {
 
 import {
   Memberships,
-  Fulfillers,
   Teams,
 } from 'components/remote'
 
@@ -35,7 +34,10 @@ import {TeamIcon} from 'components/team'
 import {log} from 'util'
 
 const Instruct = sources => ListItem({...sources,
-  title$: just('Choose one or more Teams that you want to join.'),
+  title$: sources.teamsPicked$.map(p => p ?
+    'You can apply to more Teams, or scroll down to submit your application.' :
+    'Choose one or more Teams that you want to join.'
+  ),
 })
 
 const TeamMemberLookup = sources => ({
@@ -247,68 +249,26 @@ const TeamsMembersList = sources => {
   return {...sinks, queue$}
 }
 
-const Fetch = sources => {
-  const oppKey$ = sources.engagement$.pluck('oppKey')
-
-  const memberships$ = sources.engagementKey$
-    .flatMapLatest(Memberships.query.byEngagement(sources))
-
-  const fulfillers$ = oppKey$
-    .flatMapLatest(Fulfillers.query.byOpp(sources))
-
-  return {
-    oppKey$,
-    memberships$,
-    fulfillers$,
-  }
-}
-
-const Next = sources => {
-  const rb = RaisedButton({...sources,
-    label$: just(`You're all done!`),
-  })
-
-  const route$ = sources.engagementKey$.map(k => `/engaged/${k}`)
-    .sample(rb.click$)
-
-  const DOM = rb.DOM.map(button => div([
-    button,
-    div({style: {color: '#666'}},
-      `You can pick more teams if you like, but you don't have to.`),
-  ]))
-
-  return {
-    ...rb,
-    DOM,
-    route$,
-  }
-}
+import {combineDOMsToDiv} from 'util'
 
 export default sources => {
-  const _sources = {...sources, ...Fetch(sources)}
+  // const _sources = {...sources, ...Fetch(sources)}
+  const _sources = sources
 
   const inst = Instruct(_sources)
   const list = TeamsMembersList(_sources)
-  const next = isolate(Next)(_sources)
 
-  const items = [
-    inst,
-    next,
-    list,
-  ]
-
-  const DOM = combineLatest(
-    _sources.memberships$.map(m => m.length > 0),
-    ...items.map(i => i.DOM),
-    (hasTeams, i, n, l) => div({},[
-      hasTeams ? n : i,
-      l,
-    ])
-  )
+  const DOM = combineDOMsToDiv('.choose-teams', inst, list)
+  //   _sources.memberships$.map(m => m.length > 0),
+  //   ...items.map(i => i.DOM),
+  //   (hasTeams, i, n, l) => div({},[
+  //     hasTeams ? n : i,
+  //     l,
+  //   ])
+  // )
 
   return {
     DOM,
     queue$: list.queue$,
-    route$: next.route$,
   }
 }

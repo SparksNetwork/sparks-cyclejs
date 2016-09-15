@@ -14,7 +14,7 @@ import {
 } from 'components/ui'
 
 const Instructions = sources => ListItem({...sources,
-  title$: just('Finish your application so the organizer can approve you!'),
+  title$: just('Finish your application so the organizer can approve it!'),
 })
 
 const ToDoAnswer = sources => ToDoListItem({...sources,
@@ -30,7 +30,7 @@ const ToDoTeams = sources => ToDoListItem({...sources,
 })
 
 const ToDoClickOK = sources => ToDoListItem({...sources,
-  title$: just('Push the Shiny Green Button!'),
+  title$: just('Push the Shiny Turquoise Button!'),
   isDone$: just(false),
   path$: just(sources.router.createHref('/application')),
 })
