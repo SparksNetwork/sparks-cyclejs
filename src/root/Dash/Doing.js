@@ -22,11 +22,12 @@ import {
   NavigatingComplexCard,
 } from 'components/sdm'
 
-const _label = ({isApplied, isAccepted, isConfirmed}) =>
-  isConfirmed && 'Confirmed' ||
-    isAccepted && 'Accepted' ||
-      isApplied && 'Applied' ||
-        'Unknown'
+import {label} from 'components/engagement'
+// const _label = ({isApplied, isAccepted, isConfirmed}) =>
+//   isConfirmed && 'Confirmed' ||
+//     isAccepted && 'Accepted' ||
+//       isApplied && 'Applied' ||
+//         'Unknown'
 
 const _Fetch = sources => {
   const engagements$ = sources.userProfileKey$
@@ -66,14 +67,7 @@ const _Fetch = sources => {
   }
 }
 
-const hideable = Control => sources => {
-  const ctrl = Control(sources)
-  const {DOM, ...sinks} = ctrl
-  return {
-    DOM: sources.isVisible$.flatMapLatest(v => v ? DOM : just(null)),
-    ...sinks,
-  }
-}
+import {hideable} from 'util'
 
 const _EngagementFetcher = sources => {
   const opp$ = sources.item$.pluck('oppKey')
@@ -102,7 +96,7 @@ const EngagedCard = sources => {
     subtitle$: combineLatest(
       _sources.opp$.pluck('name'),
       _sources.item$,
-      (name, item) => `${name} | ${_label(item)}`
+      (name, item) => `${name} | ${label(item)}`
     ),
     path$: _sources.item$.map(({$key}) => `/engaged/${$key}`),
   })

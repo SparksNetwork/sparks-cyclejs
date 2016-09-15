@@ -7,12 +7,13 @@ import {
 import ChooseTeams from './ChooseTeams'
 
 export const Step2 = sources => {
-  const pt = ChooseTeams(sources)
+  const pt = ChooseTeams({...sources,
+    isOpen$: null,
+  })
 
   const li = StepListItem({...sources,
     title$: $.just('Step 2: Pick Some Teams'),
     contentDOM$: pt.DOM,
-    isOpen$: sources.engagement$.map(({answer}) => !!answer),
   })
 
   return {
