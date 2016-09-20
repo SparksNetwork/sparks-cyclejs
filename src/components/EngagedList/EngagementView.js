@@ -24,6 +24,7 @@ import OppChange from './OppChange'
 import EngagementInfo from './EngagementInfo'
 import TeamsInfo from './TeamsInfo'
 import ShiftsInfo from './ShiftsInfo'
+import {PaymentInfo} from './PaymentInfo'
 
 import {
   Assignments,
@@ -122,10 +123,18 @@ const _Actions = (sources) => {
     sources.hasApprovedMemberships$,
     ({isConfirmed, isAccepted, declined}, hasApprovedMemberships) => {
       if (isConfirmed) { return null }
-      if (isAccepted) { return combineDOMsToDiv('.center', dec, rem) }
-      if (declined && hasApprovedMemberships) { return combineDOMsToDiv('.center', ac, rem)}
-      if (declined) { return combineDOMsToDiv('.center', rem) }
-      if (hasApprovedMemberships) { return combineDOMsToDiv('.center', ac, dec, rem)}
+      if (isAccepted) {
+        return combineDOMsToDiv('.center', dec, rem)
+      }
+      if (declined && hasApprovedMemberships) {
+        return combineDOMsToDiv('.center', ac, rem)
+      }
+      if (declined) {
+        return combineDOMsToDiv('.center', rem)
+      }
+      if (hasApprovedMemberships) {
+        return combineDOMsToDiv('.center', ac, dec, rem)
+      }
       return combineDOMsToDiv('.center', dec, rem)
     }
   )
@@ -141,6 +150,7 @@ const _Content = sources => {
   const profileInfo = ProfileInfo(sources)
   const oppChange = OppChange(sources)
   const engagementInfo = EngagementInfo(sources)
+  const paymentInfo = PaymentInfo(sources)
   const teamsInfo = TeamsInfo(sources)
   const shiftsInfo = ShiftsInfo(sources)
   const acts = _Actions(sources)
@@ -149,6 +159,7 @@ const _Content = sources => {
     profileInfo,
     oppChange,
     engagementInfo,
+    paymentInfo,
     teamsInfo,
     shiftsInfo,
     acts,

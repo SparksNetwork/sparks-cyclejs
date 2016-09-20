@@ -114,6 +114,7 @@ export const Engagements = {
     remove: actionCreator('Engagements', 'remove'),
     pay: actionCreator('Engagements', 'pay'),
     confirmWithoutPay: actionCreator('Engagements', 'confirmWithoutPay'),
+    reclaim: actionCreator('Engagements', 'reclaim'),
   },
 }
 

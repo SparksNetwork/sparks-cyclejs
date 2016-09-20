@@ -14,13 +14,15 @@ import {
 import {div} from 'cycle-snabbdom'
 import Collapsible from 'components/behaviors/Collapsible'
 
-const OppQ = sources => QuotingListItem({...sources,
+const OppQ = sources => QuotingListItem({
+  ...sources,
   profileKey$: sources.project$.map(prop('ownerProfileKey')),
   title$: sources.opp$.map(prop('question')),
   subtitle$: of('Organizer'),
 })
 
-const OppAnswer = sources => QuotingListItem({...sources,
+const OppAnswer = sources => QuotingListItem({
+  ...sources,
   title$: sources.engagement$.pluck('answer'),
   default$: of('This person did not answer'),
   profileKey$: sources.profile$.map(prop('$key')),
@@ -29,8 +31,12 @@ const OppAnswer = sources => QuotingListItem({...sources,
 })
 
 function statusLabel({isAccepted, declined}) {
-  if (isAccepted) { return div({style: {color: 'green'}}, 'APPROVED') }
-  if (declined) { return div({class: {disabled: true}}, 'REJECTED') }
+  if (isAccepted) {
+    return div({style: {color: 'green'}}, 'APPROVED')
+  }
+  if (declined) {
+    return div({class: {disabled: true}}, 'REJECTED')
+  }
   return div({class: {accent: true}}, '?')
 }
 

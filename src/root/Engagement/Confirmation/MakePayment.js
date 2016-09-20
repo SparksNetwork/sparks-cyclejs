@@ -8,8 +8,10 @@ import {
 } from 'components/remote'
 
 const MakePayment = sources => {
-  const clientToken$ = sources.engagement$
-    .pluck('paymentClientToken')
+  const clientToken$ = sources.engagement$.map(eng => {
+    if (eng.payment) { return eng.payment.clientToken }
+    return eng.paymentClientToken
+  })
 
   const paymentNonce$ = new Subject()
   const queue$ = paymentNonce$
@@ -57,7 +59,7 @@ const MakePayment = sources => {
           ['Pay With This']
         ),
       ]) :
-      div('','Payment submitted, thank you!')
+      div('','Payment submitted, please wait...')
     ) ,
     queue$,
   }
