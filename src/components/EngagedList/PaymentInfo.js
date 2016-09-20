@@ -79,8 +79,13 @@ const ViewReclaim = cycled('click$', sources => {
     .map(Engagements.action.reclaim)
     .sample(sources.click$)
 
+  const DOM = lrMap(sources.profile$,
+    prop('isAdmin'),
+    () => combineDOMsToDiv('', depositInfo, reclaimButton),
+    () => depositInfo.DOM)
+
   return {
-    DOM: combineDOMsToDiv('', depositInfo, reclaimButton),
+    DOM,
     click$: reclaimButton.click$,
     queue$,
   }
