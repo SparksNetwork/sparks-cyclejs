@@ -76,6 +76,22 @@ export const lr = (stream$, predicate, left, right) =>
     right(stream$.filter(complement(predicate)))
   )
 
+/**
+ * Takes a stream and predicate. Values that match the predicate are mapped by
+ * trueMap. Values that do not are mapped by falseMap.
+ *
+ * @param {Stream} stream$
+ * @param {(item:any)=>boolean} predicate
+ * @param {(item:any)=>any} trueMap
+ * @param {(item:any)=>any} falseMap
+ * @returns {Stream}
+ */
+export const lrMap = (stream$, predicate, trueMap, falseMap) =>
+  Observable.merge(
+    stream$.filter(predicate).map(trueMap),
+    stream$.filter(complement(predicate)).map(falseMap)
+  )
+
 export const switchStream = (stream$, predicate, left, right) =>
   stream$.flatMapLatest(item =>
     predicate(item) ? left(item) : right(item))

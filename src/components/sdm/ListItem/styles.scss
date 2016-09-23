@@ -117,4 +117,12 @@ a.list-item {
   .right {
 
   }
+
+  &.header {
+    .subtitle {
+      color: #eee;
+      font-size: 0.7em;
+      text-transform: none;
+    }
+  }
 }
