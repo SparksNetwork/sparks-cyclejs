@@ -31,7 +31,13 @@ function ViewIsPaid(sources) {
   const txnItem = ListItem({
     ...sources,
     title$: payment$
-      .map(p => `Txn ${p.transactionId}, Sub ${p.subscriptionId}`),
+      .map(p => {
+        if (p) {
+          return `Txn ${p.transactionId}, Sub ${p.subscriptionId}`
+        } else {
+          return 'No txn'
+        }
+      }),
   })
 
   return {
