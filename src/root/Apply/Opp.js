@@ -1,83 +1,26 @@
+import './styles.scss'
+
 import {Observable} from 'rx'
 const {just, merge, combineLatest} = Observable
-import {not, find, propEq, reduce} from 'ramda'
+import {not, find, propEq} from 'ramda'
 
-import {h5, a} from 'cycle-snabbdom'
+import {h5, a, h} from 'cycle-snabbdom'
 import {div} from 'helpers'
 import {combineLatestToDiv, combineDOMsToDiv, switchStream} from 'util'
 
-import {CommitmentList, CommitmentItemPassive} from 'components/commitment'
+import {CommitmentItemPassive} from 'components/commitment'
 
 import {
-  ListItem,
+  List,
+  ListItemNavigating,
   ListItemHeader,
   ListWithHeader,
   RaisedButton,
-  SelectControl,
 } from 'components/sdm'
 
-import {
-  Opps,
-  Commitments,
-  Engagements,
-} from 'components/remote'
+import {Commitments, Engagements} from 'components/remote'
 
-import {
-  QuotingListItem,
-  TitleListItem,
-  DescriptionListItem,
-} from 'components/ui'
-
-const _Select = sources => SelectControl({...sources,
-  label$: just('Choose another opportunity...'),
-  options$: sources.opps$.map(opps => [
-    // {value: 0, label: 'Choose another opportunity...'},
-    ...opps.map(({name,$key}) => ({value: $key, label: name})),
-  ]),
-  value$: just(false),
-})
-
-const Chooser = sources => {
-  const projectKey$ = sources.projectKey$.share()
-  const opps$ = sources.opps$.shareReplay(1)
-  const select = _Select({...sources, opps$})
-  const li = ListItem({...sources,
-    projectKey$,
-    opps$,
-    title$: select.DOM,
-  })
-
-  const route$ = select.value$
-    .filter(v => !!v)
-    .withLatestFrom(
-      projectKey$,
-      (ok, pk) => `/apply/${pk}/opp/${ok}`
-    ).share()
-
-  return {
-    DOM: li.DOM,
-    route$,
-  }
-}
-
-const Title = sources => TitleListItem({...sources,
-  title$: sources.opp$.pluck('name'),
-})
-
-const Quote = sources => QuotingListItem({...sources,
-  title$: sources.opp$.map(({description}) => description || 'No Description'),
-  profileKey$: sources.project$.pluck('ownerProfileKey'),
-})
-
-const Discount = sources => ListItem({...sources,
-  title$: sources.discount$.map(d =>
-    (d > 0 ?
-      `This volunteer program gets you a $${d} discount off the retail price for this event, and lots of other perks.` :
-      'Help out this project by contributing your time and effort.'
-    ) +
-    ' Applying for this opportunity is totally free! '
-  ),
-})
+import {TitleListItem, DescriptionListItem} from 'components/ui'
 
 import {codePriority} from 'components/commitment'
 
@@ -89,12 +32,70 @@ const CommitmentListPassive = sources => ListWithHeader({...sources,
   ),
 })
 
-export default sources => {
+const _Title = sources => TitleListItem({...sources,
+  title$: just('Check out these Opportunities!'),
+})
+
+function radioButton(sources) {
+  const isCurrent$ = combineLatest(
+    sources.router.observable, sources.item$.pluck('$key'),
+    (route, itemKey) => itemKey === route.pathname.split('/opp/')[1])
+
+  return isCurrent$.map(isCurrent => {
+    return h('svg', {
+      ns: 'http://www.w3.org/2000/svg',
+      attrs: {
+        width: '64px',
+        height: '64px',
+        margin: '0 auto',
+      },
+    }, [
+      h('circle', {
+        ns: 'http://www.w3.org/2000/svg',
+        style: {
+          borderWidth: '3px',
+        },
+        attrs: {
+          cx: '32',
+          cy: '32',
+          r: '14',
+          stroke: '#FFC107',
+          'stroke-width': '3',
+          fill: 'transparent',
+        },
+      }, []),
+
+      isCurrent ? h('circle', {
+        attrs: {
+          cx: '32',
+          cy: '32',
+          r: '8',
+          stroke: 'transparent',
+          fill: '#FFC107',
+        },
+      }, []) : h('div'),
+    ])
+  })
+}
+
+const _Item = sources => ListItemNavigating({...sources,
+  title$: sources.item$.pluck('name'),
+  subtitle$: sources.item$.pluck('description'),
+  leftDOM$: radioButton(sources),
+  path$: combineLatest(sources.router.observable, sources.item$.pluck('$key'),
+    (location, itemKey) => {
+      return location.pathname.split('/opp/')[0] + '/opp/' + itemKey
+    }),
+})
+
+const _List = sources => List({...sources,
+  rows$: sources.opps$,
+  Control$: just(_Item),
+})
+
+function Page(sources) {
   // get the remote data we need
   const oppKey$ = sources.oppKey$
-
-  const opp$ = oppKey$
-    .flatMapLatest(Opps.query.one(sources))
 
   const commitments$ = oppKey$
     .flatMapLatest(Commitments.query.byOpp(sources))
@@ -109,26 +110,6 @@ export default sources => {
       (engs, oppKey) => find(propEq('oppKey', oppKey))(engs)),
     () => just(null),
   )
-
-  const discount$ = commitments$.map(reduce((a,x) => {
-    console.log('commitment reducing', x)
-    if (x.code === 'ticket') {
-      return a + (Number(x.retailValue) || 0)
-    }
-    if (x.code === 'payment') {
-      return a - (Number(x.amount) || 0)
-    }
-    return a
-  }, 0))
-  .tap(d => console.log('discount', d))
-
-  const _sources = {...sources, opp$, oppKey$, commitments$, discount$}
-
-  // delegate to controls
-  const title = Title(_sources)
-  const chooser = Chooser(_sources)
-  const desc = Quote(_sources)
-  const discount = Discount(_sources)
 
   const applyNow = RaisedButton({...sources,
     label$: just('Apply Now!'),
@@ -152,19 +133,15 @@ export default sources => {
   })
 
   const route$ = merge(
-    chooser.route$,
     oppKey$.map(oppKey =>
       `/applyTo/${oppKey}`)
       .sample(applyNow.click$),
   ).share()
 
   const informationDOM = combineDOMsToDiv('',
-    title,
-    chooser,
-    desc,
-    discount,
     gives,
-    gets,
+    {DOM: gets.DOM.map(view => div({
+      style: {marginTop: '2em', marginBottom: '2em'}}, [view]))},
   )
 
   const alreadyAppliedDOM = combineLatest(
@@ -189,7 +166,20 @@ export default sources => {
   )
 
   return {
-    DOM,
+    DOM: DOM.map(view => div({style: {marginTop: '3em'}}, [view])),
     route$,
+  }
+}
+
+export default sources => {
+  const t = _Title(sources)
+  const l = _List(sources)
+  const p = Page(sources)
+  const childs = [t, l, p]
+
+  return {
+    DOM: combineLatest(childs.map(c => c.DOM),
+      (...doms) => div({style: {marginTop: '2em'}},doms)),
+    route$: l.route$.share(),
   }
 }

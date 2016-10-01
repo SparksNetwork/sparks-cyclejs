@@ -3,6 +3,7 @@ const {of, merge} = Observable
 import {prop, objOf} from 'ramda'
 
 import isolate from '@cycle/isolate'
+import {div} from 'cycle-snabbdom'
 
 import SoloFrame from 'components/SoloFrame'
 import {ResponsiveTitle} from 'components/Title'
@@ -72,7 +73,8 @@ const Apply = sources => {
   const desc = _Description(sources)
   const page = _Page(sources)
 
-  const pageDOM = combineLatestToDiv(desc.DOM, page.DOM)
+  const pageDOM = combineLatestToDiv(desc.DOM
+      .map(view => div({style: {marginTop: '2em'}}, [view])), page.DOM)
     .shareReplay(1)
     .tap(sources.prerender.ready)
 
