@@ -128,7 +128,8 @@ export default sources => {
   const childs = [o, p]
 
   return {
+    ...p,
     DOM: combineLatest(childs.map(c => c.DOM), (...doms) => div(doms)),
-    route$: o.route$,
+    route$: o.route$.merge(p.route$),
   }
 }
