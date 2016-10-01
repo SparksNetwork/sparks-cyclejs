@@ -84,7 +84,7 @@ const _Item = sources => {
     title$: sources.item$.pluck('name').combineLatest(discount$)
       .map(([name, discount]) =>
         `${name} ${discount === null || discount === 0 ?
-          '' : `($${discount} off)`}`),
+          '' : `($${discount} off!)`}`),
     subtitle$: sources.item$.pluck('description'),
     leftDOM$: radioButton(sources),
     path$: combineLatest(sources.router.observable, sources.item$.pluck('$key'),
