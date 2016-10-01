@@ -2,6 +2,7 @@ import './styles.scss'
 
 import {Observable} from 'rx'
 const {just, combineLatest} = Observable
+import {reduce} from 'ramda'
 
 import {h} from 'cycle-snabbdom'
 import {div} from 'helpers'
@@ -10,6 +11,8 @@ import {
   List,
   ListItemNavigating,
 } from 'components/sdm'
+
+import {Commitments} from 'components/remote'
 
 import {TitleListItem} from 'components/ui'
 
@@ -59,15 +62,37 @@ function radioButton(sources) {
   })
 }
 
-const _Item = sources => ListItemNavigating({...sources,
-  title$: sources.item$.pluck('name'),
-  subtitle$: sources.item$.pluck('description'),
-  leftDOM$: radioButton(sources),
-  path$: combineLatest(sources.router.observable, sources.item$.pluck('$key'),
-    (location, itemKey) => {
-      return location.pathname.split('/opp/')[0] + '/opp/' + itemKey
-    }),
-})
+export const calculateDiscount = reduce((a,x) => {
+  if (x.code === 'ticket') {
+    return a + (Number(x.retailValue) || 0)
+  }
+  if (x.code === 'payment') {
+    return a - (Number(x.amount) || 0)
+  }
+  return a
+}, 0)
+
+const _Item = sources => {
+  const oppKey$ = sources.item$.pluck('$key')
+
+  const commitments$ = oppKey$
+    .flatMapLatest(Commitments.query.byOpp(sources))
+
+  const discount$ = commitments$.map(calculateDiscount)
+
+  return ListItemNavigating({...sources,
+    title$: sources.item$.pluck('name').combineLatest(discount$)
+      .map(([name, discount]) =>
+        `${name} ${discount === null || discount === 0 ?
+          '' : `($${discount} off)`}`),
+    subtitle$: sources.item$.pluck('description'),
+    leftDOM$: radioButton(sources),
+    path$: combineLatest(sources.router.observable, sources.item$.pluck('$key'),
+      (location, itemKey) => {
+        return location.pathname.split('/opp/')[0] + '/opp/' + itemKey
+      }),
+  })
+}
 
 const _List = sources => List({...sources,
   rows$: sources.opps$,
@@ -81,7 +106,7 @@ export default sources => {
 
   return {
     DOM: combineLatest(childs.map(c => c.DOM),
-      (...doms) => div({style: {marginTop: '2em'}},doms)),
+      (...doms) => div(doms)),
     route$: l.route$.share(),
   }
 }
