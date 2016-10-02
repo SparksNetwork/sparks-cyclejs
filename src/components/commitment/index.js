@@ -7,6 +7,8 @@ export const codeTitles = {
   deposit: ({amount}) => `Commit to an accountability payment of $${amount}`,
   payment: ({amount}) => `A nonrefundable payment of $${amount}`,
   shifts: ({count}) => `Work ${count} ${count > 1 ? 'shifts' : 'shift'}`,
+  discount: ({amount}) =>
+    `$${amount} off price at door!`,
 }
 
 export const codePriority = {
@@ -27,7 +29,8 @@ export const codeSubtitles = {
     null,
   tracked: ({allocationRule}) => allocationRule || null,
   schwag: ({description}) => description || null,
-  deposit: () => 'This will only be charged if you arrive at the event but do not complete your shifts.',
+  deposit: () => 'This will only be charged if you arrive at the event ' +
+    'but do not complete your shifts.',
   payment: () => 'Paid upon confirmation, no payment needed to apply.',
   shifts: ({count, minLength, maxLength}) =>
     minLength && maxLength ?

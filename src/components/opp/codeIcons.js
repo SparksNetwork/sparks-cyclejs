@@ -9,4 +9,5 @@ export default {
   deposit: 'credit-card',
   payment: 'banknote',
   shifts: 'calendar2',
+  discount: 'banknote',
 }
