@@ -38,6 +38,12 @@ const Manage = sources => ListItemNavigating({...sources,
   path$: just(sources.router.createHref('/manage')),
 })
 
+const Engagements = sources => ListItemNavigating({...sources,
+  title$: just('Engagements'),
+  iconName$: just('people'),
+  path$: just(sources.router.createHref('/engagements')),
+})
+
 const CreateTeamHeader = sources => {
   const form = TeamForm(sources)
 
@@ -122,6 +128,7 @@ const OppListNavigatingAndAdding = sources => {
 const ProjectNav = sources => {
   const glance = isolate(Glance,'glance')(sources)
   const manage = isolate(Manage,'manage')(sources)
+  const engagements = isolate(Engagements,'engagements')(sources)
 
   const teams = TeamListNavigatingAndAdding({...sources,
     rows$: sources.teams$,
@@ -131,7 +138,7 @@ const ProjectNav = sources => {
     rows$: sources.opps$,
   })
 
-  const childs = [glance, manage, opps, teams]
+  const childs = [glance, manage, engagements, opps, teams]
 
   const route$ = merge(...childs.map(c => c.route$))
 

@@ -12,11 +12,13 @@ import {nestedComponent, mergeOrFlatMapLatest} from 'util'
 
 import Glance from './Glance'
 import Manage from './Manage'
+import Engagements from './Engagements'
 
 const _routes = {
   // isolating breaks child tab navigation?
   '/': Glance,
   '/manage': Manage,
+  '/engagements': Engagements,
 }
 
 import {

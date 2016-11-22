@@ -28,6 +28,7 @@ import Manage from './Manage'
 import Engaged from './Engaged'
 
 import {FetchEngagements} from './FetchEngagements'
+import {EngagementStatus} from 'helpers/EngagementStatus'
 
 const Fetch = component => sources => {
   const opp$ = sources.oppKey$
@@ -98,4 +99,4 @@ const Opp = sources => {
   }
 }
 
-export default FetchEngagements(Fetch(Opp))
+export default FetchEngagements(EngagementStatus(Fetch(Opp)))

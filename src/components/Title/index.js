@@ -16,6 +16,7 @@ const bgStyle = url => ({
   backgroundImage: url &&
     'linear-gradient(rgba(0,0,0,0.40),rgba(0,0,0,0.60)), url(' + url + ')' ||
     'linear-gradient(rgba(0,0,0,0.40),rgba(0,0,0,0.60))',
+  backgroundPosition: 'center center',
 })
 
 const TitleContent = sources => ({
