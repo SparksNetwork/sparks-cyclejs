@@ -60,7 +60,8 @@ const Fetch = component => sources => {
 }
 
 const _Title = sources => ResponsiveTitle({...sources,
-  titleDOM$: sources.opp$.pluck('name'),
+  // don't fail if there is no opp name
+  titleDOM$: sources.opp$.pluck('name').filter(Boolean).startWith(''),
   subtitleDOM$: combineLatest(
     sources.isMobile$, sources.pageTitle$,
     (isMobile, pageTitle) => isMobile ? pageTitle : null,

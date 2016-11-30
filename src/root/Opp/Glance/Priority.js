@@ -11,6 +11,7 @@ import {
   // ListItemNewTarget,
   ListItemNavigating,
   ListItemToggle,
+  ListItemCollapsibleTextArea,
 } from 'components/sdm'
 
 import {RecruitmentLinkItem} from '../RecruitmentLinkItem'
@@ -40,6 +41,13 @@ const HowItem = sources => ListItemNavigating({...sources,
   title$: just('What Teams can be filled by this Opportunity?'),
   iconName$: just('users'),
   path$: just('/manage/applying'),
+})
+
+const EditNameItem = sources => ListItemCollapsibleTextArea({...sources,
+  value$: sources.opp$.pluck('name').startWith(''),
+  subtitle$: sources.opp$.pluck('name'),
+  title$: just('Edit the name of your Opportunity'),
+  iconName$: just('power'),
 })
 
 const isNotAccepted = ({isAccepted}) => isAccepted === false
@@ -84,6 +92,7 @@ export default sources => {
     .map(Engagements.query.byOpp(sources)).switch()
     .shareReplay(1)
 
+  const edit = isolate(EditNameItem, 'edit')(sources)
   const preview = isolate(RecruitmentLinkItem)(sources)
   const what = isolate(WhatItem,'what')(sources)
   const exchange = isolate(ExchangeItem,'invite')(sources)
@@ -93,13 +102,20 @@ export default sources => {
   })
   const confirmations = isolate(ConfirmationToggle, 'confirmations')(sources)
 
-  const items = [preview, what, exchange, how, applicants]
+  const items = [edit, preview, what, exchange, how, applicants]
+
+  const editName$ = edit.value$.sample(edit.ok$)
+    .withLatestFrom(sources.oppKey$,
+      (value, key) => ({key, values: {name: value}})
+    )
+    .map(Opps.action.update)
 
   const queue$ = confirmations.value$
     .withLatestFrom(sources.oppKey$,
       (confirmationsOn, key) => ({key, values: {confirmationsOn}})
     )
     .map(Opps.action.update)
+    .merge(editName$)
 
   const route$ = merge(...items.map(i => i.route$ || empty()))
     .map(sources.router.createHref)
