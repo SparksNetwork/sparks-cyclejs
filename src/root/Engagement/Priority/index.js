@@ -2,6 +2,7 @@ import {Observable} from 'rx'
 const {merge} = Observable
 
 import {combineDOMsToDiv} from 'util'
+import {Opps} from 'components/remote'
 import {complement, not, prop, propEq, allPass} from 'ramda'
 
 import isolate from '@cycle/isolate'
@@ -33,7 +34,10 @@ export default sources => {
   const applied = hideable(CardApplied)({...sources,
     isVisible$: sources.engagement$.map(isApplied),
   })
-  const confirm = isolate(CardConfirmNow)(sources)
+
+  const confirm = hideable(isolate(CardConfirmNow))({...sources,
+    isVisible$: sources.opp$.map(o => !!o.confirmationsOn),
+  })
   const r2w = isolate(CardUpcomingShifts)(sources)
   const pms = isolate(CardPickMoreShifts)(sources)
   const ee = isolate(CardEnergyExchange)(sources)
