@@ -35,7 +35,7 @@ const TitleContent = sources => ({
             div('.title',title),
             subtitle && div('.subtitle',subtitle),
           ]),
-          right && div('.right', [right]),
+          right && div('.right', {style: {marginTop: '.5em'}}, [right]),
         ]),
       ])
   ),

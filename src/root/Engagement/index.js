@@ -181,10 +181,10 @@ import {label} from 'components/engagement'
 const Engagement = sources => {
   const _sources = {...sources, ..._Fetch(sources)}
 
-  const tabs$ = _sources.engagement$.map(({isAccepted}) => [
+  const tabs$ = _sources.engagement$.combineLatest(_sources.opp$).map(([{isAccepted}, opp]) => [
     {path: '/', label: 'Priority'},
     {path: '/application', label: 'Application'},
-    isAccepted && {path: '/confirmation', label: 'Confirmation'},
+    isAccepted && opp.confirmationsOn && {path: '/confirmation', label: 'Confirmation'},
   ].filter(x => !!x))
 
   const page = TabbedPage({..._sources,
