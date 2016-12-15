@@ -37,6 +37,19 @@ const _Fetch = sources => {
   const acceptedEngagements$ = engagements$
     .map(engagements => engagements.filter(e => !!e.isAccepted && !e.isPaid))
 
+  // gets opportunities associated with accepted Engagements
+  const acceptedOpportunities$ = acceptedEngagements$
+    .map(engagements => engagements.map(e => e.oppKey).map(Opps.query.one(sources)))
+    .map(combineLatest)
+    .switch()
+
+  // filter out engagements associated with opportunities that do not have confirmations on
+  const engagementsToConfirm$ =
+    combineLatest(acceptedEngagements$, acceptedOpportunities$,
+      (engagements, opportunities) =>
+        engagements.filter((e, i) => opportunities[i].confirmationsOn)
+    )
+
   const organizers$ = sources.userProfileKey$
     .flatMapLatest(Organizers.query.byUser(sources))
     .shareReplay(1)
@@ -64,6 +77,7 @@ const _Fetch = sources => {
     engagements$,
     organizers$,
     acceptedEngagements$,
+    engagementsToConfirm$,
   }
 }
 
@@ -95,8 +109,9 @@ const EngagedCard = sources => {
     // subtitle$: opp$.pluck('name'),
     subtitle$: combineLatest(
       _sources.opp$.pluck('name'),
+      _sources.opp$.pluck('confirmationsOn'),
       _sources.item$,
-      (name, item) => `${name} | ${label(item)}`
+      (name, confirmationsOn, item) => `${name} | ${label(item, confirmationsOn)}`
     ),
     path$: _sources.item$.map(({$key}) => `/engaged/${$key}`),
   })
@@ -142,7 +157,7 @@ const ConfirmListItem = sources => {
 }
 
 const ConfirmationsList = sources => PartialList({...sources,
-  rows$: sources.acceptedEngagements$,
+  rows$: sources.engagementsToConfirm$,
   Control$: just(ConfirmListItem),
 })
 
@@ -150,10 +165,13 @@ const approvedMsg =
   `You've been approved for these opportunities. ` +
   `Confirm now to lock in your spot!`
 
+const noConfirmations =
+  `You currently have no opportunities to confirm.`
+
 const ConfirmationsNeededCard = sources => {
   const list = ConfirmationsList(sources)
   const contents$ = list.contents$
-    .map(contents => [approvedMsg, ...contents])
+    .map(contents => [contents.length ? approvedMsg : noConfirmations, ...contents])
   const card = hideable(TitledCard)({...sources,
     elevation$: just(2),
     isVisible$: sources.acceptedEngagements$.map(c => c.length > 0),
