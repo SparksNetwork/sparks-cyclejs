@@ -109,8 +109,9 @@ const EngagedCard = sources => {
     // subtitle$: opp$.pluck('name'),
     subtitle$: combineLatest(
       _sources.opp$.pluck('name'),
+      _sources.opp$.pluck('confirmationsOn'),
       _sources.item$,
-      (name, item) => `${name} | ${label(item)}`
+      (name, confirmationsOn, item) => `${name} | ${label(item, confirmationsOn)}`
     ),
     path$: _sources.item$.map(({$key}) => `/engaged/${$key}`),
   })

@@ -21,23 +21,43 @@ import CardApplied from './CardApplied'
 const isApplying = propEq('isApplied', false)
 // const isApplied = prop('isApplied')
 const isApplied = allPass([prop('isApplied'), complement(prop('isAccepted'))])
-const isConfirmed = prop('isConfirmed')
+// const isConfirmed = prop('isConfirmed')
 
 export default sources => {
   const info = CardProjectInfo(sources)
+
   const admin = hideable(CardAdmin)({...sources,
     isVisible$: sources.userProfile$.pluck('isAdmin'),
   })
+
   const applying = hideable(CardApplying)({...sources,
     isVisible$: sources.engagement$.map(isApplying),
   })
+
   const applied = hideable(CardApplied)({...sources,
-    isVisible$: sources.engagement$.map(isApplied),
+    isVisible$: sources.engagement$.combineLatest(sources.opp$,
+      (engagement, opp) => {
+        if (opp.confirmationsOn && engagement.isAccepted) {
+          return false
+        }
+
+        if (!opp.confirmationsOn && engagement.isAccepted) {
+          return true
+        }
+
+        if (engagement.isApplied) {
+          return true
+        }
+
+        return false
+      }
+    ),
   })
 
   const confirm = hideable(isolate(CardConfirmNow))({...sources,
     isVisible$: sources.opp$.map(o => !!o.confirmationsOn),
   })
+
   const r2w = isolate(CardUpcomingShifts)(sources)
   const pms = isolate(CardPickMoreShifts)(sources)
   const ee = isolate(CardEnergyExchange)(sources)
