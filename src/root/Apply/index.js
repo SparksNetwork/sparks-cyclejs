@@ -33,8 +33,6 @@ const Fetch = component => sources => {
 
   const opps$ = sources.projectKey$
     .flatMapLatest(Opps.query.byProject(sources))
-    .map(opps => opps.filter(({isPublic}) => isPublic))
-    .shareReplay(1)
 
   const projectImage$ = sources.projectKey$
     .flatMapLatest(ProjectImages.query.one(sources))
@@ -65,8 +63,11 @@ const _Description = sources => DescriptionListItem({...sources,
 
 const _Page = sources => RoutedComponent({...sources, routes$: of({
   '/': Overview,
+  '/private/:privateKey': key => _sources => isolate(Overview)({privateKey$: Observable.just(key), ..._sources}),
+  '/private/:privateKey/opp/:oppKey': (privateKey, oppKey) => _sources =>
+      isolate(Opp)({..._sources, privateKey$: Observable.just(privateKey), oppKey$: Observable.just(oppKey)}),
   '/opp/:key': key => _sources =>
-    isolate(Opp)({oppKey$: Observable.just(key), ..._sources}),
+    isolate(Opp)({oppKey$: Observable.just(key), privateKey$: Observable.just(null), ..._sources}),
 })})
 
 const Apply = sources => {
