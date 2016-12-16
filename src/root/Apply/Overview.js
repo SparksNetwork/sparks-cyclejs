@@ -100,8 +100,14 @@ const _List = sources => List({...sources,
 })
 
 export default sources => {
+  const opps$ = combineLatest(sources.privateKey$ || just(null), sources.opps$,
+    (privateKey, opps) => {
+      return opps.filter(opp => opp.isPublic || opp.$key === privateKey)
+    }
+  )
+
   const t = _Title(sources)
-  const l = _List(sources)
+  const l = _List({...sources, opps$})
   const childs = [t, l]
 
   return {
