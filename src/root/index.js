@@ -1,43 +1,46 @@
-import {Observable as $} from 'rx'
-const {just, merge} = $
-
-import isolate from '@cycle/isolate'
-import {propOr, pick, join, compose, omit} from 'ramda'
-
-import {
-  AuthRoute,
-  AuthedKeyRoute,
-  KeyRoute,
-  AuthRedirectManager,
-  AuthedResponseManager,
-  UserManager,
-} from 'helpers/auth'
-
-import Login from './Login'
-import Logout from './Logout'
-import Confirm from './Confirm'
-import Dash from './Dash'
-import Admin from './Admin'
-import Project from './Project'
-import Team from './Team'
-import Opp from './Opp'
-import Apply from './Apply'
-import ApplyToOpp from './ApplyToOpp'
-import Engagement from './Engagement'
-import Organize from './Organize'
-
 import 'normalize-css'
 import 'snabbdom-material/lib/index.css'
-
-import {siteUrl} from 'util'
-
-import {RoutedComponent} from 'components/ui'
-import {SwitchedComponent} from 'components/SwitchedComponent'
-
-import {log} from 'util'
-import {div} from 'helpers'
-
 import './styles.scss'
+
+import {
+  AuthRedirectManager,
+  AuthRoute,
+  AuthedKeyRoute,
+  AuthedResponseManager,
+  KeyRoute,
+  UserManager,
+} from 'helpers/auth'
+import {compose, join, omit, pick, propOr} from 'ramda'
+
+import {Observable as $} from 'rx'
+import Admin from './Admin'
+import Apply from './Apply'
+import ApplyToOpp from './ApplyToOpp'
+import Confirm from './Confirm'
+import Dash from './Dash'
+import Engagement from './Engagement'
+import Login from './Login'
+import Logout from './Logout'
+import Opp from './Opp'
+import Organize from './Organize'
+import Project from './Project'
+import {RoutedComponent} from 'components/ui'
+import {SideNav} from './SideNav'
+import {SwitchedComponent} from 'components/SwitchedComponent'
+import Team from './Team'
+import {div} from 'helpers'
+import isolate from '@cycle/isolate'
+import {log} from 'util'
+import {siteUrl} from 'util'
+const {just, merge} = $
+
+
+
+
+
+
+
+
 
 // Route definitions at this level
 const _routes = {
@@ -58,7 +61,6 @@ const _routes = {
   '/logout': Logout,
 }
 
-import {SideNav} from './SideNav'
 
 const BlankSidenav = () => ({
   DOM: just(div('')),
@@ -142,6 +144,7 @@ const Root = sources => {
     bugsnag,
     openAndPrint: page.openAndPrint,
     openGraph,
+    csv: page.csv$,
   }
 }
 

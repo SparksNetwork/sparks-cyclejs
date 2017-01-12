@@ -1,25 +1,27 @@
-/* global Sparks */
-import {run} from '@cycle/core'
-
-// drivers
-import {makeDOMDriver} from 'cycle-snabbdom'
-import defaultModules from 'cycle-snabbdom/lib/modules'
-import SupernovaModule from 'drivers/supernova'
-import {makeRouterDriver, supportsHistory} from 'cyclic-router'
-import {createHistory, createHashHistory} from 'history'
-import firebase from 'firebase'
+import {createHashHistory, createHistory} from 'history'
 import {
-  makeAuthDriver, makeFirebaseDriver, makeQueueDriver,
+  makeAuthDriver,
+  makeFirebaseDriver,
+  makeQueueDriver,
 } from '@sparksnetwork/cyclic-fire'
-import screenInfoDriver from 'drivers/screenInfo'
-import makeOpenAndPrintDriver from 'drivers/openAndPrint'
-import makeBugsnagDriver from 'drivers/bugsnag'
-import makeFocusNextDriver from 'drivers/focusNext'
-import makePrerenderDriver from 'drivers/prerender'
-import makeOpenGraphDriver from 'drivers/openGraph'
+import {makeRouterDriver, supportsHistory} from 'cyclic-router'
 
 // app root function
 import Root from './root'
+import SupernovaModule from 'drivers/supernova'
+import {csvDriver} from 'drivers/csv'
+import defaultModules from 'cycle-snabbdom/lib/modules'
+import firebase from 'firebase'
+import makeBugsnagDriver from 'drivers/bugsnag'
+// drivers
+import {makeDOMDriver} from 'cycle-snabbdom'
+import makeFocusNextDriver from 'drivers/focusNext'
+import makeOpenAndPrintDriver from 'drivers/openAndPrint'
+import makeOpenGraphDriver from 'drivers/openGraph'
+import makePrerenderDriver from 'drivers/prerender'
+/* global Sparks */
+import {run} from '@cycle/core'
+import screenInfoDriver from 'drivers/screenInfo'
 
 const history = supportsHistory() ?
   createHistory() : createHashHistory()
@@ -51,6 +53,7 @@ const {sources, sinks} = run(Root, {
   openAndPrint: makeOpenAndPrintDriver('#root'),
   prerender: makePrerenderDriver(),
   openGraph: makeOpenGraphDriver(),
+  csv: csvDriver,
 })
 
 if (module.hot) {
