@@ -40,8 +40,6 @@ const lensFields = ({key, profile, project, opp, ...eng}) => [
 ]
 
 export default sources => {
-  console.clear()
-
   const projects$ = Projects.query.all(sources)().shareReplay(1)
 
   const engagements$ = Engagements.query.all(sources)()
