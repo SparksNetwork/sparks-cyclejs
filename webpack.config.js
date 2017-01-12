@@ -1,7 +1,7 @@
-import path from 'path'
-import webpack from 'webpack'
 import ExtractTextPlugin from 'extract-text-webpack-plugin'
 import importUrl from 'postcss-import-url'
+import path from 'path'
+import webpack from 'webpack'
 
 const DEV = 'development'
 const ENV = process.env.BUILD_ENV || DEV
@@ -51,7 +51,7 @@ const entry = {
   ],
 }
 
-const devtool = ENV === DEV ? 'cheap-module-eval-source-map' : 'hidden-source-map'
+const devtool = ENV === DEV ? 'hidden-source-map' : 'hidden-source-map'
 
 function extractOrNot(fallback, loader) {
   if (ENV === 'development') {

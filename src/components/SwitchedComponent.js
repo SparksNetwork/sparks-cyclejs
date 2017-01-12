@@ -7,6 +7,7 @@ const sinks = [
   'focus$',
   'openAndPrint',
   'openGraph',
+  'csv$',
 ]
 
 /**

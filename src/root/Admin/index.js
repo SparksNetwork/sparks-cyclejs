@@ -1,19 +1,15 @@
+import AppFrame from 'components/AppFrame'
+import CSV from './CSV'
+import ComingSoon from 'components/ComingSoon'
+import Header from 'components/Header'
 import {Observable} from 'rx'
+import Profiles from './Profiles'
+import Projects from './Projects'
+import {TabbedPage} from 'components/ui'
+import Title from 'components/Title'
+import {mergeSinks} from 'util'
 const {of} = Observable
 // import combineLatestObj from 'rx-combine-latest-obj'
-
-import AppFrame from 'components/AppFrame'
-import Title from 'components/Title'
-import Header from 'components/Header'
-
-import {mergeSinks} from 'util'
-
-import ComingSoon from 'components/ComingSoon'
-
-import Projects from './Projects'
-import Profiles from './Profiles'
-
-import {TabbedPage} from 'components/ui'
 
 const _Nav = sources => ({
   DOM: sources.isMobile$.map(m => m ? null : sources.titleDOM),
@@ -29,13 +25,13 @@ const _Page = sources => TabbedPage({...sources,
     {path: '/', label: 'Projects'},
     {path: '/profiles', label: 'Profiles'},
     {path: '/previously', label: 'Previously'},
-    {path: '/test', label: 'Test'},
+    {path: '/csv', label: 'CSV'},
   ]),
   routes$: of({
     '/': Projects,
     '/profiles': Profiles,
     '/previously': ComingSoon('Admin/Previously'),
-    '/test': ComingSoon('Admin/Test'),
+    '/csv': CSV,
   }),
 })
 
