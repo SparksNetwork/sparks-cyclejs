@@ -1,13 +1,24 @@
-import {Observable} from 'rx'
-import {ReplaySubject} from 'rx'
-const {just, combineLatest, empty} = Observable
 import {
-  complement, compose, curryN, filter, isNil, join, map, objOf, prop, toPairs,
+  complement,
+  compose,
+  curryN,
+  filter,
+  isNil,
+  join,
+  map,
+  objOf,
+  prop,
+  toPairs,
 } from 'ramda'
 
+import {Observable} from 'rx'
+import {ReplaySubject} from 'rx'
 import {div} from 'helpers'
-
 import isolate from '@cycle/isolate'
+import moment from 'moment'
+const {just, combineLatest, empty} = Observable
+
+
 
 export const PROVIDERS = {
   google: {type: 'redirect', provider: 'google', scopes: [
@@ -18,7 +29,6 @@ export const PROVIDERS = {
   logout: {type: 'logout'},
 }
 
-import moment from 'moment'
 
 export const hideable = Control => sources => {
   const ctrl = Control(sources)
@@ -221,6 +231,7 @@ export const mergeSinks = (...childs) => ({
   focus$: mergeOrFlatMapLatest('focus$', ...childs),
   openAndPrint: mergeOrFlatMapLatest('openAndPrint', ...childs),
   openGraph: mergeOrFlatMapLatest('openGraph', ...childs),
+  csv$: mergeOrFlatMapLatest('csv$', ...childs),
 })
 
 export const pluckLatest = (k,s$) => s$.pluck(k).switch()
