@@ -64,8 +64,6 @@ function ViewPayment(sources) {
 }
 
 const ViewReclaim = cycled('click$', sources => {
-  sources.click$.subscribe(x => console.log('click', x))
-
   const depositInfo = ListItem({
     ...sources,
     title$: sources.engagement$

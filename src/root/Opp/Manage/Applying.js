@@ -18,8 +18,6 @@ import {
   TeamImages,
 } from 'components/remote'
 
-import {log} from 'util'
-
 const TextareaQuestion = sources => ListItemCollapsibleTextArea({
   ...sources,
   title$: just('You can ask people one special question when they apply.'),
@@ -85,9 +83,6 @@ const TeamFulfilledListItem = sources => {
     rightDOM$: cb.DOM,
   })
 
-  // li.click$.subscribe(log('click$'))
-  // fulfiller$.subscribe(log('fulfiller$'))
-
   const queue$ = fulfiller$
     .sample(li.click$)
     .combineLatest(
@@ -133,19 +128,10 @@ export default sources => {
   const fulfillers$ = sources.oppKey$
     .flatMapLatest(Fulfillers.query.byOpp(sources))
 
-  fulfillers$.subscribe(log('fulfillers$'))
-
   const flist = TeamFulfilledList({...sources,
     rows$: sources.teams$,
     fulfillers$: fulfillers$,
   })
-
-  flist.queue$.subscribe(log('flist.queue$'))
-
-  const fulfilledLookup$ = fulfillers$.map(fulfillers =>
-    fulfillers.reduce((a, row) => (a[row.teamKey] = row.$key) && a, {})
-  )
-  fulfilledLookup$.subscribe(log('fulfilledLookup$'))
 
   const textareaQuestion = isolate(TextareaQuestion)({...sources,
     value$: sources.opp$.pluck('question'),
@@ -160,10 +146,6 @@ export default sources => {
     updateQuestion$,
     flist.queue$,
   )
-
-  flist.DOM.subscribe(log('flistDOM'))
-
-  sources.teams$.subscribe(log('teams$'))
 
   const DOM = combineLatest(
     textareaQuestion.DOM,

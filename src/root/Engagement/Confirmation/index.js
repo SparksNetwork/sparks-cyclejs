@@ -43,7 +43,6 @@ export default sources => {
   })
 
   const queue$ = $.merge(s1.queue$, s2.queue$)
-  queue$.subscribe(x => console.log('new queue task:', x))
 
   return {
     DOM: combineDOMsToDiv('.cardcontainer', card),

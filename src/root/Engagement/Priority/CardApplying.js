@@ -42,7 +42,6 @@ export default sources => {
   })
 
   const route$ = merge(tda.route$, tdt.route$, tdo.route$)
-  route$.subscribe(r => console.log('card route', r))
 
   return {
     ...card,

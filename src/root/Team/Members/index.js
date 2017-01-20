@@ -1,6 +1,6 @@
 import {Observable} from 'rx'
 const {of, combineLatest} = Observable
-import {map, prop, compose, filter, reject, complement, allPass} from 'ramda'
+import {map, prop, compose, filter, complement, allPass} from 'ramda'
 
 import {TabbedPage} from 'components/ui'
 
@@ -44,11 +44,6 @@ const Fetch = component => sources => {
   const all$ = sources.teamKey$
     .flatMapLatest(Memberships.query.byTeam(sources))
     .shareReplay(1)
-
-  all$ // all errors here
-    .map(reject(validMembershipΩ)) // filter out naughty records
-    .filter(ary => ary.length > 0)
-    .subscribe(engs => console.log('Memberships with errors:', engs))
 
   const e$ = all$
     .map(filter(validMembershipΩ)) // filter out naughty records

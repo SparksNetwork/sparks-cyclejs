@@ -28,7 +28,6 @@ export default sources => {
   })
 
   const route$ = change.route$
-  route$.subscribe(r => console.log('card route', r))
 
   return {
     ...card,

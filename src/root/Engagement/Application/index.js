@@ -68,15 +68,9 @@ const Step3 = sources => {
     .sample(rb.click$)
     .map(key => ({key, values: {isApplied: true}}))
     .map(Engagements.action.update)
-    // .tap(q => console.log('update isApplied',q))
 
   const route$ = sources.engagementUrl$
     .sample(rb.click$)
-
-  // const queue$ = rb.click$.combineLatest(
-  //   sources.engagementKey$,
-  //   (c,key) => ({key, values: {isApplied: true}})
-  // ).map(Engagements.action.update)
 
   return {
     ...li,

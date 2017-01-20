@@ -28,8 +28,6 @@ import {
 
 import {TeamIcon} from 'components/team'
 
-import {log} from 'util'
-
 const Instruct = sources => ListItem({...sources,
   title$: sources.teamsPicked$.map(p => p ?
     'You can apply to more Teams, or scroll down to submit your application.' :
@@ -66,8 +64,6 @@ const OpenTeamListItem = sources => {
         Memberships.action.remove({key: membership.$key}) :
         Memberships.action.create({values: {teamKey, oppKey, engagementKey}}),
     )
-
-  queue$.subscribe(log('O.queue$'))
 
   return {
     DOM: li.DOM,
@@ -191,8 +187,6 @@ const RestrictedTeamListItem = sources => {
       _determineAction
     )
 
-  queue$.subscribe(log('R.queue$'))
-
   return {
     DOM: li.DOM,
     queue$,
@@ -214,8 +208,6 @@ const FulfillerMemberListItem = sources => {
 
   const queue$ = control$.flatMapLatest(c => c.queue$)
   const DOM = control$.flatMapLatest(c => c.DOM)
-
-  queue$.subscribe(log('LI.queue$'))
 
   return {
     DOM,
@@ -240,8 +232,6 @@ const TeamsMembersList = sources => {
   })
 
   const queue$ = sinks.queue$.share()
-
-  queue$.subscribe(log('L.queue$'))
 
   return {...sinks, queue$}
 }

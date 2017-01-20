@@ -114,7 +114,6 @@ const Root = sources => {
     nav.pluck('route$'),
     sources.redirectUnconfirmed$,
   )
-  .tap(x => console.log(x))
 
   // Refresh bugsnag on page change, send user uid
   const bugsnag = merge(
