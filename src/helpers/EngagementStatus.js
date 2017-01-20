@@ -1,7 +1,10 @@
 import {filter, prop} from 'ramda'
 
 export const validΩ = prop('profileKey')
-export const appliedΩ = e => e.isApplied && !e.isAccepted && !e.declined && !e.isConfirmed
+
+export const appliedΩ = e =>
+  e.isApplied && !e.isAccepted && !e.declined && !e.isConfirmed
+
 export const priorityΩ = e => e.isAccepted && e.priority && !e.isConfirmed
 export const okΩ = e => e.isAccepted && !e.priority && !e.isConfirmed
 export const neverΩ = e => !e.isAccepted && e.declined && !e.isConfirmed

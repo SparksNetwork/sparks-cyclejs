@@ -34,14 +34,6 @@ import {log} from 'util'
 import {siteUrl} from 'util'
 const {just, merge} = $
 
-
-
-
-
-
-
-
-
 // Route definitions at this level
 const _routes = {
   // '/': Landing,
@@ -60,7 +52,6 @@ const _routes = {
     Login({...sources, provider$: just(provider)}),
   '/logout': Logout,
 }
-
 
 const BlankSidenav = () => ({
   DOM: just(div('')),

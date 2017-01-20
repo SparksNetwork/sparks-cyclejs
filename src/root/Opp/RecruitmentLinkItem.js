@@ -9,6 +9,8 @@ export const RecruitmentLinkItem = sources => ListItemNewTarget({...sources,
   iconName$: $.just('link'),
   url$: $.combineLatest(
     sources.projectKey$, sources.opp$,
-    (pk, opp) => opp.isPublilc ? '/apply/' + pk + '/opp/' + opp.$key : `/apply/${pk}/private/${opp.$key}/opp/${opp.$key}`
+    (pk, opp) => opp.isPublilc ?
+      '/apply/' + pk + '/opp/' + opp.$key :
+      `/apply/${pk}/private/${opp.$key}/opp/${opp.$key}`
   ),
 })

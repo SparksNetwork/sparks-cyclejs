@@ -113,7 +113,8 @@ const PrintableScheduleHeader = sources => {
           chineseMenu(),
         ]),
         div('.instructions', [
-          `Are you ready to make a difference?  You are needed for these shifts:`,
+          `Are you ready to make a difference? ` +
+          `You are needed for these shifts:`,
         ]),
       ])
     ),

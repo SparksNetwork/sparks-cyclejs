@@ -1,5 +1,5 @@
 import {Observable} from 'rx'
-const {just, merge, never, combineLatest} = Observable
+const {just, merge, combineLatest} = Observable
 
 import {not} from 'ramda'
 import isolate from '@cycle/isolate'
@@ -27,7 +27,10 @@ import {cond, both, prop, complement, always} from 'ramda'
 
 const appTitle = cond([
   [complement(prop('isApplied')), always('Finish Your Application')],
-  [both(prop('isApplied'), complement(prop('isAccepted'))), always('Awaiting Acceptance')],
+  [
+    both(prop('isApplied'), complement(prop('isAccepted'))),
+    always('Awaiting Acceptance'),
+  ],
   [prop('isAccepted'), always('Application Accepted')],
 ])
 
@@ -36,9 +39,9 @@ const _Title = sources => TitleListItem({...sources,
 })
 
 const appInstruct = cond([
-  [complement(prop('isApplied')), always('Applying is easy! Just answer the organizer\'s question and pick which teams you\'re interested in.')],
-  [both(prop('isApplied'), complement(prop('isAccepted'))), always('You\'ve sent in your application. Forget something? You can update it until it\'s approved.')],
-  [prop('isAccepted'), always('You\'ve been approved, now confirm to pick your shifts and lock in your spot!')],
+  [complement(prop('isApplied')), always('Applying is easy! Just answer the organizer\'s question and pick which teams you\'re interested in.')], // eslint-disable-line max-len
+  [both(prop('isApplied'), complement(prop('isAccepted'))), always('You\'ve sent in your application. Forget something? You can update it until it\'s approved.')], // eslint-disable-line max-len
+  [prop('isAccepted'), always('You\'ve been approved, now confirm to pick your shifts and lock in your spot!')], // eslint-disable-line max-len
 ])
 
 const _Instruct = sources => ListItem({...sources,
@@ -50,7 +53,7 @@ import {Step2} from './Step2'
 
 const Step3 = sources => {
   const inst = ListItem({...sources,
-    title$: just('Looking good! Send your application to the organizer by clicking the shiny, candy-like, turquoise button.'),
+    title$: just('Looking good! Send your application to the organizer by clicking the shiny, candy-like, turquoise button.'), // eslint-disable-line max-len
   })
   const rb = isolate(RaisedButton)({...sources,
     label$: just(`Send In My Application`),

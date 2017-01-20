@@ -1,9 +1,8 @@
 import {Observable as $} from 'rx'
-const {merge, of, combineLatest} = $
+const {of, combineLatest} = $
 import {objOf} from 'ramda'
 import {div} from 'cycle-snabbdom'
 import {
-  Engagements,
   Memberships,
 } from 'components/remote'
 

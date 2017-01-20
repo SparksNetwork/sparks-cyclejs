@@ -1,4 +1,3 @@
-import {cond, prop, T, always} from 'ramda'
 import {Observable as $} from 'rx'
 const {of, merge} = $
 import {

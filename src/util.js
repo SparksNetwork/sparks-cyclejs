@@ -18,8 +18,6 @@ import isolate from '@cycle/isolate'
 import moment from 'moment'
 const {just, combineLatest, empty} = Observable
 
-
-
 export const PROVIDERS = {
   google: {type: 'redirect', provider: 'google', scopes: [
     'profile',
@@ -28,7 +26,6 @@ export const PROVIDERS = {
   facebook: {type: 'redirect', provider: 'facebook'},
   logout: {type: 'logout'},
 }
-
 
 export const hideable = Control => sources => {
   const ctrl = Control(sources)

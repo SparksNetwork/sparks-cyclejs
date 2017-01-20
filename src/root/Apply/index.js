@@ -63,11 +63,12 @@ const _Description = sources => DescriptionListItem({...sources,
 
 const _Page = sources => RoutedComponent({...sources, routes$: of({
   '/': Overview,
-  '/private/:privateKey': key => _sources => isolate(Overview)({privateKey$: Observable.just(key), ..._sources}),
+  '/private/:privateKey': key => _sources =>
+    isolate(Overview)({privateKey$: Observable.just(key), ..._sources}),
   '/private/:privateKey/opp/:oppKey': (privateKey, oppKey) => _sources =>
-      isolate(Opp)({..._sources, privateKey$: Observable.just(privateKey), oppKey$: Observable.just(oppKey)}),
+      isolate(Opp)({..._sources, privateKey$: Observable.just(privateKey), oppKey$: Observable.just(oppKey)}), // eslint-disable-line max-len
   '/opp/:key': key => _sources =>
-    isolate(Opp)({oppKey$: Observable.just(key), privateKey$: Observable.just(null), ..._sources}),
+    isolate(Opp)({oppKey$: Observable.just(key), privateKey$: Observable.just(null), ..._sources}), // eslint-disable-line max-len
 })})
 
 const Apply = sources => {

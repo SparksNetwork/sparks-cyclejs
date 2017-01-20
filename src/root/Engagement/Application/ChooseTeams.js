@@ -1,8 +1,5 @@
 import {Observable} from 'rx'
 const {just, empty, merge, combineLatest} = Observable
-// const {merge} = Observable
-
-import isolate from '@cycle/isolate'
 
 import {div} from 'helpers'
 
