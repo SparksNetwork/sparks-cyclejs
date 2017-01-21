@@ -7,7 +7,15 @@ import EngagedList from 'components/EngagedList'
 import {FetchEngagements} from './fetch'
 import {EngagementStatus} from 'helpers/EngagementStatus'
 
-const statuses = ['applied', 'ok', 'confirmed', 'never', 'incomplete', 'engagements']
+const statuses = [
+  'applied',
+  'ok',
+  'confirmed',
+  'never',
+  'incomplete',
+  'engagements',
+]
+
 const labels = {
   applied: 'Applied',
   ok: 'Approved',

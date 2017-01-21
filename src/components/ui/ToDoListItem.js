@@ -1,5 +1,5 @@
 import {Observable} from 'rx'
-const {never, just, combineLatest} = Observable
+const {combineLatest} = Observable
 
 import {div, icon} from 'helpers'
 

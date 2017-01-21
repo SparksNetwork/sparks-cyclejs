@@ -8,7 +8,6 @@ export const RoutedComponent = sources => {
   const comp$ = sources.routes$
     .map(routes => sources.router.define(routes))
     .switch()
-    .tap(({path, value}) => console.log('route', path, value.name))
     .distinctUntilChanged(({path}) => path)
     .filter(({path, value}) => path && value)
     .map(({path, value}) =>

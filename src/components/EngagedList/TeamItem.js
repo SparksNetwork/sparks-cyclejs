@@ -1,4 +1,3 @@
-import {cond, prop, T, always} from 'ramda'
 import {Observable as $} from 'rx'
 const {of, merge} = $
 import {
@@ -68,7 +67,15 @@ const TeamItem = sources => {
     return combineDOMsToDiv('', qa, okButton, neverButton)
   })
 
-  const li = ListItemCollapsible({...sources, title$, rightDOM$, contentDOM$})
+  const isVisible$ = title$.map(Boolean)
+
+  const li = ListItemCollapsible({
+    ...sources,
+    title$,
+    rightDOM$,
+    contentDOM$,
+    isVisible$,
+  })
   return {...li, queue$: merge(li.queue$, queue$)}
 }
 

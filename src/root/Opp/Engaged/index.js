@@ -6,7 +6,14 @@ import {TabbedPage} from 'components/ui'
 
 import EngagedList from 'components/EngagedList'
 
-const statuses = ['applied', 'ok', 'confirmed', 'never', 'incomplete', 'engagements']
+const statuses = [
+  'applied',
+  'ok',
+  'confirmed',
+  'never',
+  'incomplete',
+  'engagements',
+]
 const labels = {
   applied: 'Applied',
   ok: 'Approved',

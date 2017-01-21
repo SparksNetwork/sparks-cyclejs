@@ -2,8 +2,7 @@ import {Observable} from 'rx'
 const {merge} = Observable
 
 import {combineDOMsToDiv} from 'util'
-import {Opps} from 'components/remote'
-import {complement, not, prop, propEq, allPass} from 'ramda'
+import {propEq} from 'ramda'
 
 import isolate from '@cycle/isolate'
 import {hideable} from 'util'
@@ -19,9 +18,6 @@ import CardApplying from './CardApplying'
 import CardApplied from './CardApplied'
 
 const isApplying = propEq('isApplied', false)
-// const isApplied = prop('isApplied')
-const isApplied = allPass([prop('isApplied'), complement(prop('isAccepted'))])
-// const isConfirmed = prop('isConfirmed')
 
 export default sources => {
   const info = CardProjectInfo(sources)
@@ -62,7 +58,8 @@ export default sources => {
   const pms = isolate(CardPickMoreShifts)(sources)
   const ee = isolate(CardEnergyExchange)(sources)
 
-  const DOM = combineDOMsToDiv('.cardcontainer',info,admin,applying,applied,confirm,r2w,pms,ee)
+  const DOM = combineDOMsToDiv('.cardcontainer',
+    info,admin,applying,applied,confirm,r2w,pms,ee)
 
   return {
     DOM,
