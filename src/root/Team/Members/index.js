@@ -84,6 +84,7 @@ const EngagementsFetcher = component => sources => {
     .map(filter(e => !e.profileKey))
     .map(map(compose(mquery, prop('$key'))))
     .flatMapLatest(m => combineLatest(...m))
+
   bad$.subscribe(ms => console.warn('bad memberships', ms))
 
   const engagements$ = raw$
