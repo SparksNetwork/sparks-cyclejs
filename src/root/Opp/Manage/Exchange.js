@@ -1,5 +1,5 @@
 import {Observable} from 'rx'
-const {just, never, merge, combineLatest} = Observable
+const {just, merge, combineLatest} = Observable
 import {objOf} from 'ramda'
 import {mapObjIndexed} from 'ramda'
 

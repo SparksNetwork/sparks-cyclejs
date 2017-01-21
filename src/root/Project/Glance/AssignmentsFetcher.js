@@ -11,7 +11,7 @@ import {
   Teams,
 } from 'components/remote'
 
-import {localTime, log} from 'util'
+import {localTime} from 'util'
 import moment from 'moment'
 
 const diff = start =>
@@ -150,18 +150,16 @@ export default function AssignmentsFetcher(sources) {
       )
     )
     .map(sortBySurname)
-    .tap(log('ap2'))
     .shareReplay(1)
 
   const profilesWithArrival$ = $.combineLatest(
       allProfiles$,
-      sources.arrivals$.tap(log('arr')),
+      sources.arrivals$,
       (profiles, arrivals) => map(profile =>
         ({
           ...profile,
           arrival: find(propEq('profileKey', profile.$key))(arrivals),
         }))(profiles))
-    .tap(log('ap3'))
     .shareReplay(1)
 
   return {

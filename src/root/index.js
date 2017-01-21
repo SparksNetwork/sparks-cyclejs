@@ -30,17 +30,8 @@ import {SwitchedComponent} from 'components/SwitchedComponent'
 import Team from './Team'
 import {div} from 'helpers'
 import isolate from '@cycle/isolate'
-import {log} from 'util'
 import {siteUrl} from 'util'
 const {just, merge} = $
-
-
-
-
-
-
-
-
 
 // Route definitions at this level
 const _routes = {
@@ -61,7 +52,6 @@ const _routes = {
   '/logout': Logout,
 }
 
-
 const BlankSidenav = () => ({
   DOM: just(div('')),
 })
@@ -78,10 +68,10 @@ const PathManager = Component => sources => {
     .scan((acc,val) => [val, acc[0]], [null,null])
     .filter(arr => arr[1] !== '/confirm')
     .map(arr => arr[1])
-    .shareReplay(1)
+    .replay(1)
 
   // confirm redirect doesnt work without this log line!!!  wtf??
-  previousRoute$.subscribe(log('index.previousRoute$'))
+  previousRoute$.connect()
 
   return Component({
     ...sources,
@@ -123,7 +113,6 @@ const Root = sources => {
     nav.pluck('route$'),
     sources.redirectUnconfirmed$,
   )
-  .tap(x => console.log(x))
 
   // Refresh bugsnag on page change, send user uid
   const bugsnag = merge(

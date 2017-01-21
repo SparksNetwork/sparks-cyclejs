@@ -1,14 +1,12 @@
 import {Observable} from 'rx'
 const {of, combineLatest} = Observable
 
-import {compose, sum, map, defaultTo, pluck} from 'ramda'
+import {compose, sum, map, defaultTo, pluck, uniq} from 'ramda'
 
 import {TabbedPage} from 'components/ui'
 import Overview from './Overview'
 import Shifts from './Shifts'
 import {Shifts as ShiftsRemote} from 'components/remote'
-
-import {log} from 'util'
 
 import {div} from 'cycle-snabbdom'
 
@@ -34,7 +32,6 @@ const avgHours = (h, p) =>
 const _Fetch = sources => {
   const shifts$ = sources.teamKey$
     .flatMapLatest(ShiftsRemote.query.byTeam(sources))
-    // .tap(log('shifts$'))
 
   const people$ = shifts$
     .map(sumPropOrZero('people'))
@@ -58,11 +55,9 @@ const _Fetch = sources => {
     .map(fromPath)
 
   const allDates$ = combineLatest(shiftDates$, selectedDate$)
-    .tap(log('allDates$ start'))
     .map(([fmShifts,fmSelected]) => [...fmShifts, fmSelected].filter(i => !!i))
     .map(arr => arr.sort())
-    .map(arr => Array.from(new Set(arr))) // orly???
-    // .tap(log('allDates$ end'))
+    .map(arr => uniq(arr))
     .shareReplay(1)
 
   return {
@@ -86,12 +81,10 @@ const TabBuilder = sources => {
   const overview$ = of({path: '/', label: 'Overview'})
   const dateTabs$ = sources.allDates$
     .map(arr => arr.map(d => ({path: '/shifts/' + d, label: tabLabel(d)})))
-    .tap(log('dateTabs$'))
 
   const tabs$ = combineLatest(overview$, dateTabs$)
     .map(([ov,dt]) => [ov, ...dt])
     .shareReplay(1)
-    .tap(log('tabs$'))
 
   return {tabs$}
 }

@@ -1,17 +1,12 @@
 import {Observable} from 'rx'
 const {just, merge, combineLatest} = Observable
 
-import isolate from '@cycle/isolate'
-
 import {
   TitledCard,
   ListItem,
 } from 'components/sdm'
 
-import {
-  TitleListItem,
-  ToDoListItem,
-} from 'components/ui'
+import {ToDoListItem} from 'components/ui'
 
 const Instructions = sources => ListItem({...sources,
   title$: just('Finish your application so the organizer can approve it!'),
@@ -47,7 +42,6 @@ export default sources => {
   })
 
   const route$ = merge(tda.route$, tdt.route$, tdo.route$)
-  route$.subscribe(r => console.log('card route', r))
 
   return {
     ...card,

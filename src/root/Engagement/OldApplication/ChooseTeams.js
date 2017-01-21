@@ -68,7 +68,6 @@ const OpenTeamListItem = sources => {
         Memberships.action.create({values: {teamKey, oppKey, engagementKey}}),
     )
 
-  queue$.subscribe(log('O.queue$'))
 
   return {
     DOM: li.DOM,
@@ -192,8 +191,6 @@ const RestrictedTeamListItem = sources => {
       _determineAction
     )
 
-  queue$.subscribe(log('R.queue$'))
-
   return {
     DOM: li.DOM,
     queue$,
@@ -215,8 +212,6 @@ const FulfillerMemberListItem = sources => {
 
   const queue$ = control$.flatMapLatest(c => c.queue$)
   const DOM = control$.flatMapLatest(c => c.DOM)
-
-  queue$.subscribe(log('LI.queue$'))
 
   return {
     DOM,
@@ -241,8 +236,6 @@ const TeamsMembersList = sources => {
   })
 
   const queue$ = sinks.queue$.share()
-
-  queue$.subscribe(log('L.queue$'))
 
   return {...sinks, queue$}
 }

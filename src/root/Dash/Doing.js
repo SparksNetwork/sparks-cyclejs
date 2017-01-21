@@ -39,11 +39,13 @@ const _Fetch = sources => {
 
   // gets opportunities associated with accepted Engagements
   const acceptedOpportunities$ = acceptedEngagements$
-    .map(engagements => engagements.map(e => e.oppKey).map(Opps.query.one(sources)))
+    .map(engagements => engagements
+      .map(e => e.oppKey).map(Opps.query.one(sources)))
     .map(combineLatest)
     .switch()
 
-  // filter out engagements associated with opportunities that do not have confirmations on
+  // filter out engagements associated with
+  // opportunities that do not have confirmations on
   const engagementsToConfirm$ =
     combineLatest(acceptedEngagements$, acceptedOpportunities$,
       (engagements, opportunities) =>
@@ -111,7 +113,8 @@ const EngagedCard = sources => {
       _sources.opp$.pluck('name'),
       _sources.opp$.pluck('confirmationsOn'),
       _sources.item$,
-      (name, confirmationsOn, item) => `${name} | ${label(item, confirmationsOn)}`
+      (name, confirmationsOn, item) =>
+        `${name} | ${label(item, confirmationsOn)}`
     ),
     path$: _sources.item$.map(({$key}) => `/engaged/${$key}`),
   })
@@ -171,7 +174,10 @@ const noConfirmations =
 const ConfirmationsNeededCard = sources => {
   const list = ConfirmationsList(sources)
   const contents$ = list.contents$
-    .map(contents => [contents.length ? approvedMsg : noConfirmations, ...contents])
+    .map(contents => [
+      contents.length ? approvedMsg : noConfirmations,
+      ...contents,
+    ])
   const card = hideable(TitledCard)({...sources,
     elevation$: just(2),
     isVisible$: sources.acceptedEngagements$.map(c => c.length > 0),

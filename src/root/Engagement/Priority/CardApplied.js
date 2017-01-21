@@ -1,7 +1,5 @@
 import {Observable} from 'rx'
-const {just, merge, combineLatest} = Observable
-
-import isolate from '@cycle/isolate'
+const {just, combineLatest} = Observable
 
 import {
   TitledCard,
@@ -9,13 +7,9 @@ import {
   ListItemNavigating,
 } from 'components/sdm'
 
-import {
-  TitleListItem,
-  ToDoListItem,
-} from 'components/ui'
-
 const Instructions = sources => ListItem({...sources,
-  title$: just('Your application has been sent to the organizer. You\'ll get an email when they approve you.'),
+  title$: just('Your application has been sent to the organizer' +
+               '. You\'ll get an email when they approve you.'),
 })
 
 const ChangeApplication = sources => ListItemNavigating({...sources,
@@ -34,7 +28,6 @@ export default sources => {
   })
 
   const route$ = change.route$
-  route$.subscribe(r => console.log('card route', r))
 
   return {
     ...card,

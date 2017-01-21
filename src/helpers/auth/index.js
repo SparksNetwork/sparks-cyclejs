@@ -81,7 +81,6 @@ export const ProfileMigration = component => sources => {
       [nth(0), ([auth]) => {
         // Construct the old uid:
         const provider = auth.providerData[0]
-        console.log(provider)
         const name = compose(head, split('.'), prop('providerId'))(provider)
 
         // If the old uid is in the format xxx-xxx-xxx then use it directly,

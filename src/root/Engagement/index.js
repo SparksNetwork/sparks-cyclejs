@@ -12,7 +12,6 @@ import {
   TabbedPage,
 } from 'components/ui'
 
-import {log} from 'util'
 import {mergeOrFlatMapLatest} from 'util'
 
 import {div} from 'helpers'
@@ -38,17 +37,14 @@ const _Fetch = sources => {
 
   const assignments$ = sources.engagementKey$
     .flatMapLatest(Assignments.query.byEngagement(sources))
-    .tap(log('assignments$'))
 
   const shifts$ = assignments$
     .map(arr => arr.map(a => Shifts.query.one(sources)(a.shiftKey)))
-    // .tap(log('shifts$ passed to query'))
     .shareReplay(1)
     .flatMapLatest(oarr => oarr.length > 0 ?
         $.combineLatest(...oarr) :
         $.of([])
     )
-    // .tap(log('shifts$ from assignments$'))
     .map(arr => arr.sort((a,b) => moment(a.start) - moment(b.start)))
     .shareReplay(1)
 
@@ -67,7 +63,6 @@ const _Fetch = sources => {
     .map(col => col.filter(c => c.code === 'shifts'))
     .map(col => parseInt(col.length >= 1 ? col[0].count : 0, 10))
     .shareReplay(1)
-    .tap(log('commitmentShifts$'))
 
   const amountPayment$ = commitmentPayment$
     .map(({amount}) => extractAmount(amount || 0))
@@ -181,11 +176,13 @@ import {label} from 'components/engagement'
 const Engagement = sources => {
   const _sources = {...sources, ..._Fetch(sources)}
 
-  const tabs$ = _sources.engagement$.combineLatest(_sources.opp$).map(([{isAccepted}, opp]) => [
-    {path: '/', label: 'Priority'},
-    {path: '/application', label: 'Application'},
-    isAccepted && opp.confirmationsOn && {path: '/confirmation', label: 'Confirmation'},
-  ].filter(x => !!x))
+  const tabs$ = _sources.engagement$.combineLatest(_sources.opp$)
+    .map(([{isAccepted}, opp]) => [
+      {path: '/', label: 'Priority'},
+      {path: '/application', label: 'Application'},
+      isAccepted && opp.confirmationsOn &&
+        {path: '/confirmation', label: 'Confirmation'},
+    ].filter(x => !!x))
 
   const page = TabbedPage({..._sources,
     tabs$,

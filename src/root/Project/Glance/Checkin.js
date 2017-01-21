@@ -19,8 +19,6 @@ import {
   Assignments,
 } from 'components/remote'
 
-import {log} from 'util'
-
 const endOfShift = shift =>
   localTime(shift.start).add(parseInt(shift.hours, 10), 'hour')
 
@@ -201,7 +199,6 @@ const CardList = sources => {
 export default sources => {
   const _sources = {...sources, ...AssignmentsFetcher(sources)}
   const cards = CardList(_sources)
-  cards.queue$.subscribe(log('cards.queue$'))
 
   return {
     DOM: cards.DOM.map(d => div('.cardcontainer',[d])),
