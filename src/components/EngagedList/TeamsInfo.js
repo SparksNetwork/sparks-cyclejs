@@ -1,7 +1,7 @@
 import {Observable as $} from 'rx'
 const {of} = $
 import {
-  map, prop, of as rof, compose,
+  map, prop, of as rof, compose, filter,
 } from 'ramda'
 import isolate from '@cycle/isolate'
 import {combineDOMsToDiv} from 'util'
@@ -15,7 +15,10 @@ import Collapsible from 'components/behaviors/Collapsible'
 import AddToTeam from './AddToTeam'
 import TeamItem from './TeamItem'
 
-import {Memberships, Teams} from 'components/remote'
+import {
+  Memberships,
+  Teams,
+} from 'components/remote'
 
 const TeamsInfo = sources => {
   const addToTeam = isolate(AddToTeam)(sources)
@@ -33,11 +36,18 @@ const TeamsInfo = sources => {
   const hasBeenAccepted$ = memberships$
     .map(memberships => memberships.some(x => x.isAccepted === true))
 
-  const rightDOM$ = memberships$.map(map(prop('teamKey')))
+  const teams$ = memberships$.map(map(prop('teamKey')))
     .map(map(Teams.query.one(sources)))
-    .flatMapLatest($.combineLatest)
-    .map(compose(Boolean, prop('name')))
-    .map(compose(div, rof, prop('length')))
+    .switchMap(teams => teams.length > 0 ? $.combineLatest(teams) : $.just([]))
+    .map(filter(prop('name')))
+    .shareReplay(1)
+
+  const teamCount$ = teams$
+    .map(prop('length'))
+    .shareReplay(1)
+
+  const rightDOM$ = teamCount$
+    .map(compose(div, rof))
 
   const header = Collapsible(ListItemHeader)({
     ...sources,
