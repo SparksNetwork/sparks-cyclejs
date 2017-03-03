@@ -21,35 +21,35 @@ const MakePayment = sources => {
     )
     .map(Engagements.action.pay)
 
-  const isVisible$ = $.merge(
-    $.just(true),
-    queue$.map(false),
-  )
+  const isPaying$ = sources.engagement$.map(eng => eng.isPaying)
+  const isClicked$ = queue$.map(() => true).startWith(false)
+  const viewState$ = $.combineLatest(clientToken$, isPaying$, isClicked$)
 
-  const viewState$ = $.combineLatest(clientToken$, isVisible$)
-
-  return {
-    DOM: viewState$.map(([clientToken, isVisible]) =>
-      isVisible ?
-      h('form',{style: {marginBottom: '1em'}}, [
-        div('#braintree', {
-          hook: {
-            insert: () => braintree.setup(clientToken,'dropin',{
-              container: 'braintree',
-              onPaymentMethodReceived: obj => paymentNonce$.onNext(obj.nonce),
-              onReady: () => {
-                document.getElementById('payment-submit')
-                  .style.display = 'inline-block'
-                document.getElementById('payment-loading')
-                  .style.display = 'none'
-              },
-            }),
-          },
-        }),
-        h('div#payment-loading', ['Loading...']),
+  const paymentForm = (clientToken, isClicked) =>
+    h('form',{style: {marginBottom: '1em'}}, [
+      div('#braintree', {
+        hook: {
+          insert: () => braintree.setup(clientToken,'dropin',{
+            container: 'braintree',
+            onPaymentMethodReceived: obj => paymentNonce$.onNext(obj.nonce),
+            onReady: () => {
+              document.getElementById('payment-submit')
+                .style.display = 'inline-block'
+              document.getElementById('payment-loading')
+                .style.display = 'none'
+            },
+          }),
+        },
+      }),
+      h('div#payment-loading', ['Loading...']),
+      isClicked ?
+        div('Please wait...') :
         h(`button#payment-submit.waves-button.waves-float.waves-light.waves-effect`, // eslint-disable-line max-len
           {
-            attrs: {type: 'submit'},
+            attrs: {
+              type: 'submit',
+              disabled: isClicked,
+            },
             style: {fontSize: '16px', lineHeight: '36px',
               padding: '0 24px', textAlign: 'center',
               backgroundColor: 'rgb(0,150,136)', color: '#FFF',
@@ -58,9 +58,17 @@ const MakePayment = sources => {
           },
           ['Pay With This']
         ),
-      ]) :
-      div('','Payment submitted, please wait...')
-    ) ,
+    ])
+
+  const paymentNotification = () =>
+    div('.list-item',[div('.content', 'Your payment has been submitted. Please wait...')])
+
+  return {
+    DOM: viewState$.map(([clientToken, isPaying, isClicked]) =>
+      isPaying ?
+        paymentNotification() :
+        paymentForm(clientToken, isClicked)
+    ),
     queue$,
   }
 }
