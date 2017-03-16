@@ -10,7 +10,7 @@ import {
   Engagements,
   Organizers,
   Opps,
-  ProjectImages,
+  // ProjectImages,
 } from 'components/remote'
 
 import {ProjectAvatar} from 'components/project'
@@ -91,14 +91,14 @@ const _EngagementFetcher = sources => {
   const projectKey$ = opp$.pluck('projectKey')
   const project$ = projectKey$
     .flatMapLatest(Projects.query.one(sources))
-  const projectImage$ = projectKey$
-    .flatMapLatest(ProjectImages.query.one(sources))
+  // const projectImage$ = projectKey$
+  //   .flatMapLatest(ProjectImages.query.one(sources))
 
   return {
     opp$,
     projectKey$,
     project$,
-    projectImage$,
+    // projectImage$,
   }
 }
 
@@ -106,7 +106,7 @@ const EngagedCard = sources => {
   const _sources = {...sources, ..._EngagementFetcher(sources)}
 
   return NavigatingComplexCard({..._sources,
-    src$: _sources.projectImage$.map(p => p && p.dataUrl || null),
+    // src$: _sources.projectImage$.map(p => p && p.dataUrl || null),
     title$: _sources.project$.pluck('name'),
     // subtitle$: opp$.pluck('name'),
     subtitle$: combineLatest(
