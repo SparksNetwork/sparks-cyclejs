@@ -51,7 +51,7 @@ const entry = {
   ],
 }
 
-const devtool = ENV === DEV ? 'hidden-source-map' : 'hidden-source-map'
+const devtool = ENV === DEV ? 'eval-source-map' : 'hidden-source-map'
 
 function extractOrNot(fallback, loader) {
   if (ENV === 'development') {
