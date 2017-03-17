@@ -57,14 +57,15 @@ export const TitledCard = sources => {
   return cardComponent({...sources, content$})
 }
 
-const sparkly = require('images/pitch/sparklerHeader-2048.jpg')
+// const sparkly = require('images/pitch/sparklerHeader-2048.jpg')
 
 const GRADIENT = 'linear-gradient(rgba(0,0,0,0.50),rgba(0,0,0,0.65),rgba(0,0,0,0.80),rgba(0,0,0,0.80))' //eslint-disable-line max-len
 
 const bgStyle = src => ({
   class: {cardmedia: true},
   style: {
-    backgroundImage: `${GRADIENT}, url(${src || '/' + sparkly})`,
+    backgroundColor: '#666',
+  //   backgroundImage: `${GRADIENT}, url(${src || '/' + sparkly})`,
   },
 })
 
