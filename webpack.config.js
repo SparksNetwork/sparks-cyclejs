@@ -51,7 +51,7 @@ const entry = {
   ],
 }
 
-const devtool = ENV === DEV ? 'hidden-source-map' : 'hidden-source-map'
+const devtool = ENV === DEV ? 'eval-source-map' : 'hidden-source-map'
 
 function extractOrNot(fallback, loader) {
   if (ENV === 'development') {
@@ -82,7 +82,7 @@ module.exports = {
     loaders: [
       {
         test: /\.js$/,
-        loaders: ['babel', 'eslint'],
+        loaders: ['babel'],
         include: __dirname,
         exclude: /node_modules/,
       },

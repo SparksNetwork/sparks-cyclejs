@@ -22,6 +22,7 @@ import makePrerenderDriver from 'drivers/prerender'
 /* global Sparks */
 import {run} from '@cycle/core'
 import screenInfoDriver from 'drivers/screenInfo'
+import { traceDOMDriver, traceRouterDriver } from "./trace"
 
 const history = supportsHistory() ?
   createHistory() : createHashHistory()
@@ -41,9 +42,10 @@ const modules = defaultModules.concat(SupernovaModule)
 
 const {sources, sinks} = run(Root, {
   screenInfo$: screenInfoDriver,
+//  DOM: traceDOMDriver(makeDOMDriver)('#root', {modules}),
   DOM: makeDOMDriver('#root', {modules}),
   focus$: makeFocusNextDriver(),
-  router: makeRouterDriver(history),
+  router: traceRouterDriver(makeRouterDriver)(history),
   firebase: makeFirebaseDriver(fbRoot),
   auth$: makeAuthDriver(firebase),
   queue$: makeQueueDriver(fbRoot.child('!queue')),
