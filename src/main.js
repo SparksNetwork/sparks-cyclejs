@@ -46,9 +46,9 @@ const {sources, sinks} = run(Root, {
   DOM: makeDOMDriver('#root', {modules}),
   focus$: makeFocusNextDriver(),
   router: traceRouterDriver(makeRouterDriver)(history),
-  firebase: makeFirebaseDriver(fbRoot),
-  auth$: makeAuthDriver(firebase),
-  queue$: makeQueueDriver(fbRoot.child('!queue')),
+  firebase: makeFirebaseDriver(fbRoot, {debug : true}),
+  auth$: makeAuthDriver(firebase, {debug : true}),
+  queue$: makeQueueDriver(fbRoot.child('!queue'), 'responses', 'tasks', {debug : true}),
   bugsnag: makeBugsnagDriver({
     releaseStage: process.env.BUILD_ENV || 'development',
   }),
