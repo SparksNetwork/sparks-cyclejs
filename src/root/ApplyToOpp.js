@@ -1,10 +1,16 @@
+/**
+ * This component displays a loader while it creates an engagement for the
+ * current profile and the given opp. Once created it will redirect to the
+ * engagement.
+ */
 import {Observable as $} from 'rx'
-const {combineLatest, just, never} = $
+const {combineLatest, just, never, empty} = $
 import {find, prop, propEq, all} from 'ramda'
 import {Engagements, Opps} from 'components/remote'
 import CenterFrame from 'components/CenterFrame'
 import Loader from 'components/ui/Loader'
 import {switchStream} from 'util'
+import { traceSource } from "../trace"
 
 const Fetch = component => sources => {
   const oppKey$ = sources.oppKey$
@@ -33,16 +39,12 @@ const Fetch = component => sources => {
   })
 }
 
-/**
- * This component displays a loader while it creates an engagement for the
- * current profile and the given opp. Once created it will redirect to the
- * engagement.
- */
 const ApplyToOpp = sources => {
-  const oppKey$ = sources.oppKey$
-  const profileKey$ = sources.userProfileKey$
+  const oppKey$ = traceSource(`ApplyToOpp > oppKey$`, sources.oppKey$)
+  const profileKey$ = traceSource(`ApplyToOpp > profileKey$`, sources.userProfileKey$)
+  const priorEngagment$ = traceSource(`ApplyToOpp > priorEngagment`, sources.priorEngagment$)
 
-  const sinks$ = sources.priorEngagment$.map(eng => {
+  const sinks$ = priorEngagment$.map(eng => {
     if (eng) {
       return {
         route$: just(`/engaged/${eng.$key}/application/question`),

@@ -9,6 +9,7 @@ import {
   objOf,
   prop,
   toPairs,
+  any
 } from 'ramda'
 
 import {Observable} from 'rx'
@@ -281,3 +282,32 @@ export const truth = val =>
   Boolean(val) || val === 0
 
 export const filterTruth = filter(truth)
+
+export function isShiftOverlappingWithAssignments(item, assignments) {
+  return any(isShiftOverlappingWithAssignment(item), assignments)
+}
+
+function isShiftOverlappingWithAssignment(item) {
+  return function isShiftOverlappingWithAssignment(assignment) {
+    return isTimeOverlapping(
+      { start: item.start, end: item.end },
+      { start: assignment.startTime, end: assignment.endTime }
+    )
+  }
+}
+
+function isTimeOverlapping(time1, time2) {
+  const start1 = Date.parse(time1.start)
+  const start2 = Date.parse(time2.start)
+  const end1 = Date.parse(time1.end)
+  const end2 = Date.parse(time2.end)
+
+  return isInBetween(start2, start1, end1) ||
+    isInBetween(start1, start2, end2) ||
+    isInBetween(end1, start2, end2) ||
+    isInBetween(end2, start1, end1)
+}
+
+function isInBetween(start2, start1, end1) {
+  return start2 > start1 && start2 < end1
+}
