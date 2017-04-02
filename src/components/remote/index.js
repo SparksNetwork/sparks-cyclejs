@@ -226,6 +226,7 @@ export const Arrivals = {
     one: filterOne('Arrivals'),
     byProject: filterBy('Arrivals','projectKey'),
     byProfile: filterBy('Arrivals','profileKey'),
+    byProjectProfile: filterBy('Arrivals', 'projectKeyProfileKey'),
   },
   action: {
     create: actionCreator('Arrivals', 'create'),
