@@ -49,8 +49,11 @@ const AssignmentItem = sources => {
   const profile$ = sources.item$.pluck('profileKey')
     .flatMapLatest(Profiles.query.one(sources))
 
-  const arrivals$ = sources.item$.pluck('profileKey')
-    .flatMapLatest(Arrivals.query.byProfile(sources))
+  const arrivals$ = $.combineLatest(
+    sources.projectKey$,
+    sources.item$.pluck('profileKey'),
+    (projectKey, profileKey) => `${projectKey}-${profileKey}`
+  ).flatMapLatest(Arrivals.query.byProjectProfile(sources))
 
   const engagement$ = sources.item$.pluck('engagementKey')
     .flatMapLatest(Engagements.query.one(sources))
