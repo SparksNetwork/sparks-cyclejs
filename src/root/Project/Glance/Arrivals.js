@@ -30,6 +30,11 @@ import AssignmentsFetcher from './AssignmentsFetcher'
 
 require('./arrivals.scss')
 
+const _PrintSchedule = sources => ListItemClickable({...sources,
+  title$: $.of('Print your schedule on dead trees.'),
+  iconName$: $.of('print'),
+})
+
 const SearchBox = sources => {
   const focus$ = sources.DOM.select('.arrivals-search').observable
     .distinctUntilChanged()
@@ -53,6 +58,8 @@ const SearchBox = sources => {
     term$: input.value$,
   }
 }
+
+import { PersonalPrintableSchedule } from '../../Engagement/Priority/CardUpcomingShifts'
 
 const ProfileView = sources => {
   const profile$ = sources.profile$
@@ -80,8 +87,12 @@ const ProfileView = sources => {
     .map(map(prop('DOM')))
     .flatMapLatest($.combineLatest)
 
-  const content$ = $.combineLatest(profile$, shiftItems$, enterPressed$,
-    (profile, shiftItems, enterPressed) => [
+  const shifts$ = assignments$.map(map(prop('shift')))
+  const print = _PrintSchedule(sources)
+  const printable = PersonalPrintableSchedule({...sources, shifts$})
+
+  const content$ = $.combineLatest(profile$, shiftItems$, enterPressed$, print.DOM, printable.DOM,
+    (profile, shiftItems, enterPressed, printDOM, printableDOM) => [
       div('.col-xs-4.arrival-portrait.big', {
         class: {arrived: profile.arrival || enterPressed},
         style: {position: 'relative'},
@@ -109,6 +120,8 @@ const ProfileView = sources => {
             `Arrived at ${formatTime(profile.arrival.arrivedAt)}` :
             'Press return to mark as arrived'
         )]),
+        div('.printButton', [printDOM]),
+        printableDOM,
       ])]
   ).shareReplay(1)
 
@@ -220,10 +233,22 @@ const ArrivalsTab = unfetchedSources => {
   const list = SearchResults({...sources, profiles$, key$: searchBox.key$})
   const DOM = combineDOMsToDiv('', searchBox, list)
 
+  const printClick$ = sources.DOM.select('.printButton .clickable').events('click')
+  printClick$.subscribe(() => console.log('printClick'))
+  const printable$ = sources.DOM.select('.printable')
+    .observable
+    .filter(e => e.length === 1)
+    .map(e => e[0])
+
+  const openAndPrint = printClick$
+    .withLatestFrom(printable$, (cl,pr) => pr)
+    .tap(() => console.log('print2'))
+
   return {
     ...searchBox,
     DOM,
     queue$: list.queue$,
+    openAndPrint,
   }
 }
 

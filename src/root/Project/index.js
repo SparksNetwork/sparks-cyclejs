@@ -114,5 +114,6 @@ export default _sources => {
     queue$: mergeOrFlatMapLatest('queue$', ...children),
     focus$: mergeOrFlatMapLatest('focus$', ...children),
     route$,
+    openAndPrint: mergeOrFlatMapLatest('openAndPrint', ...children),
   }
 }
