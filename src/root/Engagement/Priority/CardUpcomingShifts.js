@@ -100,11 +100,8 @@ const chineseMenu = () =>
   pick(COL_A) + ' ' + pick(COL_B)
 
 const PrintableScheduleHeader = sources => {
-  const profile$ = sources.engagement$.pluck('profileKey')
-    .flatMapLatest(Profiles.query.one(sources))
-
   return {
-    DOM: profile$.map(
+    DOM: sources.profile$.map(
       (profile) => div({}, [
         div('.volunteer', [
           profile.fullName,
@@ -133,14 +130,23 @@ const PrintableScheduleFooter = sources => {
 
 const printableView = (phdr, plist, pftr) => div({}, [phdr, plist, pftr])
 
-export const CardUpcomingShifts = sources => {
-  const info = _Info(sources)
+export const PersonalPrintableSchedule = sources => {
   const list = _List(sources)
   const phdr = PrintableScheduleHeader(sources)
   const pftr = PrintableScheduleFooter(sources)
-  const plist = Printable({...sources,
+  return Printable({...sources,
     contentDOM$: $.combineLatest(phdr.DOM, list.DOM, pftr.DOM, printableView),
   })
+}
+
+export const CardUpcomingShifts = sources => {
+  const profile$ = sources.engagement$.pluck('profileKey')
+    .flatMapLatest(Profiles.query.one(sources))
+
+  const info = _Info(sources)
+  const list = _List(sources)
+  const plist = PersonalPrintableSchedule({...sources, profile$})
+
   const rs = _Reschedule(sources)
   const pr = isolate(_PrintSchedule)(sources)
 
