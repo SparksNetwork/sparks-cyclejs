@@ -51,7 +51,7 @@ const _List = sources => List({...sources,
 })
 
 const _PrintSchedule = sources => ListItemClickable({...sources,
-  title$: $.of('Print your current schedule on dead trees.'),
+  title$: $.of('Print your schedule on dead trees.'),
   iconName$: $.of('print'),
 })
 
@@ -97,7 +97,7 @@ const COL_B = [
 const pick = arr => arr[Math.floor(Math.random() * arr.length)]
 
 const chineseMenu = () =>
-  'a ' + pick(COL_A) + ' ' + pick(COL_B)
+  pick(COL_A) + ' ' + pick(COL_B)
 
 const PrintableScheduleHeader = sources => {
   const profile$ = sources.engagement$.pluck('profileKey')
@@ -155,7 +155,7 @@ export const CardUpcomingShifts = sources => {
   const printable$ = sources.DOM.select('.printable')
     .observable
     .filter(e => e.length === 1)
-    .map(e => e[0].innerHTML)
+    .map(e => e[0])
 
   const content$ = $.of([
     info.DOM,

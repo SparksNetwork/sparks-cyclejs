@@ -12,6 +12,9 @@ export default function makeOpenAndPrintDriver(rootElementSelector) {
       // to keep origin intact where it belongs
       const clone = element.cloneNode(element)
 
+      // reset the classname to remove any 'hidden' class
+      clone.className = 'printable'
+
       // rmeove the current page from document
       document.body.removeChild(rootElement)
 
