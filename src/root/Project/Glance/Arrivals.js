@@ -2,7 +2,7 @@ import {Observable as $} from 'rx'
 import isolate from '@cycle/isolate'
 import {complement, isEmpty, filter, any, split, toLower, compose,
         map, prop, props, allPass, join, useWith,
-        propEq, head, always, ifElse} from 'ramda'
+        propEq, head, always, ifElse, sortBy} from 'ramda'
 
 import {div, img, span} from 'cycle-snabbdom'
 import {combineDOMsToDiv, formatTime} from 'util'
@@ -69,6 +69,7 @@ const ProfileView = sources => {
     profile$.map(prop('assignments')))
 
   const shiftItems$ = assignments$.map(map(prop('shift')))
+    .map(sortBy(prop('start')))
     .map(map(shift =>
         ListItem({
           ...ShiftContentExtra({
