@@ -64,7 +64,6 @@ export default sources => {
   return {
     DOM,
     route$: merge(applying.route$, confirm.route$),
-    // route$: $.merge(applying.route$),
-    // openAndPrint: r2w.openAndPrint,
+    openAndPrint: r2w.openAndPrint,
   }
 }
