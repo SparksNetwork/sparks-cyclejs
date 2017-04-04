@@ -8,33 +8,16 @@ import { LoadingCollapsible } from "components/behaviors/Collapsible"
 
 import AddShift from "./AddShift"
 import ShiftItem from "./ShiftItem"
-import { traceSource } from "../../trace"
 const { of } = $
 
 const ShiftsInfo = sources => {
   const addShift = isolate(AddShift)({
     ...sources,
   })
-// list of shifts the user is assigned to
-  // Assignments is an array of assigned shifts for a given opportunity/engagement/team
-  /*
-   {
-   "$key": "-KKKQ4Z9a9z_kU9xxtQD",
-   "endTime": "2016-07-13T17:56:06Z",
-   "engagementKey": "-KGTaDXmEaMiZ9B0Xkmf",
-   "oppKey": "-KEMfQuSuMoabBEy9Sdb",
-   "profileKey": "-KGTaC_JGJSdekJs4fxK",
-   "shiftKey": "-KJVw_QHEhftzplqBZtR",
-   "startTime": "2016-07-13T10:47:21Z",
-   "teamKey": "-KEMcgCK2a027JIscSfe"
-   }
-   */
-  const rows$ = traceSource(`ShiftsInfo > ShiftItem > assignments`, sources.assignments$)
-
   const list = List({
     ...sources,
-    Control$: of(ShiftItem), //
-    rows$,
+    Control$: of(ShiftItem),
+    rows$ : sources.assignments$,
   })
 
   const header = LoadingCollapsible(ListItemHeader)({

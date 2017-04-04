@@ -9,7 +9,6 @@ import { List, ListItem, ListItemCheckbox } from "components/sdm"
 import { TeamIcon } from "components/team/TeamIcon"
 import { formatDate, localTime } from "util"
 import { ShiftContentExtra } from "components/shift"
-import { traceSinks, traceSource } from "../../trace"
 import { isShiftOverlappingWithAssignments } from "../../util"
 const { of, combineLatest } = $
 
@@ -88,9 +87,8 @@ const ShiftItem = sources => {
 
   const listItemCheckboxClasses = sources => of({ 'col-sm-offset-1': true })
     .withLatestFrom(sources.item$, sources.assignments$, function (classes, item, assignments) {
-      debugger
       const isDisabled = isShiftOverlappingWithAssignments(item, assignments)
-      console.warn('listItemCheckboxClasses$', isDisabled)
+      // console.warn('listItemCheckboxClasses$', isDisabled) // called 1728 times!!
 
       return isDisabled
         ? assoc('disabled', true, classes)
@@ -103,7 +101,7 @@ const ShiftItem = sources => {
     ...ShiftContentExtra(sources),
     classes$: listItemCheckboxClasses(sources),
     // will be true if user is assigned to that shift
-    value$: traceSource(`AddShifts > ListItemCheckbox > item$`, sources.item$)
+    value$: sources.item$
       .map(prop('$key'))
       .flatMapLatest(shiftKey =>
           sources.assignments$
@@ -162,15 +160,13 @@ const TeamItem = sources => {
    "teamKey": "-KXA78F7tz5ySe-S9KSr"
    }
    */
-  const rows$ = traceSinks(`AddShift > TeamItem`, {
-    rows$: sources.item$
+  const rows$ = sources.item$
       .map(prop('shifts'))
       .map(sortShifts)
-  })
 
   const shiftList = List({
     ...sources,
-    ...rows$,
+    rows$,
     Control$: of(ShiftItem),
   })
 
@@ -215,15 +211,13 @@ const DayItem = sources => {
    }]
    }
    */
-  const rows$ = traceSinks(`AddShift > DayItem`, {
-    rows$: sources.item$
+  const rows$ = sources.item$
       .map(last)
       .flatMapLatest(shifts => sources.teams$.map(teamsAndShifts(shifts)))
-  })
 
   const teamList = List({
     ...sources,
-    ...rows$,
+    rows$,
     Control$: of(TeamItem),
   })
 
@@ -273,19 +267,17 @@ const AddShift = sources => {
    "teamKey": "-KEMakFXQAxZe_pEi9by"
    }
    */
-  const shifts$ = traceSource(`AddShift > shifts`, sources.shifts$)
+  const shifts$ = sources.shifts$
 
-  const rows$ = traceSinks(`AddShift >`, {
-    rows$: shifts$
+  const rows$ = shifts$
       .take(1)
       .map(groupBy(compose(formatDate, prop('date'))))
       .map(toPairs)
-  })
 
   // dayList only returns a DOM sink with a list of rows whose behaviour is controlled by `DayItem`
   const dayList = List({
     ...sources,
-    ...rows$,
+    rows$,
     Control$: of(DayItem),
   })
 
