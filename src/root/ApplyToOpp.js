@@ -40,9 +40,9 @@ const Fetch = component => sources => {
 }
 
 const ApplyToOpp = sources => {
-  const oppKey$ = traceSource(`ApplyToOpp > oppKey$`, sources.oppKey$)
-  const profileKey$ = traceSource(`ApplyToOpp > profileKey$`, sources.userProfileKey$)
-  const priorEngagment$ = traceSource(`ApplyToOpp > priorEngagment`, sources.priorEngagment$)
+  const oppKey$ = sources.oppKey$
+  const profileKey$ = sources.userProfileKey$
+  const priorEngagment$ = sources.priorEngagment$
 
   const sinks$ = priorEngagment$.map(eng => {
     if (eng) {
