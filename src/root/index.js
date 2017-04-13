@@ -1,37 +1,32 @@
-import 'normalize-css'
-import 'snabbdom-material/lib/index.css'
-import './styles.scss'
+import "normalize-css"
+import "snabbdom-material/lib/index.css"
+import "./styles.scss"
 
 import {
-  AuthRedirectManager,
-  AuthRoute,
-  AuthedKeyRoute,
-  AuthedResponseManager,
-  KeyRoute,
-  UserManager,
-} from 'helpers/auth'
-import {compose, join, omit, pick, propOr} from 'ramda'
+  AuthedKeyRoute, AuthedResponseManager, AuthRedirectManager, AuthRoute, KeyRoute, UserManager
+} from "helpers/auth"
+import { compose, join, omit, pick, propOr } from "ramda"
 
-import {Observable as $} from 'rx'
-import Admin from './Admin'
-import Apply from './Apply'
-import ApplyToOpp from './ApplyToOpp'
-import Confirm from './Confirm'
-import Dash from './Dash'
-import Engagement from './Engagement'
-import Login from './Login'
-import Logout from './Logout'
-import Opp from './Opp'
-import Organize from './Organize'
-import Project from './Project'
-import {RoutedComponent} from 'components/ui'
-import {SideNav} from './SideNav'
-import {SwitchedComponent} from 'components/SwitchedComponent'
-import Team from './Team'
-import {div} from 'helpers'
-import isolate from '@cycle/isolate'
-import {siteUrl} from 'util'
-const {just, merge} = $
+import { Observable as $ } from "rx"
+import Admin from "./Admin"
+import Apply from "./Apply"
+import ApplyToOpp from "./ApplyToOpp"
+import Confirm from "./Confirm"
+import Dash from "./Dash"
+import Engagement from "./Engagement"
+import Login from "./Login"
+import Logout from "./Logout"
+import Opp from "./Opp"
+import Organize from "./Organize"
+import Project from "./Project"
+import { RoutedComponent } from "components/ui"
+import { SideNav } from "./SideNav"
+import { SwitchedComponent } from "components/SwitchedComponent"
+import Team from "./Team"
+import { div } from "helpers"
+import isolate from "@cycle/isolate"
+import { siteUrl } from "util"
+const { just, merge } = $
 
 // Route definitions at this level
 const _routes = {
@@ -48,7 +43,7 @@ const _routes = {
   '/organize/:key': AuthedKeyRoute(Organize, 'organizerKey$'),
   '/login': Login,
   '/login/:provider': provider => sources =>
-    Login({...sources, provider$: just(provider)}),
+    Login({ ...sources, provider$: just(provider) }),
   '/logout': Logout,
 }
 
@@ -65,7 +60,7 @@ const PathManager = Component => sources => {
     .shareReplay(1)
 
   const previousRoute$ = path$
-    .scan((acc,val) => [val, acc[0]], [null,null])
+    .scan((acc, val) => [val, acc[0]], [null, null])
     .filter(arr => arr[1] !== '/confirm')
     .map(arr => arr[1])
     .replay(1)
@@ -81,7 +76,8 @@ const PathManager = Component => sources => {
 }
 
 const Root = sources => {
-  const nav = SwitchedComponent({...sources,
+  const nav = SwitchedComponent({
+    ...sources,
     Component$: sources.userProfile$
       .map(up => up ? isolate(SideNav) : isolate(BlankSidenav)),
   })
@@ -103,8 +99,8 @@ const Root = sources => {
   const queue$ = page.queue$ || $.empty()
 
   const openGraph = merge(
-    $.of({site_name: 'Sparks.Network'}),
-    sources.path$.map(path => ({url: join('', [siteUrl(), path])})),
+    $.of({ site_name: 'Sparks.Network' }),
+    sources.path$.map(path => ({ url: join('', [siteUrl(), path]) })),
     page.openGraph,
   )
 
@@ -116,12 +112,16 @@ const Root = sources => {
 
   // Refresh bugsnag on page change, send user uid
   const bugsnag = merge(
-    router.map({action: 'refresh'}),
-    sources.auth$.map(authInfo =>
-      ({
+    router.map({ action: 'refresh' }),
+    sources.auth$.map(function (authInfo) {
+//      console.log(`root index > authInfo`, authInfo)
+      return {
         action: 'user',
-        user: pick(['provider', 'uid'], propOr({}, 'auth', authInfo)),
-      }))
+        //user: pick(['provider', 'uid'], propOr({}, 'auth', authInfo)), // no `auth` prop on
+        // authInfo, at least when logging with google
+        user: pick(['provider', 'uid'], authInfo && authInfo.providerData ? authInfo.providerData[0] : {})
+      }
+    })
   )
 
   return {
@@ -138,8 +138,8 @@ const Root = sources => {
 }
 
 /**
-* Inject isMobile$ stream into the component sources
-*/
+ * Inject isMobile$ stream into the component sources
+ */
 const IsMobile = Component => sources => {
   const isMobile$ = sources.screenInfo$
     .map(si => si.size <= 2)
